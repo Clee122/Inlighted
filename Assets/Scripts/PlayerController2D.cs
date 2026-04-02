@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class PlayerController2D : MonoBehaviour
 {
@@ -20,6 +21,7 @@ public class PlayerController2D : MonoBehaviour
     private bool isGrounded;
     private float moveInput;
     private float currentSpeed;
+    private bool jumpQueued;
 
     private void Reset()
     {
@@ -34,19 +36,14 @@ public class PlayerController2D : MonoBehaviour
 
     private void Update()
     {
-        moveInput = 0f;
-
-        if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow))
-            moveInput = -1f;
-
-        if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow))
-            moveInput = 1f;
-
         isGrounded = Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayer);
 
-        if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
+        Debug.Log("Grounded: " + isGrounded);
+
+        if (jumpQueued && isGrounded)
         {
             rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
+            jumpQueued = false;
         }
     }
 
@@ -64,6 +61,21 @@ public class PlayerController2D : MonoBehaviour
         }
 
         rb.linearVelocity = new Vector2(currentSpeed, rb.linearVelocity.y);
+    }
+
+    public void OnMove(InputAction.CallbackContext context)
+    {
+        Vector2 input = context.ReadValue<Vector2>();
+        moveInput = input.x;
+    }
+
+    public void OnJump(InputAction.CallbackContext context)
+    {
+        if (context.performed)
+        {
+            Debug.Log("Jump pressed");
+            jumpQueued = true;
+        }
     }
 
     private void OnDrawGizmosSelected()
