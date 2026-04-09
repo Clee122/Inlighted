@@ -45,6 +45,7 @@ GameObject:
   - component: {fileID: 5995141665719187509}
   - component: {fileID: 2372123118690083170}
   - component: {fileID: 6395289212163813942}
+  - component: {fileID: -8181637828534096018}
   m_Layer: 6
   m_Name: Player
   m_TagString: Untagged
@@ -352,3 +353,17 @@ MonoBehaviour:
   groundLayer:
     serializedVersion: 2
     m_Bits: 128
+--- !u!114 &-8181637828534096018
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6740553540052544372}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f2100fc550f2f804c8f44a8a808631cd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerLifeSystem
+  maxLives: 3
+  invulnerabilityDuration: 1

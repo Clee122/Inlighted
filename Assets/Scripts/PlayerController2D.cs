@@ -38,8 +38,6 @@ public class PlayerController2D : MonoBehaviour
     {
         isGrounded = Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayer);
 
-        Debug.Log("Grounded: " + isGrounded);
-
         if (jumpQueued && isGrounded)
         {
             rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
@@ -73,7 +71,6 @@ public class PlayerController2D : MonoBehaviour
     {
         if (context.performed)
         {
-            Debug.Log("Jump pressed");
             jumpQueued = true;
         }
     }
