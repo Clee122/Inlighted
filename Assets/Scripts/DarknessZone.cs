@@ -15,7 +15,7 @@ public class DarknessZone : MonoBehaviour
 
         if (playerLife != null)
         {
-            damageCoroutine = StartCoroutine(DamageOverTime(playerLife));
+            damageCoroutine = StartCoroutine(DamageOverTime(other.gameObject, playerLife));
         }
     }
 
@@ -30,11 +30,19 @@ public class DarknessZone : MonoBehaviour
         }
     }
 
-    private IEnumerator DamageOverTime(PlayerLifeSystem playerLife)
+    private IEnumerator DamageOverTime(GameObject playerObject, PlayerLifeSystem playerLife)
     {
+        LightBurstController burstController = playerObject.GetComponent<LightBurstController>();
+
         while (playerLife != null && !playerLife.IsDead())
         {
-            playerLife.TakeDamage(damageAmount);
+            bool burstActive = burstController != null && burstController.IsBurstActive();
+
+            if (!burstActive)
+            {
+                playerLife.TakeDamage(damageAmount);
+            }
+
             yield return new WaitForSeconds(damageInterval);
         }
     }
