@@ -47,6 +47,7 @@ GameObject:
   - component: {fileID: 6395289212163813942}
   - component: {fileID: -8181637828534096018}
   - component: {fileID: -5335877252066859057}
+  - component: {fileID: 6434395042197927662}
   m_Layer: 6
   m_Name: Player
   m_TagString: Untagged
@@ -399,6 +400,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::LightBurstController
   burstDuration: 2
   burstVisual: {fileID: 7726757575506062778}
+--- !u!114 &6434395042197927662
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6740553540052544372}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a509cfe5b254dd14c9868dcfc00f77bc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerRespawn
+  respawnPoint: {fileID: 0}
+  respawnDelay: 1
 --- !u!1 &7726757575506062778
 GameObject:
   m_ObjectHideFlags: 0

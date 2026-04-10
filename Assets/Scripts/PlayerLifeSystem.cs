@@ -54,7 +54,12 @@ public class PlayerLifeSystem : MonoBehaviour
         isDead = true;
         Debug.Log("Player died");
 
-        // Later: trigger respawn here
+        PlayerRespawn playerRespawn = GetComponent<PlayerRespawn>();
+
+        if (playerRespawn != null)
+        {
+            playerRespawn.RespawnPlayer();
+        }
     }
 
     // =========================

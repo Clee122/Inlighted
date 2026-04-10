@@ -396,6 +396,10 @@ PrefabInstance:
       propertyPath: burstDuration
       value: 5
       objectReference: {fileID: 0}
+    - target: {fileID: 6434395042197927662, guid: 1a2b6faaca96b144c9f1e527bae249d1, type: 3}
+      propertyPath: respawnPoint
+      value: 
+      objectReference: {fileID: 5027164263111244767}
     - target: {fileID: 6740553540052544372, guid: 1a2b6faaca96b144c9f1e527bae249d1, type: 3}
       propertyPath: m_Name
       value: Player
@@ -682,6 +686,11 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: dabca89fada0e4f4591436cf7038bad9, type: 3}
+--- !u!4 &5027164263111244767 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 676364040258218101, guid: 69389bfd8f8fe9d459e370b494a06c47, type: 3}
+  m_PrefabInstance: {fileID: 7329389502433446146}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &6326316011306945458
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -739,6 +748,63 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 1e2c25fe400cc284bbbf92de97362c14, type: 3}
+--- !u!1001 &7329389502433446146
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 676364040258218101, guid: 69389bfd8f8fe9d459e370b494a06c47, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -9.85
+      objectReference: {fileID: 0}
+    - target: {fileID: 676364040258218101, guid: 69389bfd8f8fe9d459e370b494a06c47, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -4.37
+      objectReference: {fileID: 0}
+    - target: {fileID: 676364040258218101, guid: 69389bfd8f8fe9d459e370b494a06c47, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 676364040258218101, guid: 69389bfd8f8fe9d459e370b494a06c47, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 676364040258218101, guid: 69389bfd8f8fe9d459e370b494a06c47, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 676364040258218101, guid: 69389bfd8f8fe9d459e370b494a06c47, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 676364040258218101, guid: 69389bfd8f8fe9d459e370b494a06c47, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 676364040258218101, guid: 69389bfd8f8fe9d459e370b494a06c47, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 676364040258218101, guid: 69389bfd8f8fe9d459e370b494a06c47, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 676364040258218101, guid: 69389bfd8f8fe9d459e370b494a06c47, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7692335479241238432, guid: 69389bfd8f8fe9d459e370b494a06c47, type: 3}
+      propertyPath: m_Name
+      value: Respawn Point
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 69389bfd8f8fe9d459e370b494a06c47, type: 3}
 --- !u!1001 &7698751042492973581
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -928,3 +994,4 @@ SceneRoots:
   - {fileID: 723470345}
   - {fileID: 7837607264680391296}
   - {fileID: 6326316011306945458}
+  - {fileID: 7329389502433446146}
