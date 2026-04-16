@@ -501,7 +501,7 @@ GameObject:
   - component: {fileID: 643876584}
   - component: {fileID: 643876583}
   m_Layer: 5
-  m_Name: Options
+  m_Name: Settings
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -539,7 +539,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 290a8c47d6b0dc24fb42c80c67d0730a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LoadScene
-  sceneName: 
+  sceneName: Settings
 --- !u!114 &643876584
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -838,7 +838,9 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Options
+  m_text: 'Settings
+
+'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -1067,7 +1069,7 @@ GameObject:
   - component: {fileID: 1018024445}
   - component: {fileID: 1018024444}
   m_Layer: 5
-  m_Name: Text (TMP)
+  m_Name: title
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1112,7 +1114,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: '[Game Name]'
+  m_text: Inlighted
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -1566,7 +1568,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 290a8c47d6b0dc24fb42c80c67d0730a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LoadScene
-  sceneName: 
+  sceneName: Credits
 --- !u!114 &1873097983
 MonoBehaviour:
   m_ObjectHideFlags: 0
