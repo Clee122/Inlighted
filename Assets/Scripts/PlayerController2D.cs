@@ -23,6 +23,9 @@ public class PlayerController2D : MonoBehaviour
     private float currentSpeed;
     private bool jumpQueued;
 
+    public PauseManager Pauser;
+    private bool IsPaused = false;
+
     private void Reset()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -32,13 +35,15 @@ public class PlayerController2D : MonoBehaviour
     {
         if (rb == null)
             rb = GetComponent<Rigidbody2D>();
+
+        Pauser = FindFirstObjectByType<PauseManager>();
     }
 
     private void Update()
     {
         isGrounded = Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayer);
 
-        Debug.Log("Grounded: " + isGrounded);
+        //Debug.Log("Grounded: " + isGrounded);
 
         if (jumpQueued && isGrounded)
         {
@@ -84,5 +89,22 @@ public class PlayerController2D : MonoBehaviour
 
         Gizmos.color = Color.green;
         Gizmos.DrawWireSphere(groundCheck.position, groundCheckRadius);
+    }
+
+    public void Pause(InputAction.CallbackContext context)
+    {
+        Debug.Log("Pause button pressed");
+        if (context.started)
+        {
+            if (!IsPaused)
+            {
+                Pauser.Pause();
+            }
+            else
+            {
+                Pauser.UnPause();
+            }
+            IsPaused = !IsPaused;
+        }
     }
 }
