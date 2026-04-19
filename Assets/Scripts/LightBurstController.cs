@@ -10,21 +10,37 @@ public class LightBurstController : MonoBehaviour
     [SerializeField] private GameObject burstVisual;
 
     private bool isBurstActive = false;
+    private bool isOnCooldown = false;
     private Coroutine burstCoroutine;
+    private Coroutine cooldownCoroutine;
 
     public bool IsBurstActive()
     {
         return isBurstActive;
     }
 
+    public bool IsOnCooldown()
+    {
+        return isOnCooldown;
+    }
+
     public void ActivateBurst()
     {
+        if (isBurstActive || isOnCooldown)
+            return;
+
         if (burstCoroutine != null)
         {
             StopCoroutine(burstCoroutine);
         }
 
+        if (cooldownCoroutine != null)
+        {
+            StopCoroutine(cooldownCoroutine);
+        }
+
         burstCoroutine = StartCoroutine(BurstRoutine());
+        cooldownCoroutine = StartCoroutine(CooldownRoutine());
     }
 
     private IEnumerator BurstRoutine()
@@ -49,5 +65,17 @@ public class LightBurstController : MonoBehaviour
 
         burstCoroutine = null;
         Debug.Log("Light burst ended");
+    }
+
+    private IEnumerator CooldownRoutine()
+    {
+        isOnCooldown = true;
+        Debug.Log("Light burst cooldown started");
+
+        yield return new WaitForSeconds(burstDuration);
+
+        isOnCooldown = false;
+        cooldownCoroutine = null;
+        Debug.Log("Light burst cooldown ended");
     }
 }

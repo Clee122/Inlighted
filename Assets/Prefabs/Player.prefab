@@ -165,7 +165,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: -0.00000011920929, y: -0.000000074505806}
+  m_Offset: {x: 0.0070153177, y: 0.0017538071}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -175,7 +175,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 0.74186325, y: 0.8451177}
+  m_Size: {x: 0.99442524, y: 1.002969}
   m_EdgeRadius: 0
 --- !u!50 &5995141665719187509
 Rigidbody2D:
@@ -398,7 +398,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 00a3849ed7631514c93a97031b38aa64, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LightBurstController
-  burstDuration: 2
+  burstDuration: 3
   burstVisual: {fileID: 7726757575506062778}
 --- !u!114 &6434395042197927662
 MonoBehaviour:
