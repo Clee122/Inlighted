@@ -51,6 +51,7 @@ GameObject:
   - component: {fileID: 698329069314408359}
   - component: {fileID: 6849352920613973702}
   - component: {fileID: 1220668848310507303}
+  - component: {fileID: 6684444111527283543}
   m_Layer: 5
   m_Name: Unpause Button
   m_TagString: Untagged
@@ -159,7 +160,32 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 6849352920613973702}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 6684444111527283543}
+        m_TargetAssemblyTypeName: PauseManager, Assembly-CSharp
+        m_MethodName: UnPause
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+--- !u!114 &6684444111527283543
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 410887882498367830}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c5d4ab482bb4c604396c493674472c06, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PauseManager
+  PauseMenu: {fileID: 241028622694031518}
 --- !u!1 &879559789154496251
 GameObject:
   m_ObjectHideFlags: 0
@@ -660,6 +686,7 @@ GameObject:
   - component: {fileID: 3934273978009295416}
   - component: {fileID: 4544823543624961407}
   - component: {fileID: 627875373635435815}
+  - component: {fileID: 5222218120306767539}
   m_Layer: 5
   m_Name: MainMenu Button
   m_TagString: Untagged
@@ -768,4 +795,29 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 4544823543624961407}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 5222218120306767539}
+        m_TargetAssemblyTypeName: LoadScene, Assembly-CSharp
+        m_MethodName: GoToScene
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+--- !u!114 &5222218120306767539
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7116154316720275605}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 290a8c47d6b0dc24fb42c80c67d0730a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LoadScene
+  sceneName: Main_Menu
