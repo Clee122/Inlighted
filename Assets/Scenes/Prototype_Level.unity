@@ -119,6 +119,17 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!114 &273655994 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6684444111527283543, guid: 58839fcf5f40ff24e97de205bd895dbd, type: 3}
+  m_PrefabInstance: {fileID: 7771743925461697298}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c5d4ab482bb4c604396c493674472c06, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PauseManager
 --- !u!4 &513502518 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 8007050867395820475, guid: 1a2b6faaca96b144c9f1e527bae249d1, type: 3}
@@ -402,11 +413,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2372123118690083170, guid: 1a2b6faaca96b144c9f1e527bae249d1, type: 3}
       propertyPath: m_ActionEvents.Array.data[20].m_ActionId
-      value: 6d1bc011-7d1b-47e1-bbb0-d4b6762c5324
+      value: 062e9287-b637-4244-8bb0-fcdb527d76d9
       objectReference: {fileID: 0}
     - target: {fileID: 2372123118690083170, guid: 1a2b6faaca96b144c9f1e527bae249d1, type: 3}
       propertyPath: m_ActionEvents.Array.data[20].m_ActionName
-      value: 'Player/Pause[/Keyboard/escape]'
+      value: Player/Pause
       objectReference: {fileID: 0}
     - target: {fileID: 2372123118690083170, guid: 1a2b6faaca96b144c9f1e527bae249d1, type: 3}
       propertyPath: m_ActionEvents.Array.data[20].m_PersistentCalls.m_Calls.Array.size
@@ -436,6 +447,10 @@ PrefabInstance:
       propertyPath: m_ActionEvents.Array.data[20].m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
       value: UnityEngine.Object, UnityEngine
       objectReference: {fileID: 0}
+    - target: {fileID: 6395289212163813942, guid: 1a2b6faaca96b144c9f1e527bae249d1, type: 3}
+      propertyPath: Pauser
+      value: 
+      objectReference: {fileID: 273655994}
     - target: {fileID: 6434395042197927662, guid: 1a2b6faaca96b144c9f1e527bae249d1, type: 3}
       propertyPath: respawnPoint
       value: 
