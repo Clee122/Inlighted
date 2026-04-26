@@ -401,7 +401,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8181637828534096018, guid: 1a2b6faaca96b144c9f1e527bae249d1, type: 3}
       propertyPath: AMult
-      value: 0.11111111
+      value: 0.33333334
       objectReference: {fileID: 0}
     - target: {fileID: -8181637828534096018, guid: 1a2b6faaca96b144c9f1e527bae249d1, type: 3}
       propertyPath: maxLives
@@ -454,6 +454,10 @@ PrefabInstance:
     - target: {fileID: 2372123118690083170, guid: 1a2b6faaca96b144c9f1e527bae249d1, type: 3}
       propertyPath: m_ActionEvents.Array.data[20].m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
       value: UnityEngine.Object, UnityEngine
+      objectReference: {fileID: 0}
+    - target: {fileID: 4475843189792088534, guid: 1a2b6faaca96b144c9f1e527bae249d1, type: 3}
+      propertyPath: m_SortingOrder
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6395289212163813942, guid: 1a2b6faaca96b144c9f1e527bae249d1, type: 3}
       propertyPath: Pauser
@@ -612,7 +616,7 @@ Canvas:
   m_AdditionalShaderChannelsFlag: 25
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 2
   m_TargetDisplay: 0
 --- !u!224 &1324579468
 RectTransform:
