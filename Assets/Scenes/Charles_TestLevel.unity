@@ -953,9 +953,17 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: -8181637828534096018, guid: 1a2b6faaca96b144c9f1e527bae249d1, type: 3}
+      propertyPath: AMult
+      value: 0.3333333
+      objectReference: {fileID: 0}
+    - target: {fileID: -8181637828534096018, guid: 1a2b6faaca96b144c9f1e527bae249d1, type: 3}
       propertyPath: maxLives
       value: 3
       objectReference: {fileID: 0}
+    - target: {fileID: -8181637828534096018, guid: 1a2b6faaca96b144c9f1e527bae249d1, type: 3}
+      propertyPath: DarknessIndicator
+      value: 
+      objectReference: {fileID: 2047700108}
     - target: {fileID: -5335877252066859057, guid: 1a2b6faaca96b144c9f1e527bae249d1, type: 3}
       propertyPath: burstDuration
       value: 5
@@ -2950,6 +2958,17 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 8585825438444348274, guid: 1e2c25fe400cc284bbbf92de97362c14, type: 3}
   m_PrefabInstance: {fileID: 520106467}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &2047700108 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6163625479608989253, guid: 58839fcf5f40ff24e97de205bd895dbd, type: 3}
+  m_PrefabInstance: {fileID: 7771743925461697298}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
 --- !u!1001 &2060758896
 PrefabInstance:
   m_ObjectHideFlags: 0
