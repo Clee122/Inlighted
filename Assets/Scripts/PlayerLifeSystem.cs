@@ -26,6 +26,7 @@ public class PlayerLifeSystem : MonoBehaviour
         currentLives = maxLives;
 
         DarknessDamage = 0;
+        tempColor = DarknessIndicator.color;
     }
 
     // =========================
@@ -53,7 +54,6 @@ public class PlayerLifeSystem : MonoBehaviour
             StartCoroutine(InvulnerabilityCoroutine());
         }
 
-        tempColor = DarknessIndicator.color;
         tempColor.a = DarknessDamage*AMult;
         DarknessIndicator.color = tempColor;
 
@@ -119,7 +119,6 @@ public class PlayerLifeSystem : MonoBehaviour
     public void DarknessIndicatorReset()
     {
         Debug.Log("reached code for alpha change");
-        tempColor = DarknessIndicator.color;
         tempColor.a = ResetAlpha;
         DarknessIndicator.color = tempColor;
     }
