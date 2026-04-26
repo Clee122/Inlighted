@@ -11,6 +11,7 @@ public class LightBeamController : MonoBehaviour
     [Header("Beam Timing")]
     [SerializeField] private float beamVisualDuration = 0.2f;
     [SerializeField] private float beamCooldown = 2f;
+    [SerializeField] private float beamCheckInterval = 0.05f;
 
     [Header("Beam Origin")]
     [SerializeField] private Transform beamOrigin;
@@ -18,15 +19,78 @@ public class LightBeamController : MonoBehaviour
     [Header("Beam Visual")]
     [SerializeField] private GameObject beamVisual;
 
+    private bool isBeamActive = false;
     private bool isOnCooldown = false;
-    private Coroutine visualCoroutine;
+
+    private Coroutine beamCoroutine;
     private Coroutine cooldownCoroutine;
+
+    private Vector2 lastBeamCenter;
+    private Vector2 lastBeamSize;
+
+    private int facingDirection = 1;
+
+    public bool IsBeamActive()
+    {
+        return isBeamActive;
+    }
 
     public void FireBeam()
     {
-        if (isOnCooldown)
+        if (isOnCooldown || isBeamActive)
             return;
 
+        if (beamCoroutine != null)
+        {
+            StopCoroutine(beamCoroutine);
+        }
+
+        beamCoroutine = StartCoroutine(BeamRoutine());
+
+        if (cooldownCoroutine != null)
+        {
+            StopCoroutine(cooldownCoroutine);
+        }
+
+        cooldownCoroutine = StartCoroutine(CooldownRoutine());
+    }
+
+    private IEnumerator BeamRoutine()
+    {
+        isBeamActive = true;
+
+        if (beamVisual != null)
+        {
+            beamVisual.SetActive(true);
+        }
+
+        Debug.Log("Light beam active");
+
+        float timer = 0f;
+
+        while (timer < beamVisualDuration)
+        {
+            UpdateBeamPosition();
+            DispelDarknessInBeam();
+
+            timer += beamCheckInterval;
+            yield return new WaitForSeconds(beamCheckInterval);
+        }
+
+        isBeamActive = false;
+
+        if (beamVisual != null)
+        {
+            beamVisual.SetActive(false);
+        }
+
+        beamCoroutine = null;
+
+        Debug.Log("Light beam ended");
+    }
+
+    private void UpdateBeamPosition()
+    {
         Vector2 direction = GetFacingDirection();
 
         Vector2 originPosition = beamOrigin != null
@@ -36,65 +100,35 @@ public class LightBeamController : MonoBehaviour
         Vector2 boxCenter = originPosition + direction * (beamRange * 0.5f);
         Vector2 boxSize = new Vector2(beamRange, beamWidth);
 
-        float angle = 0f;
+        lastBeamCenter = boxCenter;
+        lastBeamSize = boxSize;
 
+        if (beamVisual != null)
+        {
+            beamVisual.transform.position = boxCenter;
+            beamVisual.transform.rotation = Quaternion.identity;
+            beamVisual.transform.localScale = new Vector3(boxSize.x, boxSize.y, 1f);
+        }
+    }
+
+    private void DispelDarknessInBeam()
+    {
         Collider2D[] hits = Physics2D.OverlapBoxAll(
-            boxCenter,
-            boxSize,
-            angle,
+            lastBeamCenter,
+            lastBeamSize,
+            0f,
             darknessLayer
         );
 
         foreach (Collider2D hit in hits)
         {
-            DarknessZone darknessZone = hit.GetComponent<DarknessZone>();
+            DarknessZone darknessZone = hit.GetComponentInParent<DarknessZone>();
 
             if (darknessZone != null)
             {
                 darknessZone.Dispel();
             }
         }
-
-        ShowBeamVisual(boxCenter, boxSize);
-
-        if (cooldownCoroutine != null)
-        {
-            StopCoroutine(cooldownCoroutine);
-        }
-
-        cooldownCoroutine = StartCoroutine(CooldownRoutine());
-
-        Debug.Log("Light beam fired. Darkness zones hit: " + hits.Length);
-    }
-
-    private void ShowBeamVisual(Vector2 boxCenter, Vector2 boxSize)
-    {
-        if (beamVisual == null)
-            return;
-
-        beamVisual.transform.position = boxCenter;
-        beamVisual.transform.rotation = Quaternion.identity;
-        beamVisual.transform.localScale = new Vector3(boxSize.x, boxSize.y, 1f);
-        beamVisual.SetActive(true);
-
-        if (visualCoroutine != null)
-        {
-            StopCoroutine(visualCoroutine);
-        }
-
-        visualCoroutine = StartCoroutine(HideBeamVisualRoutine());
-    }
-
-    private IEnumerator HideBeamVisualRoutine()
-    {
-        yield return new WaitForSeconds(beamVisualDuration);
-
-        if (beamVisual != null)
-        {
-            beamVisual.SetActive(false);
-        }
-
-        visualCoroutine = null;
     }
 
     private IEnumerator CooldownRoutine()
@@ -109,14 +143,19 @@ public class LightBeamController : MonoBehaviour
         Debug.Log("Light beam cooldown ended");
     }
 
+    public bool IsBoundsOverlappingActiveBeam(Bounds darknessBounds)
+    {
+        if (!isBeamActive)
+            return false;
+
+        Bounds beamBounds = new Bounds(lastBeamCenter, lastBeamSize);
+
+        return beamBounds.Intersects(darknessBounds);
+    }
+
     private Vector2 GetFacingDirection()
     {
-        if (transform.localScale.x < 0f)
-        {
-            return Vector2.left;
-        }
-
-        return Vector2.right;
+        return facingDirection < 0 ? Vector2.left : Vector2.right;
     }
 
     private void OnDrawGizmosSelected()
@@ -132,5 +171,19 @@ public class LightBeamController : MonoBehaviour
 
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireCube(boxCenter, boxSize);
+    }
+
+    public void OnMoveForBeam(UnityEngine.InputSystem.InputAction.CallbackContext context)
+    {
+        Vector2 input = context.ReadValue<Vector2>();
+
+        if (input.x > 0.01f)
+        {
+            facingDirection = 1;
+        }
+        else if (input.x < -0.01f)
+        {
+            facingDirection = -1;
+        }
     }
 }

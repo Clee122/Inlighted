@@ -47,13 +47,27 @@ public class PlayerDarknessTracker : MonoBehaviour
 
     private IEnumerator DarknessDamageRoutine()
     {
-        while (darknessZoneCount > 0 && playerLifeSystem != null && !playerLifeSystem.IsDead())
+        while (darknessZoneCount > 0 && playerLifeSystem != null)
         {
+            if (playerLifeSystem.IsDead())
+            {
+                darknessZoneCount = 0;
+                damageCoroutine = null;
+                yield break;
+            }
+
             bool burstActive = lightBurstController != null && lightBurstController.IsBurstActive();
 
             if (!burstActive)
             {
                 playerLifeSystem.TakeDamage(damageAmount);
+
+                if (playerLifeSystem.IsDead())
+                {
+                    darknessZoneCount = 0;
+                    damageCoroutine = null;
+                    yield break;
+                }
             }
 
             yield return new WaitForSeconds(damageInterval);

@@ -545,8 +545,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 00a3849ed7631514c93a97031b38aa64, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LightBurstController
-  burstDuration: 3
+  burstDuration: 1
   burstVisual: {fileID: 7726757575506062778}
+  burstDispelRadius: 3
+  darknessLayer:
+    serializedVersion: 2
+    m_Bits: 0
 --- !u!114 &6434395042197927662
 MonoBehaviour:
   m_ObjectHideFlags: 0
