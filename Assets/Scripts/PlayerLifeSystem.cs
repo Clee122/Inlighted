@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using UnityEngine.UI;
 
 public class PlayerLifeSystem : MonoBehaviour
 {
@@ -13,9 +14,19 @@ public class PlayerLifeSystem : MonoBehaviour
     private bool isInvulnerable = false;
     private bool isDead = false;
 
+    [Header("Darkness Indicator settings")]
+    public Image DarknessIndicator;
+    private Color tempColor;
+    public float AMult; //set to 1/3
+    private int DarknessDamage;
+    private float ResetAlpha = 0.001f;
+
     private void Start()
     {
         currentLives = maxLives;
+
+        DarknessDamage = 0;
+        tempColor = DarknessIndicator.color;
     }
 
     // =========================
@@ -27,6 +38,7 @@ public class PlayerLifeSystem : MonoBehaviour
             return;
 
         currentLives -= amount;
+        DarknessDamage += amount;
 
         if (currentLives < 0)
             currentLives = 0;
@@ -41,6 +53,10 @@ public class PlayerLifeSystem : MonoBehaviour
         {
             StartCoroutine(InvulnerabilityCoroutine());
         }
+
+        tempColor.a = DarknessDamage*AMult;
+        DarknessIndicator.color = tempColor;
+
     }
 
     // =========================
@@ -98,5 +114,12 @@ public class PlayerLifeSystem : MonoBehaviour
         currentLives = maxLives;
         isDead = false;
         isInvulnerable = false;
+    }
+
+    public void DarknessIndicatorReset()
+    {
+        Debug.Log("reached code for alpha change");
+        tempColor.a = ResetAlpha;
+        DarknessIndicator.color = tempColor;
     }
 }

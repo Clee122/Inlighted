@@ -1,5 +1,7 @@
 using UnityEngine;
 using System.Collections;
+using UnityEngine.UI;
+using System.Runtime.CompilerServices;
 
 public class PlayerRespawn : MonoBehaviour
 {
@@ -10,6 +12,12 @@ public class PlayerRespawn : MonoBehaviour
     private PlayerLifeSystem playerLifeSystem;
     private Rigidbody2D rb;
     private PlayerController2D playerController;
+
+    [Header("Darkness Indicator settings")]
+    public Image DarknessIndicator;
+    private Color newColor;
+    private int Alpha = 0;
+
 
     private void Awake()
     {
@@ -43,6 +51,8 @@ public class PlayerRespawn : MonoBehaviour
             transform.position = respawnPoint.position;
         }
 
+        playerLifeSystem.DarknessIndicatorReset();
+
         if (playerLifeSystem != null)
         {
             playerLifeSystem.RestoreFullLives();
@@ -53,4 +63,7 @@ public class PlayerRespawn : MonoBehaviour
             playerController.enabled = true;
         }
     }
+
+
+
 }
