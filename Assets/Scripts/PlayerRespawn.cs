@@ -53,4 +53,9 @@ public class PlayerRespawn : MonoBehaviour
             playerController.enabled = true;
         }
     }
+
+    public void SetCheckpoint(Transform newCheckpoint)
+    {
+        respawnPoint = newCheckpoint;
+    }
 }

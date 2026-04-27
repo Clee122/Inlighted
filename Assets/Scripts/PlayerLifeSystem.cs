@@ -99,4 +99,11 @@ public class PlayerLifeSystem : MonoBehaviour
         isDead = false;
         isInvulnerable = false;
     }
+
+    void OnCollisionEnter2D(Collision2D collision) 
+    { if (collision.gameObject.tag == "dead pit") 
+        { 
+        Die(); 
+        } 
+    }
 }
