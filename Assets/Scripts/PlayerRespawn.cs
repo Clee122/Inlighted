@@ -64,6 +64,9 @@ public class PlayerRespawn : MonoBehaviour
         }
     }
 
-
+     public void SetCheckpoint(Transform newCheckpoint)
+    {
+        respawnPoint = newCheckpoint;
+    }
 
 }

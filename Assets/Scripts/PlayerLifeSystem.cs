@@ -135,4 +135,11 @@ public class PlayerLifeSystem : MonoBehaviour
             DarknessIndicator.color = tempColor;
         }
     }
+        void OnCollisionEnter2D(Collision2D collision) 
+    { if (collision.gameObject.tag == "dead pit") 
+        { 
+        Die(); 
+        } 
+    }
+
 }
