@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Collections;
 using UnityEngine.UI;
 using System.Runtime.CompilerServices;
+using TMPro;
 
 public class PlayerRespawn : MonoBehaviour
 {
@@ -18,12 +19,15 @@ public class PlayerRespawn : MonoBehaviour
     private Color newColor;
     private int Alpha = 0;
 
+    public GameObject DeathMessage;
 
     private void Awake()
     {
         playerLifeSystem = GetComponent<PlayerLifeSystem>();
         rb = GetComponent<Rigidbody2D>();
         playerController = GetComponent<PlayerController2D>();
+
+       DeathMessage.SetActive(false);
     }
 
     public void RespawnPlayer()
@@ -33,6 +37,8 @@ public class PlayerRespawn : MonoBehaviour
 
     private IEnumerator RespawnRoutine()
     {
+        DeathMessage.SetActive(true);
+
         if (playerController != null)
         {
             playerController.enabled = false;
@@ -62,6 +68,8 @@ public class PlayerRespawn : MonoBehaviour
         {
             playerController.enabled = true;
         }
+
+        DeathMessage.SetActive(false);
     }
 
      public void SetCheckpoint(Transform newCheckpoint)
