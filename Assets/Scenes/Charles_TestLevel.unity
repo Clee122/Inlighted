@@ -316,6 +316,63 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c5d4ab482bb4c604396c493674472c06, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PauseManager
+--- !u!1001 &295556152
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 676364040258218101, guid: 69389bfd8f8fe9d459e370b494a06c47, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -10.13
+      objectReference: {fileID: 0}
+    - target: {fileID: 676364040258218101, guid: 69389bfd8f8fe9d459e370b494a06c47, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -4.45
+      objectReference: {fileID: 0}
+    - target: {fileID: 676364040258218101, guid: 69389bfd8f8fe9d459e370b494a06c47, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 676364040258218101, guid: 69389bfd8f8fe9d459e370b494a06c47, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 676364040258218101, guid: 69389bfd8f8fe9d459e370b494a06c47, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 676364040258218101, guid: 69389bfd8f8fe9d459e370b494a06c47, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 676364040258218101, guid: 69389bfd8f8fe9d459e370b494a06c47, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 676364040258218101, guid: 69389bfd8f8fe9d459e370b494a06c47, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 676364040258218101, guid: 69389bfd8f8fe9d459e370b494a06c47, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 676364040258218101, guid: 69389bfd8f8fe9d459e370b494a06c47, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7692335479241238432, guid: 69389bfd8f8fe9d459e370b494a06c47, type: 3}
+      propertyPath: m_Name
+      value: Respawn Point
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 69389bfd8f8fe9d459e370b494a06c47, type: 3}
 --- !u!4 &436548510 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 8585825438444348274, guid: 1e2c25fe400cc284bbbf92de97362c14, type: 3}
@@ -1064,6 +1121,10 @@ PrefabInstance:
       propertyPath: Pauser
       value: 
       objectReference: {fileID: 273655994}
+    - target: {fileID: 6434395042197927662, guid: 1a2b6faaca96b144c9f1e527bae249d1, type: 3}
+      propertyPath: DeathMessage
+      value: 
+      objectReference: {fileID: 0}
     - target: {fileID: 6434395042197927662, guid: 1a2b6faaca96b144c9f1e527bae249d1, type: 3}
       propertyPath: respawnPoint
       value: 
@@ -3328,6 +3389,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: PauseMenu
       objectReference: {fileID: 0}
+    - target: {fileID: 241028622694031518, guid: 58839fcf5f40ff24e97de205bd895dbd, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 627875373635435815, guid: 58839fcf5f40ff24e97de205bd895dbd, type: 3}
       propertyPath: m_Colors.m_PressedColor.b
       value: 0.2901961
@@ -3568,3 +3633,4 @@ SceneRoots:
   - {fileID: 723470345}
   - {fileID: 7837607264680391296}
   - {fileID: 1997161703}
+  - {fileID: 295556152}

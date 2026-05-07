@@ -27,7 +27,10 @@ public class PlayerRespawn : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         playerController = GetComponent<PlayerController2D>();
 
-       DeathMessage.SetActive(false);
+        if (DeathMessage != null)
+        {
+            DeathMessage.SetActive(false);
+        }
     }
 
     public void RespawnPlayer()
@@ -37,7 +40,10 @@ public class PlayerRespawn : MonoBehaviour
 
     private IEnumerator RespawnRoutine()
     {
-        DeathMessage.SetActive(true);
+        if (DeathMessage != null)
+        {
+            DeathMessage.SetActive(true);
+        }
 
         if (playerController != null)
         {
@@ -57,10 +63,9 @@ public class PlayerRespawn : MonoBehaviour
             transform.position = respawnPoint.position;
         }
 
-        playerLifeSystem.DarknessIndicatorReset();
-
         if (playerLifeSystem != null)
         {
+            playerLifeSystem.DarknessIndicatorReset();
             playerLifeSystem.RestoreFullLives();
         }
 
@@ -69,12 +74,14 @@ public class PlayerRespawn : MonoBehaviour
             playerController.enabled = true;
         }
 
-        DeathMessage.SetActive(false);
+        if (DeathMessage != null)
+        {
+            DeathMessage.SetActive(false);
+        }
     }
 
-     public void SetCheckpoint(Transform newCheckpoint)
+    public void SetCheckpoint(Transform newCheckpoint)
     {
         respawnPoint = newCheckpoint;
     }
-
 }
