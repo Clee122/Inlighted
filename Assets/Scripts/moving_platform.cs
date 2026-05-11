@@ -3,7 +3,7 @@ using System.Collections;
 
 public class MovingPlatform : MonoBehaviour
 {
-    public float moveDistance = 3f;
+    public float moveDistance;
     public float moveSpeed = 2f;
 
     public Vector3 startPosition;

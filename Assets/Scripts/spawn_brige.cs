@@ -22,7 +22,7 @@ public class spawn_brige : MonoBehaviour
           if (activated)
             return;
             
-        if (collision.CompareTag("beam"))
+        if (collision.CompareTag("Player"))
         {   
             lightbridgeSpawner.Spawn();
         }
