@@ -3299,9 +3299,25 @@ PrefabInstance:
       value: 256
       objectReference: {fileID: 0}
     - target: {fileID: 1063246405862751299, guid: 1a2b6faaca96b144c9f1e527bae249d1, type: 3}
+      propertyPath: beamRange
+      value: 21
+      objectReference: {fileID: 0}
+    - target: {fileID: 1063246405862751299, guid: 1a2b6faaca96b144c9f1e527bae249d1, type: 3}
       propertyPath: beamWidth
       value: 0.5
       objectReference: {fileID: 0}
+    - target: {fileID: 1063246405862751299, guid: 1a2b6faaca96b144c9f1e527bae249d1, type: 3}
+      propertyPath: beamOrigin
+      value: 
+      objectReference: {fileID: 905799767}
+    - target: {fileID: 1063246405862751299, guid: 1a2b6faaca96b144c9f1e527bae249d1, type: 3}
+      propertyPath: wallLayer.m_Bits
+      value: 128
+      objectReference: {fileID: 0}
+    - target: {fileID: 1063246405862751299, guid: 1a2b6faaca96b144c9f1e527bae249d1, type: 3}
+      propertyPath: beamIndicatorVisual
+      value: 
+      objectReference: {fileID: 723470346}
     - target: {fileID: 2372123118690083170, guid: 1a2b6faaca96b144c9f1e527bae249d1, type: 3}
       propertyPath: m_ActionEvents.Array.size
       value: 22
@@ -3479,6 +3495,11 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 1a2b6faaca96b144c9f1e527bae249d1, type: 3}
+--- !u!1 &723470346 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4143527229475192825, guid: 1a2b6faaca96b144c9f1e527bae249d1, type: 3}
+  m_PrefabInstance: {fileID: 723470345}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &732302537
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4767,6 +4788,11 @@ PrefabInstance:
 Transform:
   m_CorrespondingSourceObject: {fileID: 8585825438444348274, guid: 1e2c25fe400cc284bbbf92de97362c14, type: 3}
   m_PrefabInstance: {fileID: 1848350356}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &905799767 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 5347991434222150377, guid: 1a2b6faaca96b144c9f1e527bae249d1, type: 3}
+  m_PrefabInstance: {fileID: 723470345}
   m_PrefabAsset: {fileID: 0}
 --- !u!1001 &907008278
 PrefabInstance:
@@ -11557,7 +11583,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 241028622694031518, guid: 58839fcf5f40ff24e97de205bd895dbd, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 627875373635435815, guid: 58839fcf5f40ff24e97de205bd895dbd, type: 3}
       propertyPath: m_Colors.m_PressedColor.b
