@@ -34,10 +34,12 @@ public class LightBeamController : MonoBehaviour
     private float lastBeamAngle = 0f;
 
     private Camera mainCamera;
+    private PlayerAbilityUnlocks abilityUnlocks;
 
     private void Awake()
     {
         mainCamera = Camera.main;
+        abilityUnlocks = GetComponent<PlayerAbilityUnlocks>();
 
         if (beamIndicatorVisual != null)
         {
@@ -88,6 +90,12 @@ public class LightBeamController : MonoBehaviour
 
     public void BeginBeamAim()
     {
+        if (abilityUnlocks != null && !abilityUnlocks.HasLightBeam())
+        {
+            Debug.Log("Light Beam is locked");
+            return;
+        }
+
         if (isOnCooldown || isBeamActive)
             return;
 

@@ -17,7 +17,7 @@ public class PlayerLifeSystem : MonoBehaviour
     [Header("Darkness Indicator settings")]
     public Image DarknessIndicator;
     private Color tempColor;
-    public float AMult; //set to 1/3
+    public float AMult; // set to 1/3
     private int DarknessDamage;
     private float ResetAlpha = 0.001f;
 
@@ -25,19 +25,23 @@ public class PlayerLifeSystem : MonoBehaviour
     {
         currentLives = maxLives;
 
+        // This tracks how much darkness damage has been taken so the screen overlay can become darker.
+        // It is reset on start so the player begins each run with a clean visual state.
         DarknessDamage = 0;
 
+        // The null check is important because UI references can break during merges or scene changes.
+        // If the darkness indicator is not assigned, the life system should still work instead of
+        // causing death/respawn to break.
         if (DarknessIndicator != null)
         {
             tempColor = DarknessIndicator.color;
         }
     }
 
-    // =========================
-    // DAMAGE FUNCTION (IMPORTANT)
-    // =========================
     public void TakeDamage(int amount)
     {
+        // Damage is ignored while dead or briefly invulnerable so the player does not lose multiple lives
+        // instantly from the same hazard.
         if (isDead || isInvulnerable)
             return;
 
@@ -58,19 +62,19 @@ public class PlayerLifeSystem : MonoBehaviour
             StartCoroutine(InvulnerabilityCoroutine());
         }
 
+        // The darkness indicator gives visual feedback for taking damage.
+        // It is kept optional so the gameplay systems are not dependent on the UI being assigned correctly.
         if (DarknessIndicator != null)
         {
             tempColor.a = DarknessDamage * AMult;
             DarknessIndicator.color = tempColor;
         }
-
     }
 
-    // =========================
-    // DEATH
-    // =========================
     private void Die()
     {
+        // This prevents death logic from running repeatedly if the player is already dead.
+        // Without this, respawn could be triggered multiple times by the same hazard.
         if (isDead)
             return;
 
@@ -79,25 +83,23 @@ public class PlayerLifeSystem : MonoBehaviour
 
         PlayerRespawn playerRespawn = GetComponent<PlayerRespawn>();
 
+        // Respawn is kept in a separate script so the life system only decides when the player dies,
+        // while the respawn script decides how the player returns to the level.
         if (playerRespawn != null)
         {
             playerRespawn.RespawnPlayer();
         }
     }
 
-    // =========================
-    // INVULNERABILITY (PREVENT SPAM DAMAGE)
-    // =========================
     private IEnumerator InvulnerabilityCoroutine()
     {
+        // Temporary invulnerability keeps damage readable and fair, especially inside darkness zones
+        // where the player could otherwise take damage too quickly.
         isInvulnerable = true;
         yield return new WaitForSeconds(invulnerabilityDuration);
         isInvulnerable = false;
     }
 
-    // =========================
-    // PUBLIC GETTERS (GOOD PRACTICE)
-    // =========================
     public int GetCurrentLives()
     {
         return currentLives;
@@ -113,11 +115,9 @@ public class PlayerLifeSystem : MonoBehaviour
         return isDead;
     }
 
-    // =========================
-    // RESET (USED LATER FOR RESPAWN)
-    // =========================
     public void RestoreFullLives()
     {
+        // Respawn needs to reset both health and death state so the player can continue playing normally.
         currentLives = maxLives;
         isDead = false;
         isInvulnerable = false;
@@ -127,6 +127,8 @@ public class PlayerLifeSystem : MonoBehaviour
     {
         Debug.Log("reached code for alpha change");
 
+        // This resets the visual damage buildup after respawn so the screen does not stay dark
+        // after the player has been restored.
         DarknessDamage = 0;
 
         if (DarknessIndicator != null)
@@ -135,11 +137,14 @@ public class PlayerLifeSystem : MonoBehaviour
             DarknessIndicator.color = tempColor;
         }
     }
-        void OnCollisionEnter2D(Collision2D collision) 
-    { if (collision.gameObject.tag == "dead pit") 
-        { 
-        Die(); 
-        } 
-    }
 
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        // The dead pit instantly triggers death because falling into it should be treated as a fail state,
+        // not as normal tick damage from darkness.
+        if (collision.gameObject.tag == "dead pit")
+        {
+            Die();
+        }
+    }
 }
