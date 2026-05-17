@@ -411,6 +411,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: SmallShadowDripVFX (3)
       objectReference: {fileID: 0}
+    - target: {fileID: 6888234689042654938, guid: d8d0a6085ad34fb44931dfddd510ada5, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -637,6 +641,67 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 1e2c25fe400cc284bbbf92de97362c14, type: 3}
+--- !u!1001 &140632407
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 513502518}
+    m_Modifications:
+    - target: {fileID: 2472300624258245415, guid: ff27a8395b6f2174f9db5da79a4234e7, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 2472300624258245415, guid: ff27a8395b6f2174f9db5da79a4234e7, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0.021960258
+      objectReference: {fileID: 0}
+    - target: {fileID: 2472300624258245415, guid: ff27a8395b6f2174f9db5da79a4234e7, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -0.17797375
+      objectReference: {fileID: 0}
+    - target: {fileID: 2472300624258245415, guid: ff27a8395b6f2174f9db5da79a4234e7, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2472300624258245415, guid: ff27a8395b6f2174f9db5da79a4234e7, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: 2472300624258245415, guid: ff27a8395b6f2174f9db5da79a4234e7, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: 2472300624258245415, guid: ff27a8395b6f2174f9db5da79a4234e7, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2472300624258245415, guid: ff27a8395b6f2174f9db5da79a4234e7, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2472300624258245415, guid: ff27a8395b6f2174f9db5da79a4234e7, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: -90
+      objectReference: {fileID: 0}
+    - target: {fileID: 2472300624258245415, guid: ff27a8395b6f2174f9db5da79a4234e7, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2472300624258245415, guid: ff27a8395b6f2174f9db5da79a4234e7, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4320528146200396702, guid: ff27a8395b6f2174f9db5da79a4234e7, type: 3}
+      propertyPath: m_Name
+      value: LightRadialBurst
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: ff27a8395b6f2174f9db5da79a4234e7, type: 3}
 --- !u!4 &153278935 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 587144808510310466, guid: d8d0a6085ad34fb44931dfddd510ada5, type: 3}
@@ -1246,6 +1311,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: SmallShadowDripVFX (2)
       objectReference: {fileID: 0}
+    - target: {fileID: 6888234689042654938, guid: d8d0a6085ad34fb44931dfddd510ada5, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -1445,6 +1514,10 @@ PrefabInstance:
     - target: {fileID: 6888234689042654938, guid: d8d0a6085ad34fb44931dfddd510ada5, type: 3}
       propertyPath: m_Name
       value: SmallShadowDripVFX (4)
+      objectReference: {fileID: 0}
+    - target: {fileID: 6888234689042654938, guid: d8d0a6085ad34fb44931dfddd510ada5, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -3268,7 +3341,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2372123118690083170, guid: 1a2b6faaca96b144c9f1e527bae249d1, type: 3}
       propertyPath: m_ActionEvents.Array.size
-      value: 22
+      value: 23
       objectReference: {fileID: 0}
     - target: {fileID: 2372123118690083170, guid: 1a2b6faaca96b144c9f1e527bae249d1, type: 3}
       propertyPath: m_ActionEvents.Array.data[20].m_ActionId
@@ -3279,12 +3352,20 @@ PrefabInstance:
       value: Player/Pause
       objectReference: {fileID: 0}
     - target: {fileID: 2372123118690083170, guid: 1a2b6faaca96b144c9f1e527bae249d1, type: 3}
+      propertyPath: m_ActionEvents.Array.data[22].m_ActionName
+      value: 'Player/Interact1[/Keyboard/c]'
+      objectReference: {fileID: 0}
+    - target: {fileID: 2372123118690083170, guid: 1a2b6faaca96b144c9f1e527bae249d1, type: 3}
       propertyPath: m_ActionEvents.Array.data[0].m_PersistentCalls.m_Calls.Array.size
       value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 2372123118690083170, guid: 1a2b6faaca96b144c9f1e527bae249d1, type: 3}
       propertyPath: m_ActionEvents.Array.data[20].m_PersistentCalls.m_Calls.Array.size
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2372123118690083170, guid: 1a2b6faaca96b144c9f1e527bae249d1, type: 3}
+      propertyPath: m_ActionEvents.Array.data[22].m_PersistentCalls.m_Calls.Array.size
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2372123118690083170, guid: 1a2b6faaca96b144c9f1e527bae249d1, type: 3}
       propertyPath: m_ActionEvents.Array.data[0].m_PersistentCalls.m_Calls.Array.data[1].m_Mode
@@ -3411,6 +3492,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 8007050867395820475, guid: 1a2b6faaca96b144c9f1e527bae249d1, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1815658834}
+    - targetCorrespondingSourceObject: {fileID: 8007050867395820475, guid: 1a2b6faaca96b144c9f1e527bae249d1, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1131184847}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 1a2b6faaca96b144c9f1e527bae249d1, type: 3}
 --- !u!4 &728919339 stripped
@@ -4187,6 +4271,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: SmallShadowDripVFX (1)
       objectReference: {fileID: 0}
+    - target: {fileID: 6888234689042654938, guid: d8d0a6085ad34fb44931dfddd510ada5, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -4342,6 +4430,10 @@ PrefabInstance:
     - target: {fileID: 6888234689042654938, guid: d8d0a6085ad34fb44931dfddd510ada5, type: 3}
       propertyPath: m_Name
       value: SmallShadowDripVFX (6)
+      objectReference: {fileID: 0}
+    - target: {fileID: 6888234689042654938, guid: d8d0a6085ad34fb44931dfddd510ada5, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -4748,6 +4840,11 @@ Transform:
   - {fileID: 1966777470}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!4 &1131184847 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 2472300624258245415, guid: ff27a8395b6f2174f9db5da79a4234e7, type: 3}
+  m_PrefabInstance: {fileID: 140632407}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1137052326
 GameObject:
   m_ObjectHideFlags: 0
@@ -7936,7 +8033,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1815658834
 Transform:
   m_ObjectHideFlags: 0
@@ -14255,6 +14352,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: SmallShadowDripVFX (5)
       objectReference: {fileID: 0}
+    - target: {fileID: 6888234689042654938, guid: d8d0a6085ad34fb44931dfddd510ada5, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -14618,6 +14719,10 @@ PrefabInstance:
     - target: {fileID: 6888234689042654938, guid: d8d0a6085ad34fb44931dfddd510ada5, type: 3}
       propertyPath: m_Name
       value: SmallShadowDripVFX
+      objectReference: {fileID: 0}
+    - target: {fileID: 6888234689042654938, guid: d8d0a6085ad34fb44931dfddd510ada5, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
