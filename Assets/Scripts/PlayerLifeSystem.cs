@@ -11,6 +11,9 @@ public class PlayerLifeSystem : MonoBehaviour
     [Header("Damage Settings")]
     [SerializeField] private float invulnerabilityDuration = 1f;
 
+    [Header("Death Animation")]
+    [SerializeField] private float deathAnimationDelay = 0.6f;
+
     private bool isInvulnerable = false;
     private bool isDead = false;
 
@@ -20,6 +23,15 @@ public class PlayerLifeSystem : MonoBehaviour
     public float AMult; // set to 1/3
     private int DarknessDamage;
     private float ResetAlpha = 0.001f;
+
+    private PlayerAnimationController playerAnimationController;
+
+    private void Awake()
+    {
+        // The animation controller is cached once so the life system can tell the visual layer
+        // when damage or death happens without directly controlling animation states itself.
+        playerAnimationController = GetComponent<PlayerAnimationController>();
+    }
 
     private void Start()
     {
@@ -59,6 +71,13 @@ public class PlayerLifeSystem : MonoBehaviour
         }
         else
         {
+            // The hurt animation only plays when the player survives the hit.
+            // Death has its own animation, so this avoids the hurt animation interrupting death.
+            if (playerAnimationController != null)
+            {
+                playerAnimationController.PlayHurtAnimation();
+            }
+
             StartCoroutine(InvulnerabilityCoroutine());
         }
 
@@ -79,7 +98,18 @@ public class PlayerLifeSystem : MonoBehaviour
             return;
 
         isDead = true;
+        isInvulnerable = true;
+
         Debug.Log("Player died");
+
+        // Respawn is delayed so the death animation has time to play before the player
+        // is restored at the checkpoint.
+        StartCoroutine(DeathRoutine());
+    }
+
+    private IEnumerator DeathRoutine()
+    {
+        yield return new WaitForSeconds(deathAnimationDelay);
 
         PlayerRespawn playerRespawn = GetComponent<PlayerRespawn>();
 
@@ -118,6 +148,7 @@ public class PlayerLifeSystem : MonoBehaviour
     public void RestoreFullLives()
     {
         // Respawn needs to reset both health and death state so the player can continue playing normally.
+        // This also lets the Animator leave the death state after the player has respawned.
         currentLives = maxLives;
         isDead = false;
         isInvulnerable = false;
