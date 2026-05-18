@@ -77,6 +77,7 @@ public class PlayerController2D : MonoBehaviour
         if (context.performed)
         {
             jumpQueued = true;
+            //start coroutine, have it wait small time, then set jumpqeueud to false
         }
     }
 
