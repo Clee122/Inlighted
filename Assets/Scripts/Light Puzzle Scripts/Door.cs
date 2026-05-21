@@ -14,8 +14,10 @@ public class Door : MonoBehaviour
         
     }
 
-
-    //public activation script
+    public void Activate()
+    {
         //activate in direction for distance specified
+    }
+
 
 }
