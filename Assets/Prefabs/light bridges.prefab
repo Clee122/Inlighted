@@ -11,7 +11,8 @@ GameObject:
   - component: {fileID: 8499152598332237643}
   - component: {fileID: 4660981205330989932}
   - component: {fileID: -6307679889600027310}
-  m_Layer: 0
+  - component: {fileID: 6922775007976853716}
+  m_Layer: 7
   m_Name: light bridges
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -138,3 +139,18 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 1, y: 1}
   m_EdgeRadius: 0
+--- !u!114 &6922775007976853716
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2459874914777037716}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9ddd26b34f0a61f4d9be2aaadc24b0bf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::disappeear_and_appear
+  disappeear: 1
+  staytime: 5
+  appear: 1

@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine;
 using System.Collections;
 
 public class LightBeamController : MonoBehaviour
@@ -21,7 +22,7 @@ public class LightBeamController : MonoBehaviour
     [SerializeField] private GameObject beamIndicatorVisual;
     [SerializeField] private GameObject beamVisual;
 
-    private bool isAiming = false;
+     private bool isAiming = false;
     private bool isBeamActive = false;
     private bool isOnCooldown = false;
 
@@ -172,6 +173,8 @@ public class LightBeamController : MonoBehaviour
         {
             UpdateBeamPreview(beamVisual);
             DispelDarknessInBeam();
+            CheckLightGateInBeam();
+
 
             timer += beamCheckInterval;
             yield return new WaitForSeconds(beamCheckInterval);
@@ -282,7 +285,7 @@ public class LightBeamController : MonoBehaviour
 
         Debug.Log("Light beam dispelled darkness zones: " + hits.Length);
     }
-
+    
     private IEnumerator CooldownRoutine()
     {
         isOnCooldown = true;
@@ -352,4 +355,27 @@ public class LightBeamController : MonoBehaviour
     {
         // No longer needed for mouse aiming, but kept so existing Player Input events do not break.
     }
+
+       private void CheckLightGateInBeam()
+    {
+        Collider2D[] hits = Physics2D.OverlapBoxAll(
+            lastBeamCenter,
+            lastBeamSize,
+            lastBeamAngle,
+            darknessLayer
+        );
+
+        foreach (Collider2D hit in hits)
+        {
+            spawn_brige gate = hit.GetComponentInParent<spawn_brige>();
+
+            if  (gate != null)
+            {
+                gate.Activatespawn();
+            }
+        }
+    }
+
+    
+
 }

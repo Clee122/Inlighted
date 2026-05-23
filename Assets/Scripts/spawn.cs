@@ -4,6 +4,7 @@ public class spawn : MonoBehaviour
 {
    public GameObject light_brige;
    public Transform spawnPoint;
+   private GameObject currentBridge;
 
       // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -19,6 +20,10 @@ public class spawn : MonoBehaviour
 
    public void Spawn()
     {
-        Instantiate(light_brige, spawnPoint.position, spawnPoint.rotation);
+         if (currentBridge != null)
+            return;
+
+        currentBridge = Instantiate(light_brige, spawnPoint.position, spawnPoint.rotation);
+
     }
 }

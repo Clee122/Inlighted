@@ -2,10 +2,9 @@ using UnityEngine;
 
 public class spawn_brige : MonoBehaviour
 {
-    [SerializeField] private spawn lightbridgeSpawner;
+    [SerializeField] private spawn[] lightbridgeSpawner;
 
-    private bool activated = false;
-
+ 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -17,14 +16,15 @@ public class spawn_brige : MonoBehaviour
     {
         
     }
-    private void OnTriggerEnter2D(Collider2D collision)
+    public void Activatespawn()
     {
-          if (activated)
-            return;
-            
-        if (collision.CompareTag("Player"))
-        {   
-            lightbridgeSpawner.Spawn();
+        foreach (spawn spawner in lightbridgeSpawner)
+        {
+            if (spawner != null)
+            {
+                spawner.Spawn();
+            }
         }
-    }    
+
+    }
 }
