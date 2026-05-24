@@ -107,6 +107,17 @@ public class PlayerAnimationController : MonoBehaviour
         }
     }
 
+    public void ResetFacingDirection()
+    {
+        if (catSpriteRenderer == null)
+            return;
+
+        // Respawn resets the placeholder cat to face the default/front direction
+        // so it does not keep facing the direction it died in.
+        // For this specific cat asset, Flip X = true is the direction you wanted as "right/front".
+        catSpriteRenderer.flipX = true;
+    }
+
     private bool CheckGrounded()
     {
         if (groundCheckPoint == null)
@@ -140,9 +151,26 @@ public class PlayerAnimationController : MonoBehaviour
     {
         if (catAnimator != null)
         {
-            // Hurt is a trigger because it should fire once when damage happens,
-            // instead of staying active like a bool.
+            // Resetting the trigger first makes repeated damage hits more reliable,
+            // especially if the player takes damage again soon after the previous hurt animation.
+            catAnimator.ResetTrigger("hurt");
             catAnimator.SetTrigger("hurt");
+
+            if (showDebugLogs)
+            {
+                Debug.Log("Hurt animation triggered");
+            }
         }
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        if (groundCheckPoint == null)
+            return;
+
+        // This shows the exact area used for ground detection in the Scene view.
+        // It makes it easier to tune the GroundCheck position and radius.
+        Gizmos.color = Color.green;
+        Gizmos.DrawWireSphere(groundCheckPoint.position, groundCheckRadius);
     }
 }
