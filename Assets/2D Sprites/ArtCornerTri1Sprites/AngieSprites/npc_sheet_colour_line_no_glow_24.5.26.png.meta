@@ -1,0 +1,285 @@
+fileFormatVersion: 2
+guid: a050d5167a169494ca08aef9940f3e26
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -7897674078564727721
+    second: npc_sheet_colour_line_no_glow_24.5.26_0
+  - first:
+      213: 2946227697644063735
+    second: npc_sheet_colour_line_no_glow_24.5.26_1
+  - first:
+      213: 4480324580130368278
+    second: npc_sheet_colour_line_no_glow_24.5.26_2
+  - first:
+      213: 481819781291106957
+    second: npc_sheet_colour_line_no_glow_24.5.26_3
+  - first:
+      213: -923097485026632076
+    second: npc_sheet_colour_line_no_glow_24.5.26_4
+  - first:
+      213: -6238392266332371486
+    second: npc_sheet_colour_line_no_glow_24.5.26_5
+  - first:
+      213: 7178738781686081923
+    second: npc_sheet_colour_line_no_glow_24.5.26_6
+  - first:
+      213: 4918066240879362582
+    second: npc_sheet_colour_line_no_glow_24.5.26_7
+  - first:
+      213: 1233231540542220559
+    second: npc_sheet_colour_line_no_glow_24.5.26_8
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: npc_sheet_colour_line_no_glow_24.5.26_0
+      rect:
+        serializedVersion: 2
+        x: 215
+        y: 814
+        width: 277
+        height: 424
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 754c65be443d56290800000000000000
+      internalID: -7897674078564727721
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: npc_sheet_colour_line_no_glow_24.5.26_1
+      rect:
+        serializedVersion: 2
+        x: 766
+        y: 811
+        width: 285
+        height: 441
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7fbcd713b7a13e820800000000000000
+      internalID: 2946227697644063735
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: npc_sheet_colour_line_no_glow_24.5.26_2
+      rect:
+        serializedVersion: 2
+        x: 1352
+        y: 831
+        width: 327
+        height: 245
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 61b2f15c77f4d2e30800000000000000
+      internalID: 4480324580130368278
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: npc_sheet_colour_line_no_glow_24.5.26_4
+      rect:
+        serializedVersion: 2
+        x: 244
+        y: 125
+        width: 284
+        height: 441
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 47e5ee76abf7033f0800000000000000
+      internalID: -923097485026632076
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: npc_sheet_colour_line_no_glow_24.5.26_5
+      rect:
+        serializedVersion: 2
+        x: 807
+        y: 137
+        width: 303
+        height: 468
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2e507b34947cc69a0800000000000000
+      internalID: -6238392266332371486
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: npc_sheet_colour_line_no_glow_24.5.26_7
+      rect:
+        serializedVersion: 2
+        x: 1324
+        y: 153
+        width: 364
+        height: 452
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6128475603b704440800000000000000
+      internalID: 4918066240879362582
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 8719439078cb7a247bc0641e2c28b13f
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      npc_sheet_colour_line_no_glow_24.5.26_0: -7897674078564727721
+      npc_sheet_colour_line_no_glow_24.5.26_1: 2946227697644063735
+      npc_sheet_colour_line_no_glow_24.5.26_2: 4480324580130368278
+      npc_sheet_colour_line_no_glow_24.5.26_3: 481819781291106957
+      npc_sheet_colour_line_no_glow_24.5.26_4: -923097485026632076
+      npc_sheet_colour_line_no_glow_24.5.26_5: -6238392266332371486
+      npc_sheet_colour_line_no_glow_24.5.26_6: 7178738781686081923
+      npc_sheet_colour_line_no_glow_24.5.26_7: 4918066240879362582
+      npc_sheet_colour_line_no_glow_24.5.26_8: 1233231540542220559
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
