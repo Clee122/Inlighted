@@ -167,6 +167,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: TestShadow2-VFX 1
       objectReference: {fileID: 0}
+    - target: {fileID: 6630996618613399740, guid: 3ca9e1b2815b1ae44810a95e32064506, type: 3}
+      propertyPath: m_SortingOrder
+      value: 15
+      objectReference: {fileID: 0}
     - target: {fileID: 7250355442726800028, guid: 3ca9e1b2815b1ae44810a95e32064506, type: 3}
       propertyPath: m_LocalScale.x
       value: 0.1
