@@ -11,9 +11,6 @@ public class PlayerLifeSystem : MonoBehaviour
     [Header("Damage Settings")]
     [SerializeField] private float invulnerabilityDuration = 1f;
 
-    [Header("Death Animation")]
-    [SerializeField] private float deathAnimationDelay = 0.6f;
-
     private bool isInvulnerable = false;
     private bool isDead = false;
 
@@ -28,8 +25,8 @@ public class PlayerLifeSystem : MonoBehaviour
 
     private void Awake()
     {
-        // The animation controller is cached once so the life system can tell the visual layer
-        // when damage or death happens without directly controlling animation states itself.
+        // The animation controller is cached so the life system can request hurt feedback
+        // without directly managing the Animator states itself.
         playerAnimationController = GetComponent<PlayerAnimationController>();
     }
 
@@ -72,10 +69,19 @@ public class PlayerLifeSystem : MonoBehaviour
         else
         {
             // The hurt animation only plays when the player survives the hit.
-            // Death has its own animation, so this avoids the hurt animation interrupting death.
+            // The final hit should go into the death animation instead.
+            if (playerAnimationController == null)
+            {
+                playerAnimationController = GetComponent<PlayerAnimationController>();
+            }
+
             if (playerAnimationController != null)
             {
                 playerAnimationController.PlayHurtAnimation();
+            }
+            else
+            {
+                Debug.LogWarning("PlayerAnimationController was not found, so hurt animation could not play.");
             }
 
             StartCoroutine(InvulnerabilityCoroutine());
@@ -102,19 +108,10 @@ public class PlayerLifeSystem : MonoBehaviour
 
         Debug.Log("Player died");
 
-        // Respawn is delayed so the death animation has time to play before the player
-        // is restored at the checkpoint.
-        StartCoroutine(DeathRoutine());
-    }
-
-    private IEnumerator DeathRoutine()
-    {
-        yield return new WaitForSeconds(deathAnimationDelay);
-
         PlayerRespawn playerRespawn = GetComponent<PlayerRespawn>();
 
-        // Respawn is kept in a separate script so the life system only decides when the player dies,
-        // while the respawn script decides how the player returns to the level.
+        // RespawnPlayer is called immediately because PlayerRespawn already shows the death UI
+        // at the start of its routine, then waits before moving the player back.
         if (playerRespawn != null)
         {
             playerRespawn.RespawnPlayer();
