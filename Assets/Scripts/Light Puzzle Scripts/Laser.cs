@@ -23,6 +23,8 @@ public class Laser : MonoBehaviour
 
         RaycastHit2D hitInfo = Physics2D.Raycast(transform.position, transform.right, MaxRayDistance, Layerdetection);
 
+        Ray2D ray = new Ray2D(transform.position, transform.right);
+
         bool isMirror = false;
         Vector2 mirrorHitPoint = Vector2.zero;
         Vector2 mirrorHitNormal = Vector2.zero;
@@ -34,14 +36,15 @@ public class Laser : MonoBehaviour
 
             if (hitInfo.collider != null)
             {
-                Direction.SetPosition(Direction.positionCount - 1, hitInfo.point);
+                Direction.SetPosition(Direction.positionCount - 1, hitInfo.point - ray.direction * -0.1f);
 
                 isMirror = false;
                 if (hitInfo.collider.CompareTag("Mirror"))
                 {
                     mirrorHitPoint = (Vector2)hitInfo.point;
                     mirrorHitNormal = (Vector2)hitInfo.normal;
-                    hitInfo = Physics2D.Raycast((Vector2)hitInfo.point, Vector2.Reflect(hitInfo.point, hitInfo.normal), MaxRayDistance, Layerdetection);
+                    hitInfo = Physics2D.Raycast((Vector2)hitInfo.point - ray.direction * -0.1f, Vector2.Reflect(hitInfo.point - ray.direction * -0.1f, hitInfo.normal), MaxRayDistance, Layerdetection);
+                    //Debug.Log(hitInfo.normal);
                     isMirror = true;
                 }
                 else
