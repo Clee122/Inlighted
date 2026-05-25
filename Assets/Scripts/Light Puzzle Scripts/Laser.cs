@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class Laser : MonoBehaviour
 {
-    public LineRenderer Direction;
+    public LineRenderer Beam;
 
     public int reflections;
     public float MaxRayDistance;
@@ -18,8 +18,8 @@ public class Laser : MonoBehaviour
     {
         //transform.Rotate(rotationSpeed*Vector3.forward*Time.deltaTime);
 
-        Direction.positionCount = 1;
-        Direction.SetPosition(0,transform.position);
+        Beam.positionCount = 1;
+        Beam.SetPosition(0,transform.position);
 
         RaycastHit2D hitInfo = Physics2D.Raycast(transform.position, transform.right, MaxRayDistance, Layerdetection);
 
@@ -32,11 +32,11 @@ public class Laser : MonoBehaviour
 
         for (int i = 0; i < reflections; i++)
         {
-            Direction.positionCount += 1;
+            Beam.positionCount += 1;
 
             if (hitInfo.collider != null)
             {
-                Direction.SetPosition(Direction.positionCount - 1, hitInfo.point - ray.direction * -0.1f);
+                Beam.SetPosition(Beam.positionCount - 1, hitInfo.point - ray.direction * -0.1f);
 
                 isMirror = false;
                 if (hitInfo.collider.CompareTag("Mirror"))
@@ -45,7 +45,7 @@ public class Laser : MonoBehaviour
                     mirrorHitNormal = (Vector2)hitInfo.normal;
                     hitInfo = Physics2D.Raycast((Vector2)hitInfo.point - ray.direction * -0.1f, Vector2.Reflect(hitInfo.point - ray.direction * -0.1f, hitInfo.normal), MaxRayDistance, Layerdetection);
                     //Debug.Log(hitInfo.normal);
-                    isMirror = true;
+                    isMirror = true; 
                 }
                 else
                     break;
@@ -54,12 +54,12 @@ public class Laser : MonoBehaviour
             {
                 if (isMirror)
                 {
-                    Direction.SetPosition(Direction.positionCount - 1, mirrorHitPoint + Vector2.Reflect(mirrorHitPoint, mirrorHitNormal) * MaxRayDistance);
+                    Beam.SetPosition(Beam.positionCount - 1, mirrorHitPoint + Vector2.Reflect(mirrorHitPoint, mirrorHitNormal) * MaxRayDistance);
                     break;
                 }
                 else
                 {
-                    Direction.SetPosition(Direction.positionCount - 1, transform.position + transform.right * MaxRayDistance);
+                    Beam.SetPosition(Beam.positionCount - 1, transform.position + transform.right * MaxRayDistance);
                 }
             }
 

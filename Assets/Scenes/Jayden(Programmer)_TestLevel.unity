@@ -119,6 +119,11 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!120 &43305256 stripped
+LineRenderer:
+  m_CorrespondingSourceObject: {fileID: 292649361458534338, guid: b09e7732ac8cc424a90fd361711a91bc, type: 3}
+  m_PrefabInstance: {fileID: 6938157145812076378}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &195419105
 GameObject:
   m_ObjectHideFlags: 0
@@ -130,7 +135,7 @@ GameObject:
   - component: {fileID: 195419108}
   - component: {fileID: 195419107}
   - component: {fileID: 195419106}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Mirror (3)
   m_TagString: Mirror
   m_Icon: {fileID: 0}
@@ -445,7 +450,7 @@ GameObject:
   - component: {fileID: 427007844}
   - component: {fileID: 427007843}
   - component: {fileID: 427007842}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Mirror (2)
   m_TagString: Mirror
   m_Icon: {fileID: 0}
@@ -800,7 +805,7 @@ GameObject:
   - component: {fileID: 675503230}
   - component: {fileID: 675503229}
   - component: {fileID: 675503228}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Mirror (1)
   m_TagString: Mirror
   m_Icon: {fileID: 0}
@@ -932,6 +937,38 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 1852412878395821119, guid: 226a539e60bebf1488521c69759a466a, type: 3}
   m_PrefabInstance: {fileID: 1870967421}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1164278943 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 6457507820256457936, guid: 826fa04ee09e59249be03802306d6ccf, type: 3}
+  m_PrefabInstance: {fileID: 3932667220084381144}
+  m_PrefabAsset: {fileID: 0}
+--- !u!50 &1164278948
+Rigidbody2D:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1164278943}
+  m_BodyType: 0
+  m_Simulated: 1
+  m_UseFullKinematicContacts: 0
+  m_UseAutoMass: 0
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_GravityScale: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_Interpolate: 0
+  m_SleepingMode: 1
+  m_CollisionDetection: 0
+  m_Constraints: 7
 --- !u!1 &1324579464
 GameObject:
   m_ObjectHideFlags: 0
@@ -1315,7 +1352,7 @@ GameObject:
   - component: {fileID: 1665869752}
   - component: {fileID: 1665869751}
   - component: {fileID: 1665869750}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Mirror (5)
   m_TagString: Mirror
   m_Icon: {fileID: 0}
@@ -1453,7 +1490,7 @@ GameObject:
   - component: {fileID: 1794620913}
   - component: {fileID: 1794620912}
   - component: {fileID: 1794620911}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Mirror (4)
   m_TagString: Mirror
   m_Icon: {fileID: 0}
@@ -2205,6 +2242,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 945927819619499674, guid: 0aaeeab477799a44ab6a7d50fe8c605a, type: 3}
+      propertyPath: speed
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 945927819619499674, guid: 0aaeeab477799a44ab6a7d50fe8c605a, type: 3}
+      propertyPath: TargetPos.y
+      value: -6
+      objectReference: {fileID: 0}
     - target: {fileID: 5455448746773409060, guid: 0aaeeab477799a44ab6a7d50fe8c605a, type: 3}
       propertyPath: m_LocalPosition.x
       value: 1
@@ -2248,6 +2293,10 @@ PrefabInstance:
     - target: {fileID: 8174102084032383517, guid: 0aaeeab477799a44ab6a7d50fe8c605a, type: 3}
       propertyPath: m_Name
       value: Door
+      objectReference: {fileID: 0}
+    - target: {fileID: 8174102084032383517, guid: 0aaeeab477799a44ab6a7d50fe8c605a, type: 3}
+      propertyPath: m_Layer
+      value: 7
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -2302,18 +2351,33 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5614734640620566738, guid: 826fa04ee09e59249be03802306d6ccf, type: 3}
+      propertyPath: m_IsTrigger
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6457507820256457936, guid: 826fa04ee09e59249be03802306d6ccf, type: 3}
       propertyPath: m_Name
       value: lightReceiver
       objectReference: {fileID: 0}
     - target: {fileID: 8859935677643234660, guid: 826fa04ee09e59249be03802306d6ccf, type: 3}
+      propertyPath: Radius
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8859935677643234660, guid: 826fa04ee09e59249be03802306d6ccf, type: 3}
       propertyPath: activatee
       value: 
       objectReference: {fileID: 268444553}
+    - target: {fileID: 8859935677643234660, guid: 826fa04ee09e59249be03802306d6ccf, type: 3}
+      propertyPath: ChooseColorInput
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 6457507820256457936, guid: 826fa04ee09e59249be03802306d6ccf, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1164278948}
   m_SourcePrefab: {fileID: 100100000, guid: 826fa04ee09e59249be03802306d6ccf, type: 3}
 --- !u!1001 &6124777565264367155
 PrefabInstance:
@@ -2326,6 +2390,10 @@ PrefabInstance:
     - target: {fileID: 2416962974065387558, guid: c898284517d91964e88b99c7a7a8ce62, type: 3}
       propertyPath: m_Name
       value: Mirror
+      objectReference: {fileID: 0}
+    - target: {fileID: 2416962974065387558, guid: c898284517d91964e88b99c7a7a8ce62, type: 3}
+      propertyPath: m_Layer
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 6377740228459051271, guid: c898284517d91964e88b99c7a7a8ce62, type: 3}
       propertyPath: m_LocalPosition.x
@@ -2437,6 +2505,18 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 885387789626547517, guid: b09e7732ac8cc424a90fd361711a91bc, type: 3}
+      propertyPath: m_TagString
+      value: BeamBlue
+      objectReference: {fileID: 0}
+    - target: {fileID: 1946639285985427954, guid: b09e7732ac8cc424a90fd361711a91bc, type: 3}
+      propertyPath: Beam
+      value: 
+      objectReference: {fileID: 43305256}
+    - target: {fileID: 1946639285985427954, guid: b09e7732ac8cc424a90fd361711a91bc, type: 3}
+      propertyPath: MaxRayDistance
+      value: 50
+      objectReference: {fileID: 0}
     - target: {fileID: 5328798451855864518, guid: b09e7732ac8cc424a90fd361711a91bc, type: 3}
       propertyPath: m_LocalPosition.x
       value: -5
