@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class spawn_brige : MonoBehaviour
 {
-    [SerializeField] private spawn[] lightbridgeSpawner;
+    [SerializeField] private spawn[] lightplatformSpawner;
 
  
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -18,7 +18,7 @@ public class spawn_brige : MonoBehaviour
     }
     public void Activatespawn()
     {
-        foreach (spawn spawner in lightbridgeSpawner)
+        foreach (spawn spawner in lightplatformSpawner)
         {
             if (spawner != null)
             {
