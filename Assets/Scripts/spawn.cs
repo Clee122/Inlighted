@@ -2,9 +2,9 @@ using UnityEngine;
 
 public class spawn : MonoBehaviour
 {
-   public GameObject light_brige;
+   public GameObject light_platform;
    public Transform spawnPoint;
-   private GameObject currentBridge;
+   private GameObject currentplatform;
 
       // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -20,10 +20,10 @@ public class spawn : MonoBehaviour
 
    public void Spawn()
     {
-         if (currentBridge != null)
+         if (currentplatform != null)
             return;
 
-        currentBridge = Instantiate(light_brige, spawnPoint.position, spawnPoint.rotation);
+        currentplatform = Instantiate(light_platform, spawnPoint.position, spawnPoint.rotation);
 
     }
 }

@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 7385547961553569856}
   - component: {fileID: 5843021671636640333}
   m_Layer: 0
-  m_Name: light bridge spawner
+  m_Name: light platform spawner
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -91,4 +91,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 59757cf74ed96fc46a2e900e261774a0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
-  light_brige: {fileID: 2459874914777037716, guid: 9b978f1af68fe0a40985feb65afcf7a0, type: 3}
+  light_platform: {fileID: 2459874914777037716, guid: 9b978f1af68fe0a40985feb65afcf7a0, type: 3}
+  spawnPoint: {fileID: 0}

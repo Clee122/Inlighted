@@ -489,7 +489,7 @@ GameObject:
   - component: {fileID: 495530188}
   - component: {fileID: 495530187}
   m_Layer: 0
-  m_Name: light bridge spawner
+  m_Name: light platform spawner
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -522,7 +522,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 59757cf74ed96fc46a2e900e261774a0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
-  light_brige: {fileID: 2459874914777037716, guid: 9b978f1af68fe0a40985feb65afcf7a0, type: 3}
+  light_platform: {fileID: 2459874914777037716, guid: 9b978f1af68fe0a40985feb65afcf7a0, type: 3}
   spawnPoint: {fileID: 495530186}
 --- !u!61 &495530188
 BoxCollider2D:
@@ -843,7 +843,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 26365415f849ec748a845ef57a9655e2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::spawn_brige
-  lightbridgeSpawner:
+  lightplatformSpawner:
   - {fileID: 11589183}
 --- !u!1001 &699284941
 PrefabInstance:
@@ -988,7 +988,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 26365415f849ec748a845ef57a9655e2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::spawn_brige
-  lightbridgeSpawner:
+  lightplatformSpawner:
   - {fileID: 495530187}
 --- !u!1001 &774864609
 PrefabInstance:
@@ -1388,7 +1388,7 @@ Transform:
   m_GameObject: {fileID: 864902413}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 3.7512, y: -4, z: 0}
+  m_LocalPosition: {x: 8.06, y: -4, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1893,12 +1893,16 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 591306714996363872, guid: 4d3aea7791283b7419292578eb6d6678, type: 3}
       propertyPath: m_Name
-      value: light bridge spawner (1)
+      value: light platform spawner (1)
       objectReference: {fileID: 0}
     - target: {fileID: 5843021671636640333, guid: 4d3aea7791283b7419292578eb6d6678, type: 3}
       propertyPath: spawnPoint
       value: 
       objectReference: {fileID: 11589185}
+    - target: {fileID: 5843021671636640333, guid: 4d3aea7791283b7419292578eb6d6678, type: 3}
+      propertyPath: light_platform
+      value: 
+      objectReference: {fileID: 2459874914777037716, guid: 9b978f1af68fe0a40985feb65afcf7a0, type: 3}
     - target: {fileID: 5981989960332690874, guid: 4d3aea7791283b7419292578eb6d6678, type: 3}
       propertyPath: m_LocalScale.x
       value: 0.5
