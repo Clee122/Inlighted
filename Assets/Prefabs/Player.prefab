@@ -122,37 +122,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 8007050867395820475}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1646204299188735474
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 4428898871530366002}
-  m_Layer: 7
-  m_Name: GroundCheck (1)
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &4428898871530366002
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1646204299188735474}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.87, z: 0}
-  m_LocalScale: {x: 1, y: 0.5, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 8007050867395820475}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &4143527229475192825
 GameObject:
   m_ObjectHideFlags: 0
@@ -432,7 +401,6 @@ Transform:
   m_Children:
   - {fileID: 1327099728667548589}
   - {fileID: 2408163920154985248}
-  - {fileID: 4428898871530366002}
   - {fileID: 5347991434222150377}
   - {fileID: 6453652861510425336}
   - {fileID: 684125697628875248}
@@ -447,7 +415,7 @@ SpriteRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6740553540052544372}
-  m_Enabled: 1
+  m_Enabled: 0
   m_CastShadows: 0
   m_ReceiveShadows: 0
   m_DynamicOccludee: 1
@@ -790,7 +758,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerLifeSystem
   maxLives: 3
   invulnerabilityDuration: 1
-  deathAnimationDelay: 0.6
   DarknessIndicator: {fileID: 0}
   AMult: 0
 --- !u!114 &-5335877252066859057
@@ -825,7 +792,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerRespawn
   respawnPoint: {fileID: 0}
   respawnDelay: 1
-  DarknessIndicator: {fileID: 0}
   DeathMessage: {fileID: 0}
 --- !u!114 &6088018624262454599
 MonoBehaviour:
