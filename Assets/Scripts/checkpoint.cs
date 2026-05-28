@@ -3,10 +3,10 @@ using System.Collections;
 
 public class checkpoint : MonoBehaviour
 {
-    private PlayerRespawn respawn;
+    private PlayerRespawn respawn; // Use the functions store in PlayerRespawn script from the Player
     void Awake()
     {
-        respawn = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerRespawn>();
+        respawn = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerRespawn>(); // Find the object being tag Player and get the PlayerRespawn component.
     }
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -22,8 +22,8 @@ public class checkpoint : MonoBehaviour
     }
     private void OnTriggerEnter2D(Collider2D collision)
     {
-       { if (collision.gameObject.tag == "Player")
-             respawn.SetCheckpoint(transform);
+       { if (collision.gameObject.tag == "Player") // Checks is the object Player when enter the collider
+             respawn.SetCheckpoint(transform); // Active the SetCheckpoint in PlayerRespawn script to save the checkpoint position
        }
     }
 }

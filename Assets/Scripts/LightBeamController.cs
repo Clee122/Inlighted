@@ -358,7 +358,7 @@ public class LightBeamController : MonoBehaviour
 
        private void CheckLightGateInBeam()
     {
-        Collider2D[] hits = Physics2D.OverlapBoxAll(
+        Collider2D[] hits = Physics2D.OverlapBoxAll( // Checks all the collider objects belongs on the beam
             lastBeamCenter,
             lastBeamSize,
             lastBeamAngle,
@@ -367,11 +367,11 @@ public class LightBeamController : MonoBehaviour
 
         foreach (Collider2D hit in hits)
         {
-            spawn_brige gate = hit.GetComponentInParent<spawn_brige>();
+            spawn_platform gate = hit.GetComponentInParent<spawn_platform>(); // Use to checks do the object has a spawn_platform script.
 
             if  (gate != null)
             {
-                gate.Activatespawn();
+                gate.Activatespawn(); // Active the Activatespawn() function in the spawn_platform script
             }
         }
     }

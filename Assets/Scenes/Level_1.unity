@@ -15157,6 +15157,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: -4052291292075582154, guid: f7864055ff3094c4fbe907d0e7dd1f23, type: 3}
+      propertyPath: 'lightplatformSpawner.Array.data[0]'
+      value: 
+      objectReference: {fileID: 1798531964}
     - target: {fileID: -3697285394981973393, guid: f7864055ff3094c4fbe907d0e7dd1f23, type: 3}
       propertyPath: lightbridgeSpawner.Array.size
       value: 1

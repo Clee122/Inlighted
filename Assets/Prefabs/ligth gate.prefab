@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 5614345646250521379}
   - component: {fileID: 3275801338501874129}
   - component: {fileID: 6737868594658740896}
-  - component: {fileID: -3697285394981973393}
+  - component: {fileID: -4052291292075582154}
   m_Layer: 8
   m_Name: ligth gate
   m_TagString: Untagged
@@ -139,7 +139,7 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 1, y: 1}
   m_EdgeRadius: 0
---- !u!114 &-3697285394981973393
+--- !u!114 &-4052291292075582154
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -151,4 +151,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 26365415f849ec748a845ef57a9655e2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::spawn_brige
-  lightbridgeSpawner: []
+  lightplatformSpawner:
+  - {fileID: 0}
