@@ -116,7 +116,7 @@ Transform:
   m_GameObject: {fileID: 1167831801837231552}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.039, y: -0.11, z: 0}
+  m_LocalPosition: {x: 0.377, y: 0.02, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -256,7 +256,7 @@ GameObject:
   - component: {fileID: 2999778295786663979}
   - component: {fileID: 5175401410128997756}
   m_Layer: 6
-  m_Name: Cat Visual
+  m_Name: CatMoth Visual
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -272,7 +272,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0.002, y: 0.016, z: 0}
-  m_LocalScale: {x: 1.5, y: 2, z: 1}
+  m_LocalScale: {x: 0.7, y: 1.5, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 8007050867395820475}
@@ -326,9 +326,9 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 15
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 815424164945274260, guid: a6033ceee585bd6478d51ffceb6f29a6, type: 3}
+  m_Sprite: {fileID: -2134051052169505343, guid: 4406fe8ff885f0e4b88ea09f94fba002, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_FlipX: 1
+  m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
   m_Size: {x: 0.484375, y: 0.46875}
@@ -346,7 +346,7 @@ Animator:
   m_GameObject: {fileID: 5968012315484409390}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: 7387159311038914598f109513470d6f, type: 2}
+  m_Controller: {fileID: 9100000, guid: 313c5c1ed0f70714298dfb550a7052aa, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -396,7 +396,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -5.6, y: -2.24, z: 0}
-  m_LocalScale: {x: 1, y: 0.5, z: 1}
+  m_LocalScale: {x: 2, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1327099728667548589}
@@ -826,12 +826,12 @@ MonoBehaviour:
     m_Bits: 256
   wallLayer:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 128
   beamActiveDuration: 0.5
   beamCooldown: 2
   beamCheckInterval: 0.05
-  beamOrigin: {fileID: 0}
-  beamIndicatorVisual: {fileID: 0}
+  beamOrigin: {fileID: 5347991434222150377}
+  beamIndicatorVisual: {fileID: 4143527229475192825}
   beamVisual: {fileID: 404783281974109447}
 --- !u!114 &1333727836847387598
 MonoBehaviour:
@@ -859,8 +859,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b5a688fe24ea40c418014ec75847df56, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerAnimationController
-  catAnimator: {fileID: 5175401410128997756}
-  catSpriteRenderer: {fileID: 2999778295786663979}
+  catMothAnimator: {fileID: 5175401410128997756}
+  catMothSpriteRenderer: {fileID: 2999778295786663979}
   playerRigidbody: {fileID: 5995141665719187509}
   runningThreshold: 0.2
   groundCheckPoint: {fileID: 2408163920154985248}

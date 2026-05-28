@@ -2185,6 +2185,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1108126334541455310, guid: dabca89fada0e4f4591436cf7038bad9, type: 3}
+      propertyPath: m_Material
+      value: 
+      objectReference: {fileID: 6200000, guid: 66d3e23c5e7d81040a7544c4f3854c71, type: 2}
     - target: {fileID: 4309788100722312329, guid: dabca89fada0e4f4591436cf7038bad9, type: 3}
       propertyPath: m_Name
       value: ground (1)
@@ -2635,13 +2639,17 @@ PrefabInstance:
       propertyPath: m_Name
       value: Wall
       objectReference: {fileID: 0}
+    - target: {fileID: 1672105935382221452, guid: 75e2b3a892f273541bba109f31ccca2e, type: 3}
+      propertyPath: m_Material
+      value: 
+      objectReference: {fileID: 6200000, guid: 66d3e23c5e7d81040a7544c4f3854c71, type: 2}
     - target: {fileID: 2881747997449244241, guid: 75e2b3a892f273541bba109f31ccca2e, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -11.3
+      value: -11.29
       objectReference: {fileID: 0}
     - target: {fileID: 2881747997449244241, guid: 75e2b3a892f273541bba109f31ccca2e, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -1.64
+      value: -1.88
       objectReference: {fileID: 0}
     - target: {fileID: 2881747997449244241, guid: 75e2b3a892f273541bba109f31ccca2e, type: 3}
       propertyPath: m_LocalPosition.z
@@ -2688,6 +2696,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1108126334541455310, guid: dabca89fada0e4f4591436cf7038bad9, type: 3}
+      propertyPath: m_Material
+      value: 
+      objectReference: {fileID: 6200000, guid: 66d3e23c5e7d81040a7544c4f3854c71, type: 2}
     - target: {fileID: 4309788100722312329, guid: dabca89fada0e4f4591436cf7038bad9, type: 3}
       propertyPath: m_Name
       value: ground
@@ -2748,6 +2760,10 @@ PrefabInstance:
     - target: {fileID: 241028622694031518, guid: 58839fcf5f40ff24e97de205bd895dbd, type: 3}
       propertyPath: m_Name
       value: PauseMenu
+      objectReference: {fileID: 0}
+    - target: {fileID: 241028622694031518, guid: 58839fcf5f40ff24e97de205bd895dbd, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 627875373635435815, guid: 58839fcf5f40ff24e97de205bd895dbd, type: 3}
       propertyPath: m_Colors.m_PressedColor.b
