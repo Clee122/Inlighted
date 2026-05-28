@@ -3,8 +3,8 @@ using UnityEngine;
 public class PlayerAnimationController : MonoBehaviour
 {
     [Header("Animation References")]
-    [SerializeField] private Animator catAnimator;
-    [SerializeField] private SpriteRenderer catSpriteRenderer;
+    [SerializeField] private Animator catMothAnimator;
+    [SerializeField] private SpriteRenderer catMothSpriteRenderer;
 
     [Header("Movement Check")]
     [SerializeField] private Rigidbody2D playerRigidbody;
@@ -27,30 +27,30 @@ public class PlayerAnimationController : MonoBehaviour
         playerLifeSystem = GetComponent<PlayerLifeSystem>();
 
         // The Rigidbody2D is expected to be on the parent Player object.
-        // This fallback keeps the script working even if the reference was lost after undoing changes.
+        // This fallback keeps the script working if the reference is lost after replacing the character visual.
         if (playerRigidbody == null)
         {
             playerRigidbody = GetComponent<Rigidbody2D>();
         }
 
-        // The Animator is on the Cat Visual child object, not on the parent Player.
-        // Finding it automatically avoids problems where the reference gets detached or cannot be dragged in.
-        if (catAnimator == null)
+        // The Animator is expected to be on the CatMoth Visual child object, not on the parent Player.
+        // Finding it automatically helps after replacing the old cat placeholder with the new CatMoth asset.
+        if (catMothAnimator == null)
         {
-            catAnimator = GetComponentInChildren<Animator>();
+            catMothAnimator = GetComponentInChildren<Animator>();
         }
 
-        // The SpriteRenderer is also on the Cat Visual child object.
-        // This lets the script flip the cat sprite without changing the parent Player transform.
-        if (catSpriteRenderer == null)
+        // The SpriteRenderer is also expected to be on the CatMoth Visual child object.
+        // This lets the script flip only the visual sprite without changing the parent Player transform or collider.
+        if (catMothSpriteRenderer == null)
         {
-            catSpriteRenderer = GetComponentInChildren<SpriteRenderer>();
+            catMothSpriteRenderer = GetComponentInChildren<SpriteRenderer>();
         }
     }
 
     private void Update()
     {
-        if (catAnimator == null || playerRigidbody == null)
+        if (catMothAnimator == null || playerRigidbody == null)
         {
             if (showDebugLogs)
             {
@@ -68,9 +68,9 @@ public class PlayerAnimationController : MonoBehaviour
         bool isDead = playerLifeSystem != null && playerLifeSystem.IsDead();
 
         // These names must match the Animator parameters exactly.
-        catAnimator.SetBool("isRunning", isRunning);
-        catAnimator.SetBool("isGrounded", isGrounded);
-        catAnimator.SetBool("isDead", isDead);
+        catMothAnimator.SetBool("isRunning", isRunning);
+        catMothAnimator.SetBool("isGrounded", isGrounded);
+        catMothAnimator.SetBool("isDead", isDead);
 
         if (showDebugLogs)
         {
@@ -85,37 +85,37 @@ public class PlayerAnimationController : MonoBehaviour
 
     private void LateUpdate()
     {
-        FlipCatVisual();
+        FlipCatMothVisual();
     }
 
-    private void FlipCatVisual()
+    private void FlipCatMothVisual()
     {
-        if (catSpriteRenderer == null || playerRigidbody == null)
+        if (catMothSpriteRenderer == null || playerRigidbody == null)
             return;
 
         float horizontalVelocity = playerRigidbody.linearVelocity.x;
 
-        // This is reversed because the downloaded cat sprite faces the opposite direction
-        // from the direction expected by the player movement.
+        // The CatMoth asset faces right by default, so moving right should not flip the sprite.
+        // This reverses the old placeholder cat logic because that asset originally faced the opposite way.
         if (horizontalVelocity > runningThreshold)
         {
-            catSpriteRenderer.flipX = true;
+            catMothSpriteRenderer.flipX = false;
         }
         else if (horizontalVelocity < -runningThreshold)
         {
-            catSpriteRenderer.flipX = false;
+            catMothSpriteRenderer.flipX = true;
         }
     }
 
     public void ResetFacingDirection()
     {
-        if (catSpriteRenderer == null)
+        if (catMothSpriteRenderer == null)
             return;
 
-        // Respawn resets the placeholder cat to face the default/front direction
+        // Respawn resets the CatMoth to face the default/right direction
         // so it does not keep facing the direction it died in.
-        // For this specific cat asset, Flip X = true is the direction you wanted as "right/front".
-        catSpriteRenderer.flipX = true;
+        // For this CatMoth asset, Flip X = false is the right/front direction.
+        catMothSpriteRenderer.flipX = false;
     }
 
     private bool CheckGrounded()
@@ -140,7 +140,7 @@ public class PlayerAnimationController : MonoBehaviour
                 continue;
 
             // Any non-player 2D collider touching the GroundCheck counts as ground for now.
-            // This is simple and reliable for your current greybox/platform setup.
+            // This is simple and reliable for the current greybox/platform setup.
             return true;
         }
 
@@ -149,12 +149,12 @@ public class PlayerAnimationController : MonoBehaviour
 
     public void PlayHurtAnimation()
     {
-        if (catAnimator != null)
+        if (catMothAnimator != null)
         {
             // Resetting the trigger first makes repeated damage hits more reliable,
             // especially if the player takes damage again soon after the previous hurt animation.
-            catAnimator.ResetTrigger("hurt");
-            catAnimator.SetTrigger("hurt");
+            catMothAnimator.ResetTrigger("hurt");
+            catMothAnimator.SetTrigger("hurt");
 
             if (showDebugLogs)
             {
