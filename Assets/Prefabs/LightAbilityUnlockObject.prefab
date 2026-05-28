@@ -153,4 +153,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::AbilityUnlockObject
   abilityToUnlock: 0
   promptObject: {fileID: 0}
-  disableAfterUnlock: 0
+  disableAfterUnlock: 1
+  unlockedColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
