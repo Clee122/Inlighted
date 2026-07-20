@@ -13517,6 +13517,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9769a4779902048a1a81bab0541d2393, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
+  zoomSpeed: 1
+  targetOrtho: 0
+  smoothSpeed: 2
+  minOrtho: 1
+  maxOrtho: 20
+  vcam: {fileID: 2014357491}
 --- !u!4 &1359641348
 Transform:
   m_ObjectHideFlags: 0
@@ -19810,6 +19816,17 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 8585825438444348274, guid: 1e2c25fe400cc284bbbf92de97362c14, type: 3}
   m_PrefabInstance: {fileID: 664913728}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &2014357491 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1116328329378012816, guid: cdb5d760aadfe834293fa4caa42625c9, type: 3}
+  m_PrefabInstance: {fileID: 7837607264680391296}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 45e653bab7fb20e499bda25e1b646fea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Cinemachine::Cinemachine.CinemachineVirtualCamera
 --- !u!1001 &2021930482
 PrefabInstance:
   m_ObjectHideFlags: 0
