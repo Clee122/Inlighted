@@ -1,0 +1,191 @@
+fileFormatVersion: 2
+guid: 8571a4ebbc9644d4684993ad82e155df
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 4427761219225086346
+    second: TileMapAsset_Platform_0
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 0
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 0
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 395
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 4096
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: TileMapAsset_Platform_0
+      rect:
+        serializedVersion: 2
+        x: 859
+        y: 1000
+        width: 1833
+        height: 403
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape:
+      - - {x: 484.5, y: -165.5}
+        - {x: 538.5, y: -139.5}
+        - {x: 702.5, y: -109.5}
+        - {x: 741.5, y: -66.5}
+        - {x: 776.5, y: -62.5}
+        - {x: 847.5, y: -22.5}
+        - {x: 856.5, y: 15.5}
+        - {x: 893.5, y: 50.5}
+        - {x: 909.5, y: 64.5}
+        - {x: 912.5, y: 78.5}
+        - {x: 909.5, y: 91.5}
+        - {x: 916.5, y: 104.5}
+        - {x: 910.5, y: 121.5}
+        - {x: 901.5, y: 131.5}
+        - {x: 888.5, y: 139.5}
+        - {x: 866.5, y: 147.5}
+        - {x: 813.5, y: 149.5}
+        - {x: 759.5, y: 168.5}
+        - {x: 647.5, y: 161.5}
+        - {x: 479.5, y: 161.5}
+        - {x: 357.5, y: 182.5}
+        - {x: 177.5, y: 163.5}
+        - {x: 105.5, y: 185.5}
+        - {x: -12.5, y: 187.5}
+        - {x: -162.5, y: 174.5}
+        - {x: -244.5, y: 154.5}
+        - {x: -327.5, y: 177.5}
+        - {x: -469.5, y: 177.5}
+        - {x: -604.5, y: 149.5}
+        - {x: -701.5, y: 156.5}
+        - {x: -783.5, y: 152.5}
+        - {x: -894.5, y: 122.5}
+        - {x: -911.5, y: 102.5}
+        - {x: -912.5, y: 83.5}
+        - {x: -905.5, y: 75.5}
+        - {x: -907.5, y: 58.5}
+        - {x: -875.5, y: 16.5}
+        - {x: -881.5, y: -2.5}
+        - {x: -864.5, y: -33.5}
+        - {x: -777.5, y: -62.5}
+        - {x: -660.5, y: -103.5}
+        - {x: -638.5, y: -127.5}
+        - {x: -516.5, y: -151.5}
+        - {x: -438.5, y: -176.5}
+        - {x: -333.5, y: -177.5}
+        - {x: -270.5, y: -194.5}
+        - {x: 61.5, y: -196.5}
+        - {x: 355.5, y: -195.5}
+      tessellationDetail: 0
+      bones: []
+      spriteID: a89692e9e51927d30800000000000000
+      internalID: 4427761219225086346
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 523f165bcc82dc7419074831425f5f30
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      TileMapAsset_Platform_0: 4427761219225086346
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

@@ -10552,19 +10552,15 @@ PrefabInstance:
       objectReference: {fileID: 273655994}
     - target: {fileID: 6395289212163813942, guid: 1a2b6faaca96b144c9f1e527bae249d1, type: 3}
       propertyPath: jumpForce
-      value: 12.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 6395289212163813942, guid: 1a2b6faaca96b144c9f1e527bae249d1, type: 3}
-      propertyPath: moveSpeed
-      value: 8.2
+      value: 12
       objectReference: {fileID: 0}
     - target: {fileID: 6395289212163813942, guid: 1a2b6faaca96b144c9f1e527bae249d1, type: 3}
       propertyPath: acceleration
-      value: 80
+      value: 37.9
       objectReference: {fileID: 0}
     - target: {fileID: 6395289212163813942, guid: 1a2b6faaca96b144c9f1e527bae249d1, type: 3}
       propertyPath: deceleration
-      value: 300
+      value: 42.9
       objectReference: {fileID: 0}
     - target: {fileID: 6395289212163813942, guid: 1a2b6faaca96b144c9f1e527bae249d1, type: 3}
       propertyPath: groundCheckRadius

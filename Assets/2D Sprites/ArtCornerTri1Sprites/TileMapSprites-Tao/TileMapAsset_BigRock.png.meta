@@ -1,0 +1,203 @@
+fileFormatVersion: 2
+guid: f0ef02bbc8cada84a8844d7f7cbfb276
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 5583672293570878618
+    second: TileMapAsset_BigRock_0
+  - first:
+      213: -4627950494649819558
+    second: TileMapAsset_BigRock_1
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 0
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 0
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 395
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 4096
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: TileMapAsset_BigRock_0
+      rect:
+        serializedVersion: 2
+        x: 1042
+        y: 1696
+        width: 9
+        height: 10
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a9c9b701e503d7d40800000000000000
+      internalID: 5583672293570878618
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TileMapAsset_BigRock_1
+      rect:
+        serializedVersion: 2
+        x: 1043
+        y: 481
+        width: 1521
+        height: 1464
+      alignment: 9
+      pivot: {x: 0.36, y: 0.47}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline:
+      - - {x: 689.5, y: -507}
+        - {x: 635.5, y: -312}
+        - {x: 671.5, y: -174}
+        - {x: 632.5, y: -24}
+        - {x: 672.5, y: 92}
+        - {x: 646.5, y: 187}
+        - {x: 704.5, y: 298}
+        - {x: 701.5, y: 445}
+        - {x: 693.5, y: 487}
+        - {x: 744.5, y: 568}
+        - {x: 749.5, y: 621}
+        - {x: 738.5, y: 657}
+        - {x: 645.5, y: 690}
+        - {x: 538.5, y: 680}
+        - {x: 244.5, y: 704}
+        - {x: -315.5, y: 689}
+        - {x: -533.5, y: 695}
+        - {x: -613.5, y: 672}
+        - {x: -695.5, y: 684}
+        - {x: -749.5, y: 644}
+        - {x: -735.5, y: 554}
+        - {x: -706.5, y: 506}
+        - {x: -739.5, y: 466}
+        - {x: -705.5, y: 229}
+        - {x: -634.5, y: 120}
+        - {x: -696.5, y: -12}
+        - {x: -644.5, y: -208}
+        - {x: -694.5, y: -290}
+        - {x: -616.5, y: -469}
+        - {x: -671.5, y: -519}
+        - {x: -703.5, y: -633}
+        - {x: -658.5, y: -697}
+        - {x: -8.5, y: -732}
+        - {x: 642.5, y: -684}
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a5edd488b8736cfb0800000000000000
+      internalID: -4627950494649819558
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 601d3c47dec98a645a53fde69a03578b
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      TileMapAsset_BigRock_0: 5583672293570878618
+      TileMapAsset_BigRock_1: -4627950494649819558
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

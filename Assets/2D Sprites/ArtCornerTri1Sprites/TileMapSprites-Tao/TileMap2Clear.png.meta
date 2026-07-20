@@ -1,34 +1,34 @@
 fileFormatVersion: 2
-guid: 9a181ae84ab42b147b6bb17c6a7edda2
+guid: 531a47b75d4a7724fbdd6c5b20347ecf
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 1045615585311184464
-    second: TileMap2Clear_Tao_17.5.26_0
+      213: -2181142245539560066
+    second: TileMap2Clear_0
   - first:
-      213: -3597507902991034255
-    second: TileMap2Clear_Tao_17.5.26_1
+      213: 8357343194744374142
+    second: TileMap2Clear_1
   - first:
-      213: -2206652804767725524
-    second: TileMap2Clear_Tao_17.5.26_2
+      213: -1671416796633609177
+    second: TileMap2Clear_2
   - first:
-      213: 2436256883682097474
-    second: TileMap2Clear_Tao_17.5.26_3
+      213: -1601403410905693580
+    second: TileMap2Clear_3
   - first:
-      213: -2705551107744204636
-    second: TileMap2Clear_Tao_17.5.26_4
+      213: -8571219626477812413
+    second: TileMap2Clear_4
   - first:
-      213: 1259108639836792798
-    second: TileMap2Clear_Tao_17.5.26_5
+      213: -2842916076144396476
+    second: TileMap2Clear_5
   - first:
-      213: 5214088997356112877
-    second: TileMap2Clear_Tao_17.5.26_6
+      213: -1224486275729439740
+    second: TileMap2Clear_6
   - first:
-      213: -6704622852961576535
-    second: TileMap2Clear_Tao_17.5.26_7
+      213: -5384163605795117189
+    second: TileMap2Clear_7
   - first:
-      213: -5019783820147182121
-    second: TileMap2Clear_Tao_17.5.26_8
+      213: -7911051172663168404
+    second: TileMap2Clear_8
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -71,11 +71,11 @@ TextureImporter:
   lightmap: 0
   compressionQuality: 50
   spriteMode: 2
-  spriteExtrude: 1
+  spriteExtrude: 0
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 100
+  spritePixelsToUnits: 395
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -96,7 +96,7 @@ TextureImporter:
   platformSettings:
   - serializedVersion: 4
     buildTarget: DefaultTexturePlatform
-    maxTextureSize: 2048
+    maxTextureSize: 4096
     resizeAlgorithm: 0
     textureFormat: -1
     textureCompression: 0
@@ -124,29 +124,40 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: TileMap2Clear_Tao_17.5.26_0
+      name: TileMap2Clear_0
       rect:
         serializedVersion: 2
-        x: 1146
-        y: 1180
-        width: 454
-        height: 407
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+        x: 1149
+        y: 1181
+        width: 451
+        height: 414
+      alignment: 9
+      pivot: {x: 0.56, y: 0.48}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
-      physicsShape: []
-      tessellationDetail: -1
+      physicsShape:
+      - - {x: 225.5, y: 186}
+        - {x: 188.5, y: 189}
+        - {x: 140.5, y: 177}
+        - {x: 83.5, y: 145}
+        - {x: 4.5, y: 68}
+        - {x: -75.5, y: -15}
+        - {x: -115.5, y: -50}
+        - {x: -181.5, y: -132}
+        - {x: -213.5, y: -184}
+        - {x: -225.5, y: -207}
+        - {x: 225.5, y: -207}
+      tessellationDetail: 0
       bones: []
-      spriteID: 056d51eb5d5c28e00800000000000000
-      internalID: 1045615585311184464
+      spriteID: e7544021fa60bb1e0800000000000000
+      internalID: -2181142245539560066
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: TileMap2Clear_Tao_17.5.26_1
+      name: TileMap2Clear_1
       rect:
         serializedVersion: 2
         x: 2227
@@ -159,16 +170,16 @@ TextureImporter:
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 1781f856f95131ec0800000000000000
-      internalID: -3597507902991034255
+      spriteID: e7344c44b5f3bf370800000000000000
+      internalID: 8357343194744374142
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: TileMap2Clear_Tao_17.5.26_2
+      name: TileMap2Clear_2
       rect:
         serializedVersion: 2
         x: 671
@@ -181,16 +192,16 @@ TextureImporter:
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: c28433527f46061e0800000000000000
-      internalID: -2206652804767725524
+      spriteID: 72c480d674fedc8e0800000000000000
+      internalID: -1671416796633609177
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: TileMap2Clear_Tao_17.5.26_3
+      name: TileMap2Clear_3
       rect:
         serializedVersion: 2
         x: 1230
@@ -203,16 +214,16 @@ TextureImporter:
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 249b8755ab25fc120800000000000000
-      internalID: 2436256883682097474
+      spriteID: 4720ed6151ca6c9e0800000000000000
+      internalID: -1601403410905693580
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: TileMap2Clear_Tao_17.5.26_4
+      name: TileMap2Clear_4
       rect:
         serializedVersion: 2
         x: 2385
@@ -225,38 +236,49 @@ TextureImporter:
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 4a8fd352a93f37ad0800000000000000
-      internalID: -2705551107744204636
+      spriteID: 3450fe77929ec0980800000000000000
+      internalID: -8571219626477812413
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: TileMap2Clear_Tao_17.5.26_5
+      name: TileMap2Clear_5
       rect:
         serializedVersion: 2
-        x: 2550
-        y: 1178
+        x: 2549
+        y: 1177
         width: 449
-        height: 389
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+        height: 406
+      alignment: 9
+      pivot: {x: 0.55, y: 0.49}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
-      physicsShape: []
-      tessellationDetail: -1
+      physicsShape:
+      - - {x: 194.5, y: -126}
+        - {x: 108.5, y: -24}
+        - {x: 30.5, y: 64}
+        - {x: -57.5, y: 141}
+        - {x: -117.5, y: 172}
+        - {x: -173.5, y: 180}
+        - {x: -209.5, y: 175}
+        - {x: -214.5, y: 153}
+        - {x: -207.5, y: -144}
+        - {x: -184.5, y: -203}
+        - {x: 224.5, y: -203}
+      tessellationDetail: 0
       bones: []
-      spriteID: ed7e81b03a0497110800000000000000
-      internalID: 1259108639836792798
+      spriteID: 4477a2324eeeb88d0800000000000000
+      internalID: -2842916076144396476
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: TileMap2Clear_Tao_17.5.26_6
+      name: TileMap2Clear_6
       rect:
         serializedVersion: 2
         x: 2940
@@ -269,54 +291,74 @@ TextureImporter:
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: deb0fa2515a2c5840800000000000000
-      internalID: 5214088997356112877
+      spriteID: 4044ec64830c10fe0800000000000000
+      internalID: -1224486275729439740
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: TileMap2Clear_Tao_17.5.26_7
+      name: TileMap2Clear_7
       rect:
         serializedVersion: 2
-        x: 597
-        y: 1178
-        width: 455
-        height: 366
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+        x: 599
+        y: 1177
+        width: 453
+        height: 367
+      alignment: 9
+      pivot: {x: 0.45, y: 0.54}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
-      physicsShape: []
-      tessellationDetail: -1
+      physicsShape:
+      - - {x: 225.5, y: -181.5}
+        - {x: 226.5, y: 169.5}
+        - {x: 146.5, y: 175.5}
+        - {x: 91.5, y: 163.5}
+        - {x: -7.5, y: 88.5}
+        - {x: -121.5, y: -22.5}
+        - {x: -187.5, y: -107.5}
+        - {x: -206.5, y: -144.5}
+        - {x: -226.5, y: -183.5}
+        - {x: 218.5, y: -183.5}
+      tessellationDetail: 0
       bones: []
-      spriteID: 9a95240b90564f2a0800000000000000
-      internalID: -6704622852961576535
+      spriteID: b77eeff1abb9745b0800000000000000
+      internalID: -5384163605795117189
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: TileMap2Clear_Tao_17.5.26_8
+      name: TileMap2Clear_8
       rect:
         serializedVersion: 2
         x: 2001
-        y: 1178
-        width: 443
-        height: 405
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 5, z: 0, w: 0}
+        y: 1177
+        width: 442
+        height: 406
+      alignment: 9
+      pivot: {x: 0.45, y: 0.49}
+      border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
-      physicsShape: []
-      tessellationDetail: -1
+      physicsShape:
+      - - {x: 210, y: -174}
+        - {x: 180, y: -119}
+        - {x: 120, y: -41}
+        - {x: 27, y: 64}
+        - {x: -60, y: 149}
+        - {x: -93, y: 168}
+        - {x: -169, y: 189}
+        - {x: -221, y: 188}
+        - {x: -221, y: -203}
+        - {x: 221, y: -203}
+      tessellationDetail: 0
       bones: []
-      spriteID: 7d5bfd62635265ab0800000000000000
-      internalID: -5019783820147182121
+      spriteID: c62797d7fdc463290800000000000000
+      internalID: -7911051172663168404
       vertices: []
       indices: 
       edges: []
@@ -325,7 +367,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: c10a72f6f8d61bc4b8a067bb70cd15cc
+    spriteID: bcedd75c451fdbc4b9817ce9b94bccd6
     internalID: 0
     vertices: []
     indices: 
@@ -335,15 +377,15 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      TileMap2Clear_Tao_17.5.26_0: 1045615585311184464
-      TileMap2Clear_Tao_17.5.26_1: -3597507902991034255
-      TileMap2Clear_Tao_17.5.26_2: -2206652804767725524
-      TileMap2Clear_Tao_17.5.26_3: 2436256883682097474
-      TileMap2Clear_Tao_17.5.26_4: -2705551107744204636
-      TileMap2Clear_Tao_17.5.26_5: 1259108639836792798
-      TileMap2Clear_Tao_17.5.26_6: 5214088997356112877
-      TileMap2Clear_Tao_17.5.26_7: -6704622852961576535
-      TileMap2Clear_Tao_17.5.26_8: -5019783820147182121
+      TileMap2Clear_0: -2181142245539560066
+      TileMap2Clear_1: 8357343194744374142
+      TileMap2Clear_2: -1671416796633609177
+      TileMap2Clear_3: -1601403410905693580
+      TileMap2Clear_4: -8571219626477812413
+      TileMap2Clear_5: -2842916076144396476
+      TileMap2Clear_6: -1224486275729439740
+      TileMap2Clear_7: -5384163605795117189
+      TileMap2Clear_8: -7911051172663168404
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
