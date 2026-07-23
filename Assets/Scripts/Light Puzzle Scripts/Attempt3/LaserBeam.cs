@@ -7,9 +7,12 @@ public class LaserBeam
     Vector3 pos, dir;
 
     GameObject laserObj;
-    LineRenderer laser;
-    List<Vector3> laserIndices = new List<Vector3>();
+    public LineRenderer laser;
+    public List<Vector3> laserIndices = new List<Vector3>();
+    private ShootLaser Shootlaser;
 
+    GameObject LaserPointer;
+    
     public LaserBeam(Vector3 pos, Vector3 dir, Material material)
     {
         this.laser = new LineRenderer();
@@ -28,7 +31,12 @@ public class LaserBeam
         CastRay(pos, dir, laser);
     }
 
-    void CastRay(Vector3 pos, Vector3 dir, LineRenderer laser)
+    void Awake()
+    {
+        Shootlaser = LaserPointer.GetComponent<ShootLaser>();
+    }
+
+    public void CastRay(Vector3 pos, Vector3 dir, LineRenderer laser)
     {
         laserIndices.Add(pos);
 
@@ -67,10 +75,17 @@ public class LaserBeam
 
             CastRay(pos, dir, laser);
         }
+        else if (hitInfo.collider.gameObject.tag == "AppearingPlatformLightReceiver")
+        {
+            laserIndices.Add(hitInfo.point);
+            UpdateLaser();
+            Shootlaser.Activate();
+        }
         else
         {
             laserIndices.Add(hitInfo.point);
             UpdateLaser();
+            Shootlaser.DeActivate();
         }
     }
 }
