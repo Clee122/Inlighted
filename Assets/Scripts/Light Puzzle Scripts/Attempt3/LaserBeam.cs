@@ -79,13 +79,13 @@ public class LaserBeam
         {
             laserIndices.Add(hitInfo.point);
             UpdateLaser();
-            Shootlaser.Activate();
+            //Shootlaser.Activate();
         }
         else
         {
             laserIndices.Add(hitInfo.point);
             UpdateLaser();
-            Shootlaser.DeActivate();
+            //Shootlaser.DeActivate();
         }
     }
 }
