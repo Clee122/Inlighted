@@ -238,7 +238,7 @@ Transform:
   m_GameObject: {fileID: 4831500803388899710}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.87, z: 0}
+  m_LocalPosition: {x: 0, y: -0.476, z: 0}
   m_LocalScale: {x: 1, y: 0.5, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -270,9 +270,9 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5968012315484409390}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.002, y: 0.016, z: 0}
-  m_LocalScale: {x: 0.7, y: 1.5, z: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0.0020003319, y: 0.016000032, z: 0}
+  m_LocalScale: {x: 1.4, y: 1.5, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 8007050867395820475}
@@ -396,7 +396,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -5.6, y: -2.24, z: 0}
-  m_LocalScale: {x: 2, y: 1, z: 1}
+  m_LocalScale: {x: 0.6, y: 0.6, z: 0.6}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1327099728667548589}
@@ -500,7 +500,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0.0070153177, y: 0.0017538071}
+  m_Offset: {x: 0.13234082, y: -0.07323715}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -510,7 +510,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 0.99442524, y: 1.002969}
+  m_Size: {x: 0.7771744, y: 0.63451266}
   m_EdgeRadius: 0
 --- !u!50 &5995141665719187509
 Rigidbody2D:
@@ -716,6 +716,10 @@ MonoBehaviour:
         m_CallState: 2
     m_ActionId: 4449d40a-a024-4afc-8b35-64fcef5921c9
     m_ActionName: Player/Interact1
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 2fef7768-73ed-42d5-82f7-7cd70c1b8b1e
+    m_ActionName: 'Player/Zoom[/Mouse/scroll]'
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: 
   m_DefaultActionMap: Player
@@ -734,10 +738,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController2D
   rb: {fileID: 5995141665719187509}
-  moveSpeed: 8
-  acceleration: 18
-  deceleration: 22
-  jumpForce: 14
+  moveSpeed: 5
+  acceleration: 30
+  deceleration: 45
+  turnAcceleration: 60
+  slopeCheckDistance: 0.5
+  maximumSlopeAngle: 50
+  slopeVisual: {fileID: 1327099728667548589}
+  visualRotationSpeed: 12
+  jumpForce: 15
   groundCheck: {fileID: 2408163920154985248}
   groundCheckRadius: 0.2
   groundLayer:
@@ -896,7 +905,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0.0143, y: -0.016, z: 0}
-  m_LocalScale: {x: 5.940995, y: 11.894184, z: 1}
+  m_LocalScale: {x: 10, y: 10, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 8007050867395820475}
