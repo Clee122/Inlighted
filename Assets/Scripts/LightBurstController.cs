@@ -12,6 +12,7 @@ public class LightBurstController : MonoBehaviour
     [Header("Darkness Dispel")]
     [SerializeField] private float burstDispelRadius = 3f;
     [SerializeField] private LayerMask darknessLayer;
+    [SerializeField] private LayerMask GroundLayer;
 
     private bool isBurstActive = false;
     private bool isOnCooldown = false;
@@ -90,6 +91,8 @@ public class LightBurstController : MonoBehaviour
         while (timer < burstDuration)
         {
             DispelDarknessInRadius();
+            CheckLightplatformInBurst();
+
 
             timer += dispelCheckInterval;
             yield return new WaitForSeconds(dispelCheckInterval);
@@ -156,4 +159,27 @@ public class LightBurstController : MonoBehaviour
         // This helps prevent darkness from reforming while the burst is still covering it.
         return burstDispelRadius;
     }
+       private void CheckLightplatformInBurst()
+    {
+        Debug.Log("Checking light platforms");
+        Collider2D[] hits = Physics2D.OverlapCircleAll(
+            transform.position,
+            burstDispelRadius
+            
+        );
+        Debug.Log("Ground hit count: " + hits.Length);
+        foreach (Collider2D hit in hits)
+        {
+            Debug.Log("Hit object: " + hit.gameObject.name);
+
+            appear_and_disappeear_by_burst lightPlatform = hit.GetComponentInParent<appear_and_disappeear_by_burst>();
+
+            if (lightPlatform != null)
+            {
+                Debug.Log("Found invisible platform: " + lightPlatform.gameObject.name);
+                lightPlatform.ShowPlatform();
+            }
+        }
+    }
+
 }
