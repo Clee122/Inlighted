@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using static UnityEditor.PlayerSettings;
 
 public class ShootLaser : MonoBehaviour
 {
@@ -9,41 +8,62 @@ public class ShootLaser : MonoBehaviour
     LaserBeam beam;
 
     public AppearingPlatformReceiver APReceiver;
-    public GameObject AppearingPlatform;
 
     /*
     // Update is called once per frame
     void Update()
     {
         Destroy(GameObject.Find("Laser Beam"));
-        beam = new LaserBeam(gameObject.transform.position, gameObject.transform.right, material);
+        beam = new LaserBeam(
+            gameObject.transform.position,
+            gameObject.transform.right,
+            material,
+            APReceiver
+        );
     }
     */
 
     private void Start()
     {
-        beam = new LaserBeam(transform.position, transform.right, material);
+        // Pass the assigned receiver into LaserBeam because LaserBeam is not a
+        // MonoBehaviour and cannot obtain the reference through Awake.
+        beam = new LaserBeam(
+            transform.position,
+            transform.right,
+            material,
+            APReceiver
+        );
+
         //beam.tag = "BeamBlue";
-        AppearingPlatform.SetActive(false);
+
+        // Begin with the platform hidden until the beam reaches the receiver.
+        if (APReceiver != null)
+        {
+            APReceiver.DeActivate();
+        }
+        else
+        {
+            Debug.LogError(
+                "ShootLaser requires an AppearingPlatformReceiver to be assigned.",
+                this
+            );
+        }
     }
 
     private void Update()
     {
+        // Avoid another null-reference error if the beam could not be created.
+        if (beam == null || beam.laser == null)
+        {
+            return;
+        }
+
         beam.laser.positionCount = 0;
         beam.laserIndices.Clear();
-        beam.CastRay(transform.position, transform.right, beam.laser);
+        beam.CastRay(
+            transform.position,
+            transform.right,
+            beam.laser
+        );
     }
-
-    
-    public void Activate()
-    {
-        AppearingPlatform.SetActive(true);
-    }
-
-    public void DeActivate()
-    {
-        AppearingPlatform.SetActive(false);
-    }
-    
-
 }

@@ -9,19 +9,29 @@ public class LaserBeam
     GameObject laserObj;
     public LineRenderer laser;
     public List<Vector3> laserIndices = new List<Vector3>();
-    private ShootLaser Shootlaser;
 
-    GameObject LaserPointer;
-    
-    public LaserBeam(Vector3 pos, Vector3 dir, Material material)
+    // LaserBeam is a normal C# class rather than a MonoBehaviour, so the
+    // receiver reference must be provided when the beam is created.
+    private AppearingPlatformReceiver APReceiver;
+
+    public LaserBeam(
+        Vector3 pos,
+        Vector3 dir,
+        Material material,
+        AppearingPlatformReceiver receiver)
     {
-        this.laser = new LineRenderer();
+        // Store the receiver so the laser can tell it when the beam is or is
+        // not hitting the correct light receiver.
+        this.APReceiver = receiver;
+
         this.laserObj = new GameObject();
         this.laserObj.name = "Laser Beam";
         this.pos = pos;
         this.dir = dir;
 
-        this.laser = this.laserObj.AddComponent(typeof(LineRenderer)) as LineRenderer;
+        this.laser =
+            this.laserObj.AddComponent(typeof(LineRenderer)) as LineRenderer;
+
         this.laser.startWidth = 0.2f;
         this.laser.endWidth = 0.2f;
         this.laser.material = material;
@@ -31,11 +41,6 @@ public class LaserBeam
         CastRay(pos, dir, laser);
     }
 
-    void Awake()
-    {
-        Shootlaser = LaserPointer.GetComponent<ShootLaser>();
-    }
-
     public void CastRay(Vector3 pos, Vector3 dir, LineRenderer laser)
     {
         laserIndices.Add(pos);
@@ -43,7 +48,9 @@ public class LaserBeam
         Ray ray = new Ray(pos, dir);
         RaycastHit hit;
 
-        if(Physics.Raycast(ray, out hit, 30, 1))
+        // The layer mask value 1 means the ray currently checks objects on the
+        // Default layer only, preserving the original raycast behaviour.
+        if (Physics.Raycast(ray, out hit, 30, 1))
         {
             CheckHit(hit, dir, laser);
         }
@@ -51,6 +58,13 @@ public class LaserBeam
         {
             laserIndices.Add(ray.GetPoint(30));
             UpdateLaser();
+
+            // The platform should disappear when the beam is not hitting
+            // anything within its maximum distance.
+            if (APReceiver != null)
+            {
+                APReceiver.DeActivate();
+            }
         }
     }
 
@@ -66,26 +80,55 @@ public class LaserBeam
         }
     }
 
-    void CheckHit(RaycastHit hitInfo, Vector3 direction, LineRenderer laser)
+    void CheckHit(
+        RaycastHit hitInfo,
+        Vector3 direction,
+        LineRenderer laser)
     {
-        if (hitInfo.collider.gameObject.tag == "Mirror")
+        if (hitInfo.collider.CompareTag("Mirror"))
         {
             Vector3 pos = hitInfo.point;
             Vector3 dir = Vector3.Reflect(direction, hitInfo.normal);
 
             CastRay(pos, dir, laser);
         }
-        else if (hitInfo.collider.gameObject.tag == "AppearingPlatformLightReceiver")
+        else if (
+            hitInfo.collider.CompareTag(
+                "AppearingPlatformLightReceiver"))
         {
             laserIndices.Add(hitInfo.point);
             UpdateLaser();
-            //Shootlaser.Activate();
+
+            // The receiver is responsible for showing the platform when it is
+            // reached by the reflected laser.
+            if (APReceiver != null)
+            {
+                APReceiver.Activate();
+            }
+            else
+            {
+                Debug.LogError(
+                    "LaserBeam does not have an AppearingPlatformReceiver reference."
+                );
+            }
         }
         else
         {
             laserIndices.Add(hitInfo.point);
             UpdateLaser();
-            //Shootlaser.DeActivate();
+
+            // Any non-mirror object other than the intended receiver stops the
+            // beam and hides the platform.
+            if (APReceiver != null)
+            {
+                APReceiver.DeActivate();
+            }
+            else
+            {
+                Debug.LogError(
+                    "LaserBeam does not have an AppearingPlatformReceiver reference."
+                );
+            }
         }
     }
 }
