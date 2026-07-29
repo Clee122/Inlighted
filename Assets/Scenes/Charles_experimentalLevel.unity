@@ -3216,7 +3216,7 @@ PrefabInstance:
     - target: {fileID: 6434395042197927662, guid: 1a2b6faaca96b144c9f1e527bae249d1, type: 3}
       propertyPath: DeathMessage
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 1989435515}
     - target: {fileID: 6434395042197927662, guid: 1a2b6faaca96b144c9f1e527bae249d1, type: 3}
       propertyPath: respawnPoint
       value: 
@@ -8105,6 +8105,11 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: dabca89fada0e4f4591436cf7038bad9, type: 3}
+--- !u!1 &1989435515 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5772202103253467029, guid: 80652b93270fc87469a6b26392751271, type: 3}
+  m_PrefabInstance: {fileID: 1946785917}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1996989048
 PrefabInstance:
   m_ObjectHideFlags: 0
