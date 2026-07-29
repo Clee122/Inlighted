@@ -1,10 +1,16 @@
 fileFormatVersion: 2
-guid: 745510a7e4b62534b9470a3831898a8e
+guid: a7162d22ea91af74185e79342f18cb26
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -3226805685755231158
-    second: CaveBackgroundDark_0
+      213: -7262675226577613452
+    second: CaveConnector 1_0
+  - first:
+      213: 8578068125321002907
+    second: CaveConnector 1_1
+  - first:
+      213: 6608812519999114835
+    second: CaveConnector 1_2
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -100,23 +106,67 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: CaveBackgroundDark_0
+      name: CaveConnector 1_0
       rect:
         serializedVersion: 2
-        x: 0
-        y: 0
-        width: 3508
-        height: 2480
+        x: 21
+        y: 236
+        width: 841
+        height: 2244
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: a44495d33551833d0800000000000000
-      internalID: -3226805685755231158
+      spriteID: 47dcfc85c5bc53b90800000000000000
+      internalID: -7262675226577613452
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CaveConnector 1_1
+      rect:
+        serializedVersion: 2
+        x: 835
+        y: 1257
+        width: 42
+        height: 58
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b9ffbdce28b6b0770800000000000000
+      internalID: 8578068125321002907
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CaveConnector 1_2
+      rect:
+        serializedVersion: 2
+        x: 850
+        y: 1178
+        width: 22
+        height: 21
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 35e83b1d8f737bb50800000000000000
+      internalID: 6608812519999114835
       vertices: []
       indices: 
       edges: []
@@ -125,7 +175,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 3b7cc5d4661b9b44cba6f9686252b217
+    spriteID: 
     internalID: 0
     vertices: []
     indices: 
@@ -135,7 +185,9 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      CaveBackgroundDark_0: -3226805685755231158
+      CaveConnector 1_0: -7262675226577613452
+      CaveConnector 1_1: 8578068125321002907
+      CaveConnector 1_2: 6608812519999114835
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
