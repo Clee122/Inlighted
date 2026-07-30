@@ -1,4 +1,5 @@
 using UnityEngine;
+using System;
 using System.Collections;
 using UnityEngine.UI;
 
@@ -7,6 +8,8 @@ public class PlayerLifeSystem : MonoBehaviour
     [Header("Lives")]
     [SerializeField] private int maxLives = 3;
     private int currentLives;
+
+    public static event Action<int, int> OnLivesChanged; //fires whenever lives are changed 
 
     [Header("Damage Settings")]
     [SerializeField] private float invulnerabilityDuration = 1f;
@@ -62,6 +65,8 @@ public class PlayerLifeSystem : MonoBehaviour
 
         Debug.Log("Player took damage. Lives left: " + currentLives);
 
+        OnLivesChanged?.Invoke(currentLives, maxLives); //notifys the UI
+
         if (currentLives <= 0)
         {
             Die();
@@ -105,9 +110,11 @@ public class PlayerLifeSystem : MonoBehaviour
 
         isDead = true;
         isInvulnerable = true;
+        currentLives = 0;
 
         Debug.Log("Player died");
 
+        OnLivesChanged?.Invoke(currentLives, maxLives); // so the UI can reflect death via deathpit 
         PlayerRespawn playerRespawn = GetComponent<PlayerRespawn>();
 
         // RespawnPlayer is called immediately because PlayerRespawn already shows the death UI
@@ -149,6 +156,8 @@ public class PlayerLifeSystem : MonoBehaviour
         currentLives = maxLives;
         isDead = false;
         isInvulnerable = false;
+
+        OnLivesChanged?.Invoke(currentLives, maxLives); //when respawning reflects full health in the HUD 
     }
 
     public void DarknessIndicatorReset()
