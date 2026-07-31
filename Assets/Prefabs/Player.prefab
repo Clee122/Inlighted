@@ -379,6 +379,7 @@ GameObject:
   - component: {fileID: 1063246405862751299}
   - component: {fileID: 1333727836847387598}
   - component: {fileID: 5994051326798216373}
+  - component: {fileID: 4330560771201811758}
   m_Layer: 6
   m_Name: Player
   m_TagString: Player
@@ -752,6 +753,7 @@ MonoBehaviour:
   groundLayer:
     serializedVersion: 2
     m_Bits: 128
+  showMovementDebugLogs: 0
   Pauser: {fileID: 0}
 --- !u!114 &-8181637828534096018
 MonoBehaviour:
@@ -782,9 +784,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LightBurstController
   burstDuration: 1
+  lightCost: 25
   burstVisual: {fileID: 7726757575506062778}
   burstDispelRadius: 3
   darknessLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  GroundLayer:
     serializedVersion: 2
     m_Bits: 0
 --- !u!114 &6434395042197927662
@@ -836,6 +842,7 @@ MonoBehaviour:
   wallLayer:
     serializedVersion: 2
     m_Bits: 128
+  lightCost: 15
   beamActiveDuration: 0.5
   beamCooldown: 2
   beamCheckInterval: 0.05
@@ -878,6 +885,28 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 128
   showDebugLogs: 0
+--- !u!114 &4330560771201811758
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6740553540052544372}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b0367e70de49b0b4fa3d3c0e1712657d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerLightResource
+  maximumLight: 100
+  startingLight: 0
+  currentLight: 0
+  movementRegenerationLimitPercentage: 0.5
+  movementRegenerationRate: 10
+  playerController: {fileID: 6395289212163813942}
+  lightBurstController: {fileID: -5335877252066859057}
+  lightBeamController: {fileID: 1063246405862751299}
+  showDebugLogs: 1
+  debugLightInterval: 5
 --- !u!1 &7726757575506062778
 GameObject:
   m_ObjectHideFlags: 0

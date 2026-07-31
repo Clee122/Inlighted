@@ -27,9 +27,21 @@ public class PlayerController2D : MonoBehaviour
     [SerializeField] private float groundCheckRadius = 0.2f;
     [SerializeField] private LayerMask groundLayer;
 
+    [Header("Debug")]
+    [SerializeField] private bool showMovementDebugLogs = false;
+
     private bool isGrounded;
     private bool isOnWalkableSlope;
     private bool jumpQueued;
+
+    // This records whether the player entered the air through a successful jump input.
+    // It allows jumping to generate light without treating falling, knockback, or other
+    // uncontrolled airborne movement as valid light-generating movement.
+    private bool isInPlayerControlledJump;
+
+    // The previous grounded state is stored so landing can be detected reliably.
+    // Landing ends the player-controlled jump state and prevents it carrying into later falls.
+    private bool wasGroundedLastFrame;
 
     private float moveInput;
     private float defaultGravityScale;
@@ -61,7 +73,17 @@ public class PlayerController2D : MonoBehaviour
 
         // The normal gravity value is saved because grounded slope movement
         // temporarily disables gravity to prevent unwanted downhill sliding.
-        defaultGravityScale = rb.gravityScale;
+        if (rb != null)
+        {
+            defaultGravityScale = rb.gravityScale;
+        }
+        else
+        {
+            Debug.LogError(
+                "PlayerController2D could not find a Rigidbody2D. " +
+                "Player movement and light-generation checks will not work."
+            );
+        }
 
         // The original visual rotation is preserved so slope rotation is added
         // on top of the character's intended prefab orientation.
@@ -73,6 +95,11 @@ public class PlayerController2D : MonoBehaviour
         // Finding the pause manager at runtime avoids needing to reassign it each
         // time the Player prefab is placed in another scene.
         Pauser = FindFirstObjectByType<PauseManager>();
+
+        if (showMovementDebugLogs)
+        {
+            Debug.Log("PlayerController2D initialised.");
+        }
     }
 
     private void Update()
@@ -96,9 +123,21 @@ public class PlayerController2D : MonoBehaviour
 
     private void UpdateGroundedState()
     {
+        // The old value is stored before the new ground check so the script can
+        // detect the exact moment the player lands after a controlled jump.
+        wasGroundedLastFrame = isGrounded;
+
         if (groundCheck == null)
         {
             isGrounded = false;
+
+            if (showMovementDebugLogs)
+            {
+                Debug.LogWarning(
+                    "Ground Check has not been assigned, so the player is being treated as airborne."
+                );
+            }
+
             return;
         }
 
@@ -109,6 +148,21 @@ public class PlayerController2D : MonoBehaviour
             groundCheckRadius,
             groundLayer
         );
+
+        // A player-controlled jump remains valid while airborne and ends when the
+        // player lands. Walking off an edge does not activate this state.
+        if (isGrounded && !wasGroundedLastFrame)
+        {
+            if (isInPlayerControlledJump && showMovementDebugLogs)
+            {
+                Debug.Log(
+                    "Player-controlled jump ended after landing. " +
+                    "Airborne light generation has stopped."
+                );
+            }
+
+            isInPlayerControlledJump = false;
+        }
     }
 
     private void DetectSlope()
@@ -160,6 +214,11 @@ public class PlayerController2D : MonoBehaviour
 
     private void ApplyMovement()
     {
+        if (rb == null)
+        {
+            return;
+        }
+
         float targetSpeed = moveInput * moveSpeed;
         bool hasMovementInput = Mathf.Abs(moveInput) > 0.01f;
 
@@ -279,7 +338,7 @@ public class PlayerController2D : MonoBehaviour
             return;
         }
 
-        if (isGrounded)
+        if (isGrounded && rb != null)
         {
             // Gravity is restored before jumping so the player immediately returns
             // to normal airborne physics after leaving a slope.
@@ -288,6 +347,15 @@ public class PlayerController2D : MonoBehaviour
             rb.linearVelocity = new Vector2(
                 rb.linearVelocity.x,
                 jumpForce
+            );
+
+            // This records that the airborne movement came from a successful player jump.
+            // It lets jumping regenerate light without treating accidental falls the same way.
+            isInPlayerControlledJump = true;
+
+            Debug.Log(
+                "Player-controlled jump started. " +
+                "This jump can generate light while the player remains airborne."
             );
         }
 
@@ -320,13 +388,60 @@ public class PlayerController2D : MonoBehaviour
         {
             jumpQueued = true;
         }
+        else if (showMovementDebugLogs)
+        {
+            Debug.Log(
+                "Jump input was ignored because the player was not grounded."
+            );
+        }
+    }
+
+    public bool HasHorizontalMovementInput()
+    {
+        // The light-resource system uses deliberate input instead of velocity alone.
+        // This prevents sliding, knockback, and moving platforms from generating light.
+        return Mathf.Abs(moveInput) > 0.01f;
+    }
+
+    public bool IsInPlayerControlledJump()
+    {
+        // This value is exposed as read-only so other systems can understand why
+        // the player is airborne without being able to alter the movement state.
+        return isInPlayerControlledJump;
+    }
+
+    public bool IsGrounded()
+    {
+        // This allows the resource and future channel systems to read the existing
+        // ground result instead of performing their own separate physics checks.
+        return isGrounded;
+    }
+
+    public bool IsActivelyGeneratingLight()
+    {
+        // Grounded running counts when horizontal input is deliberately held.
+        bool isRunningWithInput =
+            isGrounded &&
+            HasHorizontalMovementInput();
+
+        // A successful player-triggered jump counts for the entire airborne period,
+        // including a vertical jump where no horizontal input is being held.
+        bool isActivelyJumping =
+            !isGrounded &&
+            isInPlayerControlledJump;
+
+        return isRunningWithInput || isActivelyJumping;
     }
 
     private void UpdateVisualSlopeRotation()
     {
         if (slopeVisual == null)
         {
-            Debug.LogWarning("Slope Visual has not been assigned.");
+            if (showMovementDebugLogs)
+            {
+                Debug.LogWarning("Slope Visual has not been assigned.");
+            }
+
             return;
         }
 
@@ -340,12 +455,17 @@ public class PlayerController2D : MonoBehaviour
             ) * Mathf.Rad2Deg;
         }
 
-        Debug.Log(
-            "Grounded: " + isGrounded +
-            " | On slope: " + isOnWalkableSlope +
-            " | Detected angle: " + targetSlopeAngle +
-            " | Visual: " + slopeVisual.name
-        );
+        // The slope information is useful while diagnosing movement, but keeping it
+        // behind a toggle prevents the Console from being flooded during other tests.
+        if (showMovementDebugLogs)
+        {
+            Debug.Log(
+                "Grounded: " + isGrounded +
+                " | On slope: " + isOnWalkableSlope +
+                " | Detected angle: " + targetSlopeAngle +
+                " | Visual: " + slopeVisual.name
+            );
+        }
 
         // This direct assignment removes smoothing from the test so we can confirm
         // whether the selected visual can be rotated at all by this script.
@@ -411,6 +531,9 @@ public class PlayerController2D : MonoBehaviour
         moveInput = 0f;
         jumpQueued = false;
 
+        // A jump must not continue generating light after the player dies or respawns.
+        isInPlayerControlledJump = false;
+
         if (rb != null)
         {
             // Respawn restores gravity in case death happened while the player was
@@ -426,5 +549,9 @@ public class PlayerController2D : MonoBehaviour
             // angle cannot carry into the respawn location.
             slopeVisual.localRotation = slopeVisualBaseRotation;
         }
+
+        Debug.Log(
+            "Player movement input and player-controlled jump state were reset."
+        );
     }
 }

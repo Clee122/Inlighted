@@ -6,6 +6,9 @@ public class LightBurstController : MonoBehaviour
     [Header("Burst Settings")]
     [SerializeField] private float burstDuration = 2f;
 
+    [Header("Light Resource Cost")]
+    [SerializeField] private float lightCost = 25f;
+
     [Header("Burst Visual")]
     [SerializeField] private GameObject burstVisual;
 
@@ -20,6 +23,7 @@ public class LightBurstController : MonoBehaviour
     private Coroutine cooldownCoroutine;
 
     private PlayerAbilityUnlocks abilityUnlocks;
+    private PlayerLightResource playerLightResource;
 
     private void Awake()
     {
@@ -27,11 +31,29 @@ public class LightBurstController : MonoBehaviour
         // rather than being available from the beginning.
         abilityUnlocks = GetComponent<PlayerAbilityUnlocks>();
 
+        // Light Burst must request energy from the central resource component.
+        // Keeping light spending outside this script prevents each ability from managing separate values.
+        playerLightResource = GetComponent<PlayerLightResource>();
+
+        if (playerLightResource == null)
+        {
+            Debug.LogError(
+                "LightBurstController could not find PlayerLightResource on " +
+                gameObject.name +
+                ". Light Burst will not activate until the component is added."
+            );
+        }
+
         // The visual starts hidden because it should only appear when the ability is actually active.
         if (burstVisual != null)
         {
             burstVisual.SetActive(false);
         }
+
+        Debug.Log(
+            "LightBurstController initialised. Burst light cost: " +
+            lightCost.ToString("0.0")
+        );
     }
 
     public bool IsBurstActive()
@@ -55,8 +77,36 @@ public class LightBurstController : MonoBehaviour
         }
 
         // This prevents the player from spamming burst or restarting it while it is already active.
-        if (isBurstActive || isOnCooldown)
+        // Light is not spent when the input is rejected for either of these reasons.
+        if (isBurstActive)
+        {
+            Debug.Log("Light Burst could not activate because it is already active.");
             return;
+        }
+
+        if (isOnCooldown)
+        {
+            Debug.Log("Light Burst could not activate because it is on cooldown.");
+            return;
+        }
+
+        // The resource check happens before starting either coroutine.
+        // This ensures a failed activation does not display the burst or begin its cooldown.
+        if (playerLightResource == null)
+        {
+            Debug.LogError(
+                "Light Burst could not activate because PlayerLightResource is missing."
+            );
+            return;
+        }
+
+        if (!playerLightResource.TrySpendLight(lightCost, "Light Burst"))
+        {
+            Debug.Log(
+                "Light Burst activation was blocked because the player did not have enough light."
+            );
+            return;
+        }
 
         if (burstCoroutine != null)
         {
@@ -70,6 +120,12 @@ public class LightBurstController : MonoBehaviour
 
         burstCoroutine = StartCoroutine(BurstRoutine());
         cooldownCoroutine = StartCoroutine(CooldownRoutine());
+
+        Debug.Log(
+            "Light Burst successfully activated after spending " +
+            lightCost.ToString("0.0") +
+            " light."
+        );
     }
 
     private IEnumerator BurstRoutine()
@@ -92,7 +148,6 @@ public class LightBurstController : MonoBehaviour
         {
             DispelDarknessInRadius();
             CheckLightplatformInBurst();
-
 
             timer += dispelCheckInterval;
             yield return new WaitForSeconds(dispelCheckInterval);
@@ -159,27 +214,34 @@ public class LightBurstController : MonoBehaviour
         // This helps prevent darkness from reforming while the burst is still covering it.
         return burstDispelRadius;
     }
-       private void CheckLightplatformInBurst()
+
+    private void CheckLightplatformInBurst()
     {
         Debug.Log("Checking light platforms");
+
         Collider2D[] hits = Physics2D.OverlapCircleAll(
             transform.position,
             burstDispelRadius
-            
         );
+
         Debug.Log("Ground hit count: " + hits.Length);
+
         foreach (Collider2D hit in hits)
         {
             Debug.Log("Hit object: " + hit.gameObject.name);
 
-            appear_and_disappeear_by_burst lightPlatform = hit.GetComponentInParent<appear_and_disappeear_by_burst>();
+            appear_and_disappeear_by_burst lightPlatform =
+                hit.GetComponentInParent<appear_and_disappeear_by_burst>();
 
             if (lightPlatform != null)
             {
-                Debug.Log("Found invisible platform: " + lightPlatform.gameObject.name);
+                Debug.Log(
+                    "Found invisible platform: " +
+                    lightPlatform.gameObject.name
+                );
+
                 lightPlatform.ShowPlatform();
             }
         }
     }
-
 }

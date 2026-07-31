@@ -1,29 +1,71 @@
 using UnityEngine;
-using System.Collections;
 
 public class checkpoint : MonoBehaviour
 {
-    private PlayerRespawn respawn; // Use the functions store in PlayerRespawn script from the Player
-    void Awake()
+    private PlayerRespawn respawn;
+    private PlayerLightResource playerLightResource;
+
+    private void Awake()
     {
-        respawn = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerRespawn>(); // Find the object being tag Player and get the PlayerRespawn component.
+        // The checkpoint stores references to the player's respawn and light systems
+        // so reaching it can update the respawn position and fully restore light.
+        GameObject player = GameObject.FindGameObjectWithTag("Player");
+
+        if (player == null)
+        {
+            Debug.LogError(
+                "Checkpoint could not find a GameObject tagged Player. " +
+                "Checkpoint activation will not work."
+            );
+
+            return;
+        }
+
+        respawn = player.GetComponent<PlayerRespawn>();
+        playerLightResource = player.GetComponent<PlayerLightResource>();
+
+        if (respawn == null)
+        {
+            Debug.LogError(
+                "Checkpoint found the Player, but PlayerRespawn is missing."
+            );
+        }
+
+        if (playerLightResource == null)
+        {
+            Debug.LogError(
+                "Checkpoint found the Player, but PlayerLightResource is missing."
+            );
+        }
     }
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
-    }
     private void OnTriggerEnter2D(Collider2D collision)
     {
-       { if (collision.gameObject.tag == "Player") // Checks is the object Player when enter the collider
-             respawn.SetCheckpoint(transform); // Active the SetCheckpoint in PlayerRespawn script to save the checkpoint position
-       }
+        // Only the Player should activate the checkpoint. This prevents other
+        // trigger objects, projectiles, or moving level objects from activating it.
+        if (!collision.CompareTag("Player"))
+        {
+            return;
+        }
+
+        if (respawn != null)
+        {
+            // The checkpoint Transform becomes the player's new respawn position.
+            respawn.SetCheckpoint(transform);
+
+            Debug.Log(
+                "Checkpoint activated. New respawn point: " +
+                gameObject.name
+            );
+        }
+
+        if (playerLightResource != null)
+        {
+            // Checkpoints restore light beyond the renewable 50% movement limit,
+            // giving the player access to their full resource again.
+            playerLightResource.RestoreFullLight(
+                "Checkpoint " + gameObject.name
+            );
+        }
     }
 }

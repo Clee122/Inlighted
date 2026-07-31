@@ -6750,7 +6750,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7726757575506062778, guid: 1a2b6faaca96b144c9f1e527bae249d1, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8007050867395820475, guid: 1a2b6faaca96b144c9f1e527bae249d1, type: 3}
       propertyPath: m_LocalScale.x
@@ -13760,6 +13760,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Check point gameobject
       objectReference: {fileID: 0}
+    - target: {fileID: 7321695640662405119, guid: 618a41195abf9444c89a8674f2dedc24, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7705850818078614392, guid: 618a41195abf9444c89a8674f2dedc24, type: 3}
       propertyPath: m_LocalPosition.x
       value: -7.46
@@ -16483,6 +16487,10 @@ PrefabInstance:
     - target: {fileID: 7540012088041795997, guid: 9ad82f27c3068444a9ded1051053e2b7, type: 3}
       propertyPath: m_Name
       value: Darkness Indicator
+      objectReference: {fileID: 0}
+    - target: {fileID: 7540012088041795997, guid: 9ad82f27c3068444a9ded1051053e2b7, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8504936278900614984, guid: 9ad82f27c3068444a9ded1051053e2b7, type: 3}
       propertyPath: m_Color.a
@@ -20513,7 +20521,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &2117026542
 Transform:
   m_ObjectHideFlags: 0
@@ -21552,7 +21560,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 241028622694031518, guid: 58839fcf5f40ff24e97de205bd895dbd, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 627875373635435815, guid: 58839fcf5f40ff24e97de205bd895dbd, type: 3}
       propertyPath: m_Colors.m_PressedColor.b
