@@ -15,13 +15,21 @@ public class HealthHUD : MonoBehaviour
 
     private RectTransform rectTransform;
     private Vector2 originalPosition;
-    private Coroutine ShakeRoutine;
+    private Coroutine shakeRoutine;
+
+    [Header("Health Regen Juice Overshoot")]
+    [SerializeField] private float overShotScale = 1.2f; //how big the health bumps up to before going back to og size when regening 
+    [SerializeField] private float overShotDuration = 0.3f; //how long it takes for it to bump up and settle
+
+    private Vector3 originalScale;
+    private Coroutine overShootRoutine;
     private void Awake()
     {
         healthImage = GetComponent<Image>();
         animator = GetComponent<Animator>();
         rectTransform = GetComponent<RectTransform>();
         originalPosition = rectTransform.anchoredPosition;
+        originalScale = rectTransform.localScale;
     }
 
     public void SetHealthState(HealthState state) //using a switch state which will work for only having 3 hearts
@@ -38,6 +46,7 @@ public class HealthHUD : MonoBehaviour
             case HealthState.Full:
                 animator.SetTrigger("FadeIn");// can fade health back in 
                 healthImage.sprite = fullHealth;
+                PlayOverShoot(); //punches health up in scale then settles as it fades in
                 break;
         }
     }
@@ -45,16 +54,16 @@ public class HealthHUD : MonoBehaviour
     private void PlayShake()
     {
         //stops any shake running so it can't stack
-        if (ShakeRoutine != null)
+        if (shakeRoutine != null)
         {
-            StopCoroutine(ShakeRoutine);
+            StopCoroutine(shakeRoutine);
             rectTransform.anchoredPosition = originalPosition; //sets back to original position before starting a fresh shake
         }
 
-        ShakeRoutine = StartCoroutine(shakeRoutine());
+        shakeRoutine = StartCoroutine(ShakeRoutine());
     }
 
-    private IEnumerator shakeRoutine()
+    private IEnumerator ShakeRoutine()
     {
         float elapsed = 0f;
         while (elapsed < shakeDuration)
@@ -70,8 +79,35 @@ public class HealthHUD : MonoBehaviour
 
         //always end back at the og position 
         rectTransform.anchoredPosition = originalPosition;
-        ShakeRoutine = null;
-    }    
+        shakeRoutine = null;
+    }
+
+    private void PlayOverShoot()
+    {
+        if (overShootRoutine != null) ; //stops stacking of the overshoot
+        {
+            StopCoroutine(overShootRoutine);
+            rectTransform.localScale = originalScale; //resets scale before starting a fresh overshoot 
+        }
+
+        overShootRoutine = StartCoroutine(OverShootRoutine());
+    }
+
+    private IEnumerator OverShootRoutine()
+    {
+        float elapsed = 0f;
+        while (elapsed < overShotDuration)
+        {
+            float t = elapsed / overShotDuration; //0 - 1 over the duration 
+            float scaleAmount = Mathf.Sin(t * Mathf.PI) * (overShotScale - 1f); //quickly bumps upthen eases back down to original size using a bounce curve 
+            rectTransform.localScale = originalScale * (1f + scaleAmount);
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        rectTransform.localScale = originalScale; // ends back at original scale
+        overShootRoutine = null;
+    }
 }
 
 public enum HealthState //this lets me reference the health states from sprite fullheart, halfheart, and emptyheart
