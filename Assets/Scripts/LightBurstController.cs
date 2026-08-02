@@ -9,6 +9,9 @@ public class LightBurstController : MonoBehaviour
     [Header("Burst Visual")]
     [SerializeField] private GameObject burstVisual;
 
+    [Header("Reveal Mask")]
+    [SerializeField] private GameObject revealMask;
+
     [Header("Darkness Dispel")]
     [SerializeField] private float burstDispelRadius = 3f;
     [SerializeField] private LayerMask darknessLayer;
@@ -32,6 +35,7 @@ public class LightBurstController : MonoBehaviour
         {
             burstVisual.SetActive(false);
         }
+        turnMaskOff();
     }
 
     public bool IsBurstActive()
@@ -81,6 +85,9 @@ public class LightBurstController : MonoBehaviour
             burstVisual.SetActive(true);
         }
 
+        turnMaskOn();
+
+
         Debug.Log("Light burst active");
 
         float timer = 0f;
@@ -91,7 +98,7 @@ public class LightBurstController : MonoBehaviour
         while (timer < burstDuration)
         {
             DispelDarknessInRadius();
-            CheckLightplatformInBurst();
+            CheckLightPlatformInBurst();
 
 
             timer += dispelCheckInterval;
@@ -104,6 +111,8 @@ public class LightBurstController : MonoBehaviour
         {
             burstVisual.SetActive(false);
         }
+        
+       turnMaskOff();
 
         burstCoroutine = null;
         Debug.Log("Light burst ended");
@@ -159,27 +168,39 @@ public class LightBurstController : MonoBehaviour
         // This helps prevent darkness from reforming while the burst is still covering it.
         return burstDispelRadius;
     }
-       private void CheckLightplatformInBurst()
+
+    private void turnMaskOn()
     {
-        Debug.Log("Checking light platforms");
-        Collider2D[] hits = Physics2D.OverlapCircleAll(
-            transform.position,
-            burstDispelRadius
-            
-        );
-        Debug.Log("Ground hit count: " + hits.Length);
-        foreach (Collider2D hit in hits)
+        if (revealMask != null)
         {
-            Debug.Log("Hit object: " + hit.gameObject.name);
-
-            appear_and_disappeear_by_burst lightPlatform = hit.GetComponentInParent<appear_and_disappeear_by_burst>();
-
-            if (lightPlatform != null)
-            {
-                Debug.Log("Found invisible platform: " + lightPlatform.gameObject.name);
-                lightPlatform.ShowPlatform();
-            }
+            revealMask.SetActive(true);
         }
     }
 
+    private void turnMaskOff()
+    {
+        if (revealMask != null)
+        {
+            revealMask.SetActive(false);
+        }
+    }
+
+    private void CheckLightPlatformInBurst()
+{
+        Collider2D[] hits = Physics2D.OverlapCircleAll(
+        transform.position,
+        burstDispelRadius,
+        GroundLayer
+    );
+    
+    foreach (Collider2D hit in hits)
+    {
+        appear_and_disappeear_by_burst lightPlatform = hit.GetComponentInParent<appear_and_disappeear_by_burst>();
+
+        if (lightPlatform != null)
+        {
+            lightPlatform.ActivatePlatform();
+        }
+    }
+}
 }
