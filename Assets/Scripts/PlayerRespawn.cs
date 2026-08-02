@@ -7,11 +7,9 @@ public class PlayerRespawn : MonoBehaviour
     [SerializeField] private Transform respawnPoint;
     [SerializeField] private float respawnDelay = 1f;
 
-    [Header("Light Penalty")]
-    [SerializeField] private float respawnLightPenalty = 10f;
-
     private PlayerLifeSystem playerLifeSystem;
     private PlayerLightResource playerLightResource;
+    private PlayerLightChannel playerLightChannel;
     private Rigidbody2D rb;
     private PlayerController2D playerController;
     private PlayerAnimationController playerAnimationController;
@@ -22,16 +20,14 @@ public class PlayerRespawn : MonoBehaviour
     private void Awake()
     {
         // These references are stored once because respawn needs to coordinate player health,
-        // light, movement, animation, and physics without making those systems handle respawn.
+        // light, movement, channeling, animation, and physics without making those systems
+        // handle the complete respawn process themselves.
         playerLifeSystem = GetComponent<PlayerLifeSystem>();
         playerLightResource = GetComponent<PlayerLightResource>();
+        playerLightChannel = GetComponent<PlayerLightChannel>();
         rb = GetComponent<Rigidbody2D>();
         playerController = GetComponent<PlayerController2D>();
         playerAnimationController = GetComponent<PlayerAnimationController>();
-
-        // A negative penalty would accidentally add light, so the value is kept at
-        // zero or higher before it is used during the respawn process.
-        respawnLightPenalty = Mathf.Max(0f, respawnLightPenalty);
 
         // DeathMessage is optional so missing UI references do not break the respawn system.
         // This is useful while the UI is still being changed by different team members.
@@ -44,7 +40,7 @@ public class PlayerRespawn : MonoBehaviour
         {
             Debug.LogError(
                 "PlayerRespawn could not find PlayerLightResource. " +
-                "The respawn light penalty will not be applied."
+                "Light will not be restored after respawning."
             );
         }
     }
@@ -57,6 +53,13 @@ public class PlayerRespawn : MonoBehaviour
     private IEnumerator RespawnRoutine()
     {
         Debug.Log("Player respawn routine started.");
+
+        // Respawning clears channel progress and pending refunds before health and
+        // light are restored to their full values.
+        if (playerLightChannel != null)
+        {
+            playerLightChannel.ResetForRespawn();
+        }
 
         // Showing the death message here gives feedback before the player is moved back.
         // If no death UI is assigned, the gameplay respawn should still continue normally.
@@ -106,8 +109,7 @@ public class PlayerRespawn : MonoBehaviour
             rb.angularVelocity = 0f;
         }
 
-        // Health is fully restored after death, while light is handled separately
-        // so it can retain its previous value with a configurable penalty.
+        // Health is fully restored after death so the player can retry the section.
         if (playerLifeSystem != null)
         {
             playerLifeSystem.DarknessIndicatorReset();
@@ -116,14 +118,11 @@ public class PlayerRespawn : MonoBehaviour
             Debug.Log("Player health restored during respawn.");
         }
 
+        // Respawning restores the complete light resource so the player can retry
+        // the section without being disadvantaged by the previous failed attempt.
         if (playerLightResource != null)
         {
-            // Respawning preserves the resource the player had when they died,
-            // but removes a small amount so death still has a light-energy consequence.
-            playerLightResource.LoseLight(
-                respawnLightPenalty,
-                "Respawn penalty"
-            );
+            playerLightResource.RestoreFullLight("Respawn");
         }
 
         if (playerAnimationController != null)

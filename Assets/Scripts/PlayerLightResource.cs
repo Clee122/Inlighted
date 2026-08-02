@@ -26,6 +26,7 @@ public class PlayerLightResource : MonoBehaviour
     [SerializeField] private PlayerController2D playerController;
     [SerializeField] private LightBurstController lightBurstController;
     [SerializeField] private LightBeamController lightBeamController;
+    [SerializeField] private PlayerLightChannel playerLightChannel;
 
     [Header("Debug")]
     [SerializeField] private bool showDebugLogs = true;
@@ -46,6 +47,7 @@ public class PlayerLightResource : MonoBehaviour
         playerController = GetComponent<PlayerController2D>();
         lightBurstController = GetComponent<LightBurstController>();
         lightBeamController = GetComponent<LightBeamController>();
+        playerLightChannel = GetComponent<PlayerLightChannel>();
     }
 
     private void Awake()
@@ -67,14 +69,24 @@ public class PlayerLightResource : MonoBehaviour
             lightBeamController = GetComponent<LightBeamController>();
         }
 
-        // These limits prevent invalid Inspector values from breaking resource
-        // calculations or allowing the current value to exceed the maximum.
+        if (playerLightChannel == null)
+        {
+            playerLightChannel = GetComponent<PlayerLightChannel>();
+        }
+
         maximumLight = Mathf.Max(1f, maximumLight);
-        startingLight = Mathf.Clamp(startingLight, 0f, maximumLight);
-        movementRegenerationRate = Mathf.Max(0f, movementRegenerationRate);
+        startingLight = Mathf.Clamp(
+            startingLight,
+            0f,
+            maximumLight
+        );
+
+        movementRegenerationRate =
+            Mathf.Max(0f, movementRegenerationRate);
 
         currentLight = startingLight;
-        nextDebugLightValue = GetNextDebugThreshold(currentLight);
+        nextDebugLightValue =
+            GetNextDebugThreshold(currentLight);
 
         NotifyLightChanged();
 
@@ -117,7 +129,8 @@ public class PlayerLightResource : MonoBehaviour
         }
 
         float regenerationLimit =
-            maximumLight * movementRegenerationLimitPercentage;
+            maximumLight *
+            movementRegenerationLimitPercentage;
 
         bool isBelowRegenerationLimit =
             currentLight < regenerationLimit;
@@ -129,16 +142,30 @@ public class PlayerLightResource : MonoBehaviour
         // This prevents movement during Burst or Beam from immediately refunding
         // some of the energy spent to activate that ability.
         bool isLightAbilityActive =
-            (lightBurstController != null &&
-             lightBurstController.IsBurstActive()) ||
-            (lightBeamController != null &&
-             lightBeamController.IsBeamActive());
+            (
+                lightBurstController != null &&
+                lightBurstController.IsBurstActive()
+            ) ||
+            (
+                lightBeamController != null &&
+                lightBeamController.IsBeamActive()
+            );
+
+        bool isChanneling =
+            playerLightChannel != null &&
+            playerLightChannel.IsChanneling();
+
+        bool isChannelRefundPending =
+            playerLightChannel != null &&
+            playerLightChannel.IsRefundPending();
 
         bool shouldRegenerate =
             isBelowRegenerationLimit &&
             isPlayerControlledMovement &&
             playerController.enabled &&
-            !isLightAbilityActive;
+            !isLightAbilityActive &&
+            !isChanneling &&
+            !isChannelRefundPending;
 
         if (!shouldRegenerate)
         {
@@ -146,7 +173,17 @@ public class PlayerLightResource : MonoBehaviour
             {
                 string stopReason;
 
-                if (isLightAbilityActive)
+                if (isChanneling)
+                {
+                    stopReason =
+                        "Movement regeneration paused because the player is channeling.";
+                }
+                else if (isChannelRefundPending)
+                {
+                    stopReason =
+                        "Movement regeneration paused while cancelled channel light is being refunded.";
+                }
+                else if (isLightAbilityActive)
                 {
                     stopReason =
                         "Movement regeneration paused because a light ability is active.";
@@ -172,7 +209,9 @@ public class PlayerLightResource : MonoBehaviour
         {
             wasRegenerating = true;
             regenerationLimitWasReached = false;
-            nextDebugLightValue = GetNextDebugThreshold(currentLight);
+
+            nextDebugLightValue =
+                GetNextDebugThreshold(currentLight);
 
             if (showDebugLogs)
             {
@@ -185,10 +224,19 @@ public class PlayerLightResource : MonoBehaviour
 
         float previousLight = currentLight;
 
-        currentLight += movementRegenerationRate * Time.deltaTime;
-        currentLight = Mathf.Min(currentLight, regenerationLimit);
+        currentLight +=
+            movementRegenerationRate *
+            Time.deltaTime;
 
-        if (!Mathf.Approximately(previousLight, currentLight))
+        currentLight = Mathf.Min(
+            currentLight,
+            regenerationLimit
+        );
+
+        if (!Mathf.Approximately(
+            previousLight,
+            currentLight
+        ))
         {
             NotifyLightChanged();
             PrintRegenerationProgress();
@@ -205,7 +253,10 @@ public class PlayerLightResource : MonoBehaviour
             {
                 Debug.Log(
                     "Movement regeneration reached the " +
-                    (movementRegenerationLimitPercentage * 100f).ToString("0") +
+                    (
+                        movementRegenerationLimitPercentage *
+                        100f
+                    ).ToString("0") +
                     "% limit: " +
                     currentLight.ToString("0.0") +
                     " / " +
@@ -227,7 +278,10 @@ public class PlayerLightResource : MonoBehaviour
         return currentLight >= amount;
     }
 
-    public bool TrySpendLight(float amount, string sourceName)
+    public bool TrySpendLight(
+        float amount,
+        string sourceName
+    )
     {
         // All abilities spend light through this method so value checks, clamping
         // and debugging remain consistent across the project.
@@ -262,10 +316,17 @@ public class PlayerLightResource : MonoBehaviour
         }
 
         currentLight -= amount;
-        currentLight = Mathf.Clamp(currentLight, 0f, maximumLight);
+
+        currentLight = Mathf.Clamp(
+            currentLight,
+            0f,
+            maximumLight
+        );
 
         regenerationLimitWasReached = false;
-        nextDebugLightValue = GetNextDebugThreshold(currentLight);
+
+        nextDebugLightValue =
+            GetNextDebugThreshold(currentLight);
 
         NotifyLightChanged();
 
@@ -285,46 +346,82 @@ public class PlayerLightResource : MonoBehaviour
         return true;
     }
 
-    public void LoseLight(float amount, string sourceName)
+    public float RemoveLightUpTo(
+        float amount,
+        string sourceName,
+        bool printDebugLog = true
+    )
     {
-        // Penalties must be able to remove the remaining light even when the player
-        // has less than the requested amount, so this uses clamping rather than the
-        // normal ability-spending check.
+        // Continuous mechanics such as channeling must be able to remove whatever
+        // light remains without requiring the complete requested amount upfront.
         if (amount <= 0f)
         {
-            return;
+            return 0f;
         }
 
         float previousLight = currentLight;
 
         currentLight -= amount;
-        currentLight = Mathf.Clamp(currentLight, 0f, maximumLight);
 
-        regenerationLimitWasReached = false;
-        nextDebugLightValue = GetNextDebugThreshold(currentLight);
+        currentLight = Mathf.Clamp(
+            currentLight,
+            0f,
+            maximumLight
+        );
 
-        if (!Mathf.Approximately(previousLight, currentLight))
+        float amountRemoved =
+            previousLight - currentLight;
+
+        if (amountRemoved <= 0f)
         {
-            NotifyLightChanged();
+            return 0f;
         }
 
-        if (showDebugLogs)
+        regenerationLimitWasReached = false;
+
+        nextDebugLightValue =
+            GetNextDebugThreshold(currentLight);
+
+        NotifyLightChanged();
+
+        // Channeling calls this every frame, so it can disable individual drain logs
+        // while still allowing one summary log when the channel ends.
+        if (showDebugLogs && printDebugLog)
         {
             Debug.Log(
                 sourceName +
                 " removed " +
-                (previousLight - currentLight).ToString("0.0") +
+                amountRemoved.ToString("0.0") +
                 " light. Remaining light: " +
                 currentLight.ToString("0.0") +
                 " / " +
                 maximumLight.ToString("0.0")
             );
         }
+
+        return amountRemoved;
     }
 
-    public void RestoreLight(float amount, string sourceName)
+    public void LoseLight(
+        float amount,
+        string sourceName
+    )
     {
-        // Restoration is kept in one place so checkpoints, pickups and future
+        // One-time penalties use the same clamped removal path as continuous drains,
+        // while still printing their individual result to the Console.
+        RemoveLightUpTo(
+            amount,
+            sourceName,
+            true
+        );
+    }
+
+    public void RestoreLight(
+        float amount,
+        string sourceName
+    )
+    {
+        // Restoration is kept in one place so checkpoints, refunds, pickups and future
         // environmental light sources cannot exceed the configured maximum.
         if (amount <= 0f)
         {
@@ -334,15 +431,25 @@ public class PlayerLightResource : MonoBehaviour
         float previousLight = currentLight;
 
         currentLight += amount;
-        currentLight = Mathf.Clamp(currentLight, 0f, maximumLight);
 
-        if (Mathf.Approximately(previousLight, currentLight))
+        currentLight = Mathf.Clamp(
+            currentLight,
+            0f,
+            maximumLight
+        );
+
+        if (Mathf.Approximately(
+            previousLight,
+            currentLight
+        ))
         {
             return;
         }
 
         regenerationLimitWasReached = false;
-        nextDebugLightValue = GetNextDebugThreshold(currentLight);
+
+        nextDebugLightValue =
+            GetNextDebugThreshold(currentLight);
 
         NotifyLightChanged();
 
@@ -360,12 +467,15 @@ public class PlayerLightResource : MonoBehaviour
 
     public void RestoreFullLight(string sourceName)
     {
-        // Full restoration will later be called by checkpoints and respawning.
+        // Checkpoints and respawning restore the player to full light so they can
+        // retry the next section without carrying a failed attempt's resource loss.
         currentLight = maximumLight;
 
         wasRegenerating = false;
         regenerationLimitWasReached = true;
-        nextDebugLightValue = GetNextDebugThreshold(currentLight);
+
+        nextDebugLightValue =
+            GetNextDebugThreshold(currentLight);
 
         NotifyLightChanged();
 
@@ -403,7 +513,8 @@ public class PlayerLightResource : MonoBehaviour
 
     public float GetMovementRegenerationLimit()
     {
-        return maximumLight * movementRegenerationLimitPercentage;
+        return maximumLight *
+               movementRegenerationLimitPercentage;
     }
 
     [ContextMenu("Test Spend 60 Light")]
@@ -411,25 +522,36 @@ public class PlayerLightResource : MonoBehaviour
     {
         // This Inspector command lowers the resource so movement regeneration
         // can be tested without repeatedly using an ability.
-        TrySpendLight(60f, "Inspector test");
+        TrySpendLight(
+            60f,
+            "Inspector test"
+        );
     }
 
     [ContextMenu("Test Restore Full Light")]
     private void TestRestoreFullLight()
     {
-        RestoreFullLight("Inspector test");
+        RestoreFullLight(
+            "Inspector test"
+        );
     }
 
     private void NotifyLightChanged()
     {
-        OnLightChanged?.Invoke(currentLight, maximumLight);
+        OnLightChanged?.Invoke(
+            currentLight,
+            maximumLight
+        );
     }
 
     private void PrintRegenerationProgress()
     {
         // Logging only at intervals keeps the Console readable while still showing
         // that continuous regeneration is updating correctly.
-        if (!showDebugLogs || debugLightInterval <= 0f)
+        if (
+            !showDebugLogs ||
+            debugLightInterval <= 0f
+        )
         {
             return;
         }
@@ -446,10 +568,13 @@ public class PlayerLightResource : MonoBehaviour
             maximumLight.ToString("0.0")
         );
 
-        nextDebugLightValue += debugLightInterval;
+        nextDebugLightValue +=
+            debugLightInterval;
     }
 
-    private void StopRegenerationDebug(string reason)
+    private void StopRegenerationDebug(
+        string reason
+    )
     {
         wasRegenerating = false;
 
@@ -463,7 +588,9 @@ public class PlayerLightResource : MonoBehaviour
         }
     }
 
-    private float GetNextDebugThreshold(float value)
+    private float GetNextDebugThreshold(
+        float value
+    )
     {
         if (debugLightInterval <= 0f)
         {
@@ -471,7 +598,10 @@ public class PlayerLightResource : MonoBehaviour
         }
 
         return
-            Mathf.Floor(value / debugLightInterval) *
+            Mathf.Floor(
+                value /
+                debugLightInterval
+            ) *
             debugLightInterval +
             debugLightInterval;
     }

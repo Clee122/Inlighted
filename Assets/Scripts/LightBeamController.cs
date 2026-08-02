@@ -33,23 +33,29 @@ public class LightBeamController : MonoBehaviour
 
     private Vector2 lastBeamCenter;
     private Vector2 lastBeamSize;
-    private Vector2 lastBeamDirection = Vector2.right;
+    private Vector2 lastBeamDirection =
+        Vector2.right;
+
     private float lastBeamAngle = 0f;
 
     private Camera mainCamera;
     private PlayerAbilityUnlocks abilityUnlocks;
     private PlayerLightResource playerLightResource;
+    private PlayerLightChannel playerLightChannel;
 
     private void Awake()
     {
         mainCamera = Camera.main;
 
-        // The beam checks whether the player has unlocked it before allowing aiming.
-        abilityUnlocks = GetComponent<PlayerAbilityUnlocks>();
+        abilityUnlocks =
+            GetComponent<PlayerAbilityUnlocks>();
 
-        // The central light-resource component decides whether the player has enough
-        // energy and handles spending it consistently across all light abilities.
-        playerLightResource = GetComponent<PlayerLightResource>();
+        playerLightResource =
+            GetComponent<PlayerLightResource>();
+
+        // Beam aiming must be blocked before a preview begins while channeling.
+        playerLightChannel =
+            GetComponent<PlayerLightChannel>();
 
         if (playerLightResource == null)
         {
@@ -62,15 +68,27 @@ public class LightBeamController : MonoBehaviour
 
         if (beamIndicatorVisual != null)
         {
-            beamIndicatorVisual.transform.SetParent(null, true);
-            beamIndicatorVisual.transform.localScale = Vector3.one;
+            beamIndicatorVisual.transform.SetParent(
+                null,
+                true
+            );
+
+            beamIndicatorVisual.transform.localScale =
+                Vector3.one;
+
             beamIndicatorVisual.SetActive(false);
         }
 
         if (beamVisual != null)
         {
-            beamVisual.transform.SetParent(null, true);
-            beamVisual.transform.localScale = Vector3.one;
+            beamVisual.transform.SetParent(
+                null,
+                true
+            );
+
+            beamVisual.transform.localScale =
+                Vector3.one;
+
             beamVisual.SetActive(false);
         }
 
@@ -83,19 +101,36 @@ public class LightBeamController : MonoBehaviour
     private void Update()
     {
         if (!isAiming)
+        {
             return;
+        }
 
-        UpdateBeamPreview(beamIndicatorVisual);
+        UpdateBeamPreview(
+            beamIndicatorVisual
+        );
 
-        if (UnityEngine.InputSystem.Mouse.current == null)
+        if (
+            UnityEngine.InputSystem.Mouse.current ==
+            null
+        )
+        {
             return;
+        }
 
-        if (UnityEngine.InputSystem.Mouse.current.leftButton.wasPressedThisFrame)
+        if (
+            UnityEngine.InputSystem.Mouse.current
+                .leftButton
+                .wasPressedThisFrame
+        )
         {
             ConfirmFireBeam();
         }
 
-        if (UnityEngine.InputSystem.Mouse.current.rightButton.wasPressedThisFrame)
+        if (
+            UnityEngine.InputSystem.Mouse.current
+                .rightButton
+                .wasPressedThisFrame
+        )
         {
             CancelBeamAim();
         }
@@ -108,22 +143,54 @@ public class LightBeamController : MonoBehaviour
 
     public bool IsAiming()
     {
-        // This can later be used by movement, channeling, animation, or UI systems
-        // if aiming needs to restrict another player action.
         return isAiming;
     }
 
-    // Called by E input.
+    // Called by the Beam input.
     public void FireBeam()
     {
+        if (
+            playerLightChannel != null &&
+            playerLightChannel.IsChanneling()
+        )
+        {
+            // Beam input is ignored rather than cancelling channeling, ensuring
+            // channeling and ability use remain mutually exclusive.
+            Debug.Log(
+                "Light Beam aiming was blocked because the player is channeling."
+            );
+
+            return;
+        }
+
         BeginBeamAim();
     }
 
     public void BeginBeamAim()
     {
-        if (abilityUnlocks != null && !abilityUnlocks.HasLightBeam())
+        // This second channel check protects against another script directly
+        // calling BeginBeamAim instead of going through FireBeam.
+        if (
+            playerLightChannel != null &&
+            playerLightChannel.IsChanneling()
+        )
         {
-            Debug.Log("Light Beam is locked");
+            Debug.Log(
+                "Light Beam aiming was blocked because the player is channeling."
+            );
+
+            return;
+        }
+
+        if (
+            abilityUnlocks != null &&
+            !abilityUnlocks.HasLightBeam()
+        )
+        {
+            Debug.Log(
+                "Light Beam is locked"
+            );
+
             return;
         }
 
@@ -132,6 +199,7 @@ public class LightBeamController : MonoBehaviour
             Debug.Log(
                 "Light Beam aiming could not begin because the ability is on cooldown."
             );
+
             return;
         }
 
@@ -140,17 +208,19 @@ public class LightBeamController : MonoBehaviour
             Debug.Log(
                 "Light Beam aiming could not begin because the beam is already active."
             );
+
             return;
         }
 
         if (isAiming)
         {
-            Debug.Log("Light Beam is already being aimed.");
+            Debug.Log(
+                "Light Beam is already being aimed."
+            );
+
             return;
         }
 
-        // Beginning the preview does not spend light. The player can inspect the
-        // direction and cancel without losing energy.
         isAiming = true;
 
         if (beamIndicatorVisual != null)
@@ -163,7 +233,9 @@ public class LightBeamController : MonoBehaviour
             beamVisual.SetActive(false);
         }
 
-        UpdateBeamPreview(beamIndicatorVisual);
+        UpdateBeamPreview(
+            beamIndicatorVisual
+        );
 
         Debug.Log(
             "Light beam aiming started. No light has been spent yet."
@@ -173,7 +245,9 @@ public class LightBeamController : MonoBehaviour
     private void CancelBeamAim()
     {
         if (!isAiming)
+        {
             return;
+        }
 
         isAiming = false;
 
@@ -194,6 +268,21 @@ public class LightBeamController : MonoBehaviour
             Debug.Log(
                 "Light Beam could not fire because the player was not aiming."
             );
+
+            return;
+        }
+
+        if (
+            playerLightChannel != null &&
+            playerLightChannel.IsChanneling()
+        )
+        {
+            CancelBeamAim();
+
+            Debug.Log(
+                "Light Beam firing was blocked because the player is channeling."
+            );
+
             return;
         }
 
@@ -202,6 +291,7 @@ public class LightBeamController : MonoBehaviour
             Debug.Log(
                 "Light Beam could not fire because it is on cooldown."
             );
+
             return;
         }
 
@@ -210,6 +300,7 @@ public class LightBeamController : MonoBehaviour
             Debug.Log(
                 "Light Beam could not fire because it is already active."
             );
+
             return;
         }
 
@@ -218,17 +309,21 @@ public class LightBeamController : MonoBehaviour
             Debug.LogError(
                 "Light Beam could not fire because PlayerLightResource is missing."
             );
+
             return;
         }
 
-        // The light check occurs only when the player confirms the shot.
-        // If there is not enough light, aiming remains active so the player can
-        // cancel it instead of having the preview disappear unexpectedly.
-        if (!playerLightResource.TrySpendLight(lightCost, "Light Beam"))
+        if (
+            !playerLightResource.TrySpendLight(
+                lightCost,
+                "Light Beam"
+            )
+        )
         {
             Debug.Log(
                 "Light Beam firing was blocked because the player did not have enough light."
             );
+
             return;
         }
 
@@ -241,17 +336,27 @@ public class LightBeamController : MonoBehaviour
 
         if (beamCoroutine != null)
         {
-            StopCoroutine(beamCoroutine);
+            StopCoroutine(
+                beamCoroutine
+            );
         }
 
-        beamCoroutine = StartCoroutine(BeamRoutine());
+        beamCoroutine =
+            StartCoroutine(
+                BeamRoutine()
+            );
 
         if (cooldownCoroutine != null)
         {
-            StopCoroutine(cooldownCoroutine);
+            StopCoroutine(
+                cooldownCoroutine
+            );
         }
 
-        cooldownCoroutine = StartCoroutine(CooldownRoutine());
+        cooldownCoroutine =
+            StartCoroutine(
+                CooldownRoutine()
+            );
 
         Debug.Log(
             "Light Beam successfully fired after spending " +
@@ -269,18 +374,28 @@ public class LightBeamController : MonoBehaviour
             beamVisual.SetActive(true);
         }
 
-        Debug.Log("Light beam active");
+        Debug.Log(
+            "Light beam active"
+        );
 
         float timer = 0f;
 
         while (timer < beamActiveDuration)
         {
-            UpdateBeamPreview(beamVisual);
+            UpdateBeamPreview(
+                beamVisual
+            );
+
             DispelDarknessInBeam();
             CheckLightGateInBeam();
 
-            timer += beamCheckInterval;
-            yield return new WaitForSeconds(beamCheckInterval);
+            timer +=
+                beamCheckInterval;
+
+            yield return
+                new WaitForSeconds(
+                    beamCheckInterval
+                );
         }
 
         isBeamActive = false;
@@ -292,31 +407,47 @@ public class LightBeamController : MonoBehaviour
 
         beamCoroutine = null;
 
-        Debug.Log("Light beam ended");
+        Debug.Log(
+            "Light beam ended"
+        );
     }
 
-    private void UpdateBeamPreview(GameObject visualObject)
+    private void UpdateBeamPreview(
+        GameObject visualObject
+    )
     {
-        Vector2 originPosition = beamOrigin != null
-            ? beamOrigin.position
-            : transform.position;
+        Vector2 originPosition =
+            beamOrigin != null
+                ? beamOrigin.position
+                : transform.position;
 
-        Vector2 direction = GetMouseAimDirection(originPosition);
+        Vector2 direction =
+            GetMouseAimDirection(
+                originPosition
+            );
 
-        float actualRange = GetBeamRangeBeforeWall(
-            originPosition,
-            direction
-        );
+        float actualRange =
+            GetBeamRangeBeforeWall(
+                originPosition,
+                direction
+            );
 
         Vector2 boxCenter =
             originPosition +
-            direction * (actualRange * 0.5f);
+            direction *
+            (actualRange * 0.5f);
 
         Vector2 boxSize =
-            new Vector2(actualRange, beamWidth);
+            new Vector2(
+                actualRange,
+                beamWidth
+            );
 
         float angle =
-            Mathf.Atan2(direction.y, direction.x) *
+            Mathf.Atan2(
+                direction.y,
+                direction.x
+            ) *
             Mathf.Rad2Deg;
 
         lastBeamCenter = boxCenter;
@@ -326,21 +457,34 @@ public class LightBeamController : MonoBehaviour
 
         if (visualObject != null)
         {
-            visualObject.transform.position = originPosition;
+            visualObject.transform.position =
+                originPosition;
+
             visualObject.transform.rotation =
-                Quaternion.Euler(0f, 0f, angle);
+                Quaternion.Euler(
+                    0f,
+                    0f,
+                    angle
+                );
 
             visualObject.transform.localScale =
-                new Vector3(actualRange, beamWidth, 1f);
+                new Vector3(
+                    actualRange,
+                    beamWidth,
+                    1f
+                );
 
             visualObject.transform.Translate(
-                Vector3.right * (actualRange * 0.5f),
+                Vector3.right *
+                (actualRange * 0.5f),
                 Space.Self
             );
         }
     }
 
-    private Vector2 GetMouseAimDirection(Vector2 originPosition)
+    private Vector2 GetMouseAimDirection(
+        Vector2 originPosition
+    )
     {
         if (mainCamera == null)
         {
@@ -349,22 +493,30 @@ public class LightBeamController : MonoBehaviour
 
         if (
             mainCamera == null ||
-            UnityEngine.InputSystem.Mouse.current == null
+            UnityEngine.InputSystem.Mouse.current ==
+            null
         )
         {
             return lastBeamDirection;
         }
 
         Vector2 mouseScreenPosition =
-            UnityEngine.InputSystem.Mouse.current.position.ReadValue();
+            UnityEngine.InputSystem.Mouse.current
+                .position
+                .ReadValue();
 
         Vector3 mouseWorldPosition =
-            mainCamera.ScreenToWorldPoint(mouseScreenPosition);
+            mainCamera.ScreenToWorldPoint(
+                mouseScreenPosition
+            );
 
         mouseWorldPosition.z = 0f;
 
         Vector2 direction =
-            ((Vector2)mouseWorldPosition - originPosition).normalized;
+            (
+                (Vector2)mouseWorldPosition -
+                originPosition
+            ).normalized;
 
         if (direction.sqrMagnitude <= 0.001f)
         {
@@ -379,12 +531,13 @@ public class LightBeamController : MonoBehaviour
         Vector2 direction
     )
     {
-        RaycastHit2D wallHit = Physics2D.Raycast(
-            originPosition,
-            direction,
-            beamRange,
-            wallLayer
-        );
+        RaycastHit2D wallHit =
+            Physics2D.Raycast(
+                originPosition,
+                direction,
+                beamRange,
+                wallLayer
+            );
 
         if (wallHit.collider != null)
         {
@@ -396,12 +549,13 @@ public class LightBeamController : MonoBehaviour
 
     private void DispelDarknessInBeam()
     {
-        Collider2D[] hits = Physics2D.OverlapBoxAll(
-            lastBeamCenter,
-            lastBeamSize,
-            lastBeamAngle,
-            darknessLayer
-        );
+        Collider2D[] hits =
+            Physics2D.OverlapBoxAll(
+                lastBeamCenter,
+                lastBeamSize,
+                lastBeamAngle,
+                darknessLayer
+            );
 
         foreach (Collider2D hit in hits)
         {
@@ -423,14 +577,22 @@ public class LightBeamController : MonoBehaviour
     private IEnumerator CooldownRoutine()
     {
         isOnCooldown = true;
-        Debug.Log("Light beam cooldown started");
 
-        yield return new WaitForSeconds(beamCooldown);
+        Debug.Log(
+            "Light beam cooldown started"
+        );
+
+        yield return
+            new WaitForSeconds(
+                beamCooldown
+            );
 
         isOnCooldown = false;
         cooldownCoroutine = null;
 
-        Debug.Log("Light beam cooldown ended");
+        Debug.Log(
+            "Light beam cooldown ended"
+        );
     }
 
     public bool IsBoundsOverlappingActiveBeam(
@@ -438,23 +600,38 @@ public class LightBeamController : MonoBehaviour
     )
     {
         if (!isBeamActive)
+        {
             return false;
+        }
 
         Vector2 beamRight =
             lastBeamDirection.normalized;
 
         Vector2 beamUp =
-            new Vector2(-beamRight.y, beamRight.x);
+            new Vector2(
+                -beamRight.y,
+                beamRight.x
+            );
 
         Vector2 difference =
             (Vector2)darknessBounds.center -
             lastBeamCenter;
 
         float distanceAlongBeam =
-            Mathf.Abs(Vector2.Dot(difference, beamRight));
+            Mathf.Abs(
+                Vector2.Dot(
+                    difference,
+                    beamRight
+                )
+            );
 
         float distanceAcrossBeam =
-            Mathf.Abs(Vector2.Dot(difference, beamUp));
+            Mathf.Abs(
+                Vector2.Dot(
+                    difference,
+                    beamUp
+                )
+            );
 
         Vector2 boundsExtents =
             darknessBounds.extents;
@@ -462,13 +639,15 @@ public class LightBeamController : MonoBehaviour
         float darknessProjectionAlongBeam =
             Mathf.Abs(
                 Vector2.Dot(
-                    Vector2.right * boundsExtents.x,
+                    Vector2.right *
+                    boundsExtents.x,
                     beamRight
                 )
             ) +
             Mathf.Abs(
                 Vector2.Dot(
-                    Vector2.up * boundsExtents.y,
+                    Vector2.up *
+                    boundsExtents.y,
                     beamRight
                 )
             );
@@ -476,13 +655,15 @@ public class LightBeamController : MonoBehaviour
         float darknessProjectionAcrossBeam =
             Mathf.Abs(
                 Vector2.Dot(
-                    Vector2.right * boundsExtents.x,
+                    Vector2.right *
+                    boundsExtents.x,
                     beamUp
                 )
             ) +
             Mathf.Abs(
                 Vector2.Dot(
-                    Vector2.up * boundsExtents.y,
+                    Vector2.up *
+                    boundsExtents.y,
                     beamUp
                 )
             );
@@ -503,39 +684,54 @@ public class LightBeamController : MonoBehaviour
             beamHalfWidth +
             darknessProjectionAcrossBeam;
 
-        return overlapsAlongBeam &&
-               overlapsAcrossBeam;
+        return
+            overlapsAlongBeam &&
+            overlapsAcrossBeam;
     }
 
     private void OnDrawGizmosSelected()
     {
-        Vector2 originPosition = beamOrigin != null
-            ? beamOrigin.position
-            : transform.position;
+        Vector2 originPosition =
+            beamOrigin != null
+                ? beamOrigin.position
+                : transform.position;
 
         Vector2 direction =
             lastBeamDirection.normalized;
 
         Vector2 boxCenter =
             originPosition +
-            direction * (beamRange * 0.5f);
+            direction *
+            (beamRange * 0.5f);
 
         Vector2 boxSize =
-            new Vector2(beamRange, beamWidth);
+            new Vector2(
+                beamRange,
+                beamWidth
+            );
 
         float angle =
-            Mathf.Atan2(direction.y, direction.x) *
+            Mathf.Atan2(
+                direction.y,
+                direction.x
+            ) *
             Mathf.Rad2Deg;
 
         Gizmos.color = Color.yellow;
 
-        Matrix4x4 oldMatrix = Gizmos.matrix;
+        Matrix4x4 oldMatrix =
+            Gizmos.matrix;
 
-        Gizmos.matrix = Matrix4x4.TRS(
-            boxCenter,
-            Quaternion.Euler(0f, 0f, angle),
-            Vector3.one
-        );
+        Gizmos.matrix =
+            Matrix4x4.TRS(
+                boxCenter,
+                Quaternion.Euler(
+                    0f,
+                    0f,
+                    angle
+                ),
+                Vector3.one
+            );
 
         Gizmos.DrawWireCube(
             Vector3.zero,
@@ -546,7 +742,8 @@ public class LightBeamController : MonoBehaviour
     }
 
     public void OnMoveForBeam(
-        UnityEngine.InputSystem.InputAction.CallbackContext context
+        UnityEngine.InputSystem.InputAction
+            .CallbackContext context
     )
     {
         // No longer needed for mouse aiming, but kept so existing Player Input
@@ -555,23 +752,24 @@ public class LightBeamController : MonoBehaviour
 
     private void CheckLightGateInBeam()
     {
-        // This uses the same rectangular area as the beam so puzzle gates are
-        // activated only when the visible beam reaches them.
-        Collider2D[] hits = Physics2D.OverlapBoxAll(
-            lastBeamCenter,
-            lastBeamSize,
-            lastBeamAngle,
-            darknessLayer
-        );
+        Collider2D[] hits =
+            Physics2D.OverlapBoxAll(
+                lastBeamCenter,
+                lastBeamSize,
+                lastBeamAngle,
+                darknessLayer
+            );
 
         foreach (Collider2D hit in hits)
         {
             spawn_platform gate =
-                hit.GetComponentInParent<spawn_platform>();
+                hit.GetComponentInParent
+                <spawn_platform>();
 
             if (gate != null)
             {
                 gate.Activatespawn();
+
                 Debug.Log(
                     "Light Beam activated gate: " +
                     gate.gameObject.name

@@ -52,6 +52,9 @@ public class PlayerController2D : MonoBehaviour
 
     private Quaternion slopeVisualBaseRotation;
 
+    private PlayerLightChannel playerLightChannel;
+    private bool isChannelingLocked;
+
     public PauseManager Pauser;
     private bool IsPaused;
 
@@ -64,15 +67,11 @@ public class PlayerController2D : MonoBehaviour
 
     private void Awake()
     {
-        // Movement cannot function without a Rigidbody, so this fallback keeps
-        // the controller usable if the Inspector reference was left empty.
         if (rb == null)
         {
             rb = GetComponent<Rigidbody2D>();
         }
 
-        // The normal gravity value is saved because grounded slope movement
-        // temporarily disables gravity to prevent unwanted downhill sliding.
         if (rb != null)
         {
             defaultGravityScale = rb.gravityScale;
@@ -85,20 +84,25 @@ public class PlayerController2D : MonoBehaviour
             );
         }
 
-        // The original visual rotation is preserved so slope rotation is added
-        // on top of the character's intended prefab orientation.
         if (slopeVisual != null)
         {
-            slopeVisualBaseRotation = slopeVisual.localRotation;
+            slopeVisualBaseRotation =
+                slopeVisual.localRotation;
         }
 
-        // Finding the pause manager at runtime avoids needing to reassign it each
-        // time the Player prefab is placed in another scene.
-        Pauser = FindFirstObjectByType<PauseManager>();
+        Pauser =
+            FindFirstObjectByType<PauseManager>();
+
+        // Movement and jump inputs check the channel state so they can be ignored
+        // instead of ending the channel and moving the player on the same frame.
+        playerLightChannel =
+            GetComponent<PlayerLightChannel>();
 
         if (showMovementDebugLogs)
         {
-            Debug.Log("PlayerController2D initialised.");
+            Debug.Log(
+                "PlayerController2D initialised."
+            );
         }
     }
 
@@ -116,16 +120,13 @@ public class PlayerController2D : MonoBehaviour
 
     private void LateUpdate()
     {
-        // Applying the visual rotation after normal animation updates reduces the
-        // chance of the Animator immediately replacing the slope angle.
         UpdateVisualSlopeRotation();
     }
 
     private void UpdateGroundedState()
     {
-        // The old value is stored before the new ground check so the script can
-        // detect the exact moment the player lands after a controlled jump.
-        wasGroundedLastFrame = isGrounded;
+        wasGroundedLastFrame =
+            isGrounded;
 
         if (groundCheck == null)
         {
@@ -141,19 +142,22 @@ public class PlayerController2D : MonoBehaviour
             return;
         }
 
-        // The overlap circle determines whether jumping is allowed, while the
-        // separate raycast provides the surface angle used for slope movement.
-        isGrounded = Physics2D.OverlapCircle(
-            groundCheck.position,
-            groundCheckRadius,
-            groundLayer
-        );
+        isGrounded =
+            Physics2D.OverlapCircle(
+                groundCheck.position,
+                groundCheckRadius,
+                groundLayer
+            );
 
-        // A player-controlled jump remains valid while airborne and ends when the
-        // player lands. Walking off an edge does not activate this state.
-        if (isGrounded && !wasGroundedLastFrame)
+        if (
+            isGrounded &&
+            !wasGroundedLastFrame
+        )
         {
-            if (isInPlayerControlledJump && showMovementDebugLogs)
+            if (
+                isInPlayerControlledJump &&
+                showMovementDebugLogs
+            )
             {
                 Debug.Log(
                     "Player-controlled jump ended after landing. " +
@@ -167,24 +171,26 @@ public class PlayerController2D : MonoBehaviour
 
     private void DetectSlope()
     {
-        // Slope information is reset every physics frame so an old angle is not
-        // retained after reaching flat ground or leaving the platform.
         isOnWalkableSlope = false;
         slopeNormal = Vector2.up;
         slopeDirection = Vector2.right;
         slopeAngle = 0f;
 
-        if (!isGrounded || groundCheck == null)
+        if (
+            !isGrounded ||
+            groundCheck == null
+        )
         {
             return;
         }
 
-        RaycastHit2D hit = Physics2D.Raycast(
-            groundCheck.position,
-            Vector2.down,
-            slopeCheckDistance,
-            groundLayer
-        );
+        RaycastHit2D hit =
+            Physics2D.Raycast(
+                groundCheck.position,
+                Vector2.down,
+                slopeCheckDistance,
+                groundLayer
+            );
 
         if (!hit)
         {
@@ -193,20 +199,18 @@ public class PlayerController2D : MonoBehaviour
 
         slopeNormal = hit.normal;
 
-        slopeAngle = Vector2.Angle(
-            slopeNormal,
-            Vector2.up
-        );
+        slopeAngle =
+            Vector2.Angle(
+                slopeNormal,
+                Vector2.up
+            );
 
-        // This tangent points generally towards world-space right. Positive speed
-        // moves right along the surface and negative speed moves left.
-        slopeDirection = new Vector2(
-            slopeNormal.y,
-            -slopeNormal.x
-        ).normalized;
+        slopeDirection =
+            new Vector2(
+                slopeNormal.y,
+                -slopeNormal.x
+            ).normalized;
 
-        // Almost-flat surfaces use ordinary movement, while surfaces above the
-        // maximum angle are not treated as walkable slopes.
         isOnWalkableSlope =
             slopeAngle > 0.1f &&
             slopeAngle <= maximumSlopeAngle;
@@ -219,10 +223,32 @@ public class PlayerController2D : MonoBehaviour
             return;
         }
 
-        float targetSpeed = moveInput * moveSpeed;
-        bool hasMovementInput = Mathf.Abs(moveInput) > 0.01f;
+        if (isChannelingLocked)
+        {
+            // Channeling removes horizontal movement while preserving vertical
+            // gravity in case the platform underneath the player disappears.
+            rb.gravityScale =
+                defaultGravityScale;
 
-        if (isGrounded && isOnWalkableSlope)
+            rb.linearVelocity =
+                new Vector2(
+                    0f,
+                    rb.linearVelocity.y
+                );
+
+            return;
+        }
+
+        float targetSpeed =
+            moveInput * moveSpeed;
+
+        bool hasMovementInput =
+            Mathf.Abs(moveInput) > 0.01f;
+
+        if (
+            isGrounded &&
+            isOnWalkableSlope
+        )
         {
             ApplySlopeMovement(
                 targetSpeed,
@@ -243,29 +269,31 @@ public class PlayerController2D : MonoBehaviour
         bool hasMovementInput
     )
     {
-        // Gravity must return to its normal value away from slopes so jumping,
-        // falling and flat-ground movement continue to behave normally.
-        rb.gravityScale = defaultGravityScale;
+        rb.gravityScale =
+            defaultGravityScale;
 
-        float currentHorizontalSpeed = rb.linearVelocity.x;
+        float currentHorizontalSpeed =
+            rb.linearVelocity.x;
 
-        float movementRate = GetMovementRate(
-            currentHorizontalSpeed,
-            hasMovementInput
-        );
+        float movementRate =
+            GetMovementRate(
+                currentHorizontalSpeed,
+                hasMovementInput
+            );
 
-        float newHorizontalSpeed = Mathf.MoveTowards(
-            currentHorizontalSpeed,
-            targetSpeed,
-            movementRate * Time.fixedDeltaTime
-        );
+        float newHorizontalSpeed =
+            Mathf.MoveTowards(
+                currentHorizontalSpeed,
+                targetSpeed,
+                movementRate *
+                Time.fixedDeltaTime
+            );
 
-        // Only horizontal velocity is replaced so vertical movement from gravity,
-        // jumping and falling remains intact.
-        rb.linearVelocity = new Vector2(
-            newHorizontalSpeed,
-            rb.linearVelocity.y
-        );
+        rb.linearVelocity =
+            new Vector2(
+                newHorizontalSpeed,
+                rb.linearVelocity.y
+            );
     }
 
     private void ApplySlopeMovement(
@@ -273,37 +301,39 @@ public class PlayerController2D : MonoBehaviour
         bool hasMovementInput
     )
     {
-        // Gravity would otherwise pull the player downhill even without input,
-        // so it is disabled while firmly grounded on a walkable slope.
         rb.gravityScale = 0f;
 
         if (!hasMovementInput)
         {
-            // Removing residual velocity keeps the player stationary at the point
-            // where movement input was released.
-            rb.linearVelocity = Vector2.zero;
+            rb.linearVelocity =
+                Vector2.zero;
+
             return;
         }
 
-        float currentSlopeSpeed = Vector2.Dot(
-            rb.linearVelocity,
-            slopeDirection
-        );
+        float currentSlopeSpeed =
+            Vector2.Dot(
+                rb.linearVelocity,
+                slopeDirection
+            );
 
-        float movementRate = GetMovementRate(
-            currentSlopeSpeed,
-            hasMovementInput
-        );
+        float movementRate =
+            GetMovementRate(
+                currentSlopeSpeed,
+                hasMovementInput
+            );
 
-        float newSlopeSpeed = Mathf.MoveTowards(
-            currentSlopeSpeed,
-            targetSpeed,
-            movementRate * Time.fixedDeltaTime
-        );
+        float newSlopeSpeed =
+            Mathf.MoveTowards(
+                currentSlopeSpeed,
+                targetSpeed,
+                movementRate *
+                Time.fixedDeltaTime
+            );
 
-        // Velocity follows the surface tangent so the player travels uphill and
-        // downhill instead of forcing purely horizontal movement into the slope.
-        rb.linearVelocity = slopeDirection * newSlopeSpeed;
+        rb.linearVelocity =
+            slopeDirection *
+            newSlopeSpeed;
     }
 
     private float GetMovementRate(
@@ -313,21 +343,18 @@ public class PlayerController2D : MonoBehaviour
     {
         if (!hasMovementInput)
         {
-            // Strong braking provides a short and predictable stopping distance.
             return deceleration;
         }
 
         if (
             Mathf.Abs(currentSpeed) > 0.01f &&
-            Mathf.Sign(moveInput) != Mathf.Sign(currentSpeed)
+            Mathf.Sign(moveInput) !=
+            Mathf.Sign(currentSpeed)
         )
         {
-            // Reversing must cancel existing momentum before travelling the other
-            // way, so it uses a stronger response than normal acceleration.
             return turnAcceleration;
         }
 
-        // Normal acceleration is used when starting or continuing in the same direction.
         return acceleration;
     }
 
@@ -338,19 +365,20 @@ public class PlayerController2D : MonoBehaviour
             return;
         }
 
-        if (isGrounded && rb != null)
+        if (
+            isGrounded &&
+            rb != null
+        )
         {
-            // Gravity is restored before jumping so the player immediately returns
-            // to normal airborne physics after leaving a slope.
-            rb.gravityScale = defaultGravityScale;
+            rb.gravityScale =
+                defaultGravityScale;
 
-            rb.linearVelocity = new Vector2(
-                rb.linearVelocity.x,
-                jumpForce
-            );
+            rb.linearVelocity =
+                new Vector2(
+                    rb.linearVelocity.x,
+                    jumpForce
+                );
 
-            // This records that the airborne movement came from a successful player jump.
-            // It lets jumping regenerate light without treating accidental falls the same way.
             isInPlayerControlledJump = true;
 
             Debug.Log(
@@ -359,31 +387,58 @@ public class PlayerController2D : MonoBehaviour
             );
         }
 
-        // Clearing the request after one physics attempt prevents an airborne jump
-        // press from being stored until the player lands.
         jumpQueued = false;
     }
 
-    public void OnMove(InputAction.CallbackContext context)
+    public void OnMove(
+        InputAction.CallbackContext context
+    )
     {
-        // Input is stored here and applied during FixedUpdate so Rigidbody changes
-        // remain synchronised with Unity's physics simulation.
-        Vector2 input = context.ReadValue<Vector2>();
-        moveInput = input.x;
+        Vector2 input =
+            context.ReadValue<Vector2>();
 
-        // This controller does not modify scale or left/right facing. The existing
-        // animation or facing system remains responsible for that behaviour.
+        if (
+            playerLightChannel != null &&
+            playerLightChannel.IsChanneling()
+        )
+        {
+            // Movement input is discarded while channeling rather than cancelling
+            // the channel and allowing movement on the same frame.
+            moveInput = 0f;
+            return;
+        }
+
+        moveInput = input.x;
     }
 
-    public void OnJump(InputAction.CallbackContext context)
+    public void OnJump(
+        InputAction.CallbackContext context
+    )
     {
         if (!context.performed)
         {
             return;
         }
 
-        // Jump requests are accepted only while grounded so a mid-air press cannot
-        // unexpectedly trigger another jump immediately after landing.
+        if (
+            playerLightChannel != null &&
+            playerLightChannel.IsChanneling()
+        )
+        {
+            // Jump input is ignored while channeling because healing requires the
+            // player to remain grounded and committed to the channel action.
+            jumpQueued = false;
+
+            if (showMovementDebugLogs)
+            {
+                Debug.Log(
+                    "Jump input was blocked because the player is channeling."
+                );
+            }
+
+            return;
+        }
+
         if (isGrounded)
         {
             jumpQueued = true;
@@ -398,39 +453,75 @@ public class PlayerController2D : MonoBehaviour
 
     public bool HasHorizontalMovementInput()
     {
-        // The light-resource system uses deliberate input instead of velocity alone.
-        // This prevents sliding, knockback, and moving platforms from generating light.
         return Mathf.Abs(moveInput) > 0.01f;
     }
 
     public bool IsInPlayerControlledJump()
     {
-        // This value is exposed as read-only so other systems can understand why
-        // the player is airborne without being able to alter the movement state.
         return isInPlayerControlledJump;
     }
 
     public bool IsGrounded()
     {
-        // This allows the resource and future channel systems to read the existing
-        // ground result instead of performing their own separate physics checks.
         return isGrounded;
     }
 
     public bool IsActivelyGeneratingLight()
     {
-        // Grounded running counts when horizontal input is deliberately held.
+        if (isChannelingLocked)
+        {
+            return false;
+        }
+
         bool isRunningWithInput =
             isGrounded &&
             HasHorizontalMovementInput();
 
-        // A successful player-triggered jump counts for the entire airborne period,
-        // including a vertical jump where no horizontal input is being held.
         bool isActivelyJumping =
             !isGrounded &&
             isInPlayerControlledJump;
 
-        return isRunningWithInput || isActivelyJumping;
+        return
+            isRunningWithInput ||
+            isActivelyJumping;
+    }
+
+    public void SetChannelingLocked(
+        bool shouldLock
+    )
+    {
+        // The channel script controls only whether movement can be accepted.
+        // Ground checks, gravity and the rest of the controller remain active.
+        isChannelingLocked =
+            shouldLock;
+
+        if (!shouldLock)
+        {
+            return;
+        }
+
+        moveInput = 0f;
+        jumpQueued = false;
+        isInPlayerControlledJump = false;
+
+        if (rb != null)
+        {
+            rb.gravityScale =
+                defaultGravityScale;
+
+            rb.linearVelocity =
+                new Vector2(
+                    0f,
+                    rb.linearVelocity.y
+                );
+        }
+
+        if (showMovementDebugLogs)
+        {
+            Debug.Log(
+                "Player movement and jumping were locked for channeling."
+            );
+        }
     }
 
     private void UpdateVisualSlopeRotation()
@@ -439,7 +530,9 @@ public class PlayerController2D : MonoBehaviour
         {
             if (showMovementDebugLogs)
             {
-                Debug.LogWarning("Slope Visual has not been assigned.");
+                Debug.LogWarning(
+                    "Slope Visual has not been assigned."
+                );
             }
 
             return;
@@ -447,31 +540,39 @@ public class PlayerController2D : MonoBehaviour
 
         float targetSlopeAngle = 0f;
 
-        if (isGrounded && isOnWalkableSlope)
+        if (
+            isGrounded &&
+            isOnWalkableSlope
+        )
         {
-            targetSlopeAngle = Mathf.Atan2(
-                slopeDirection.y,
-                slopeDirection.x
-            ) * Mathf.Rad2Deg;
+            targetSlopeAngle =
+                Mathf.Atan2(
+                    slopeDirection.y,
+                    slopeDirection.x
+                ) *
+                Mathf.Rad2Deg;
         }
 
-        // The slope information is useful while diagnosing movement, but keeping it
-        // behind a toggle prevents the Console from being flooded during other tests.
         if (showMovementDebugLogs)
         {
             Debug.Log(
                 "Grounded: " + isGrounded +
-                " | On slope: " + isOnWalkableSlope +
-                " | Detected angle: " + targetSlopeAngle +
-                " | Visual: " + slopeVisual.name
+                " | On slope: " +
+                isOnWalkableSlope +
+                " | Detected angle: " +
+                targetSlopeAngle +
+                " | Visual: " +
+                slopeVisual.name
             );
         }
 
-        // This direct assignment removes smoothing from the test so we can confirm
-        // whether the selected visual can be rotated at all by this script.
         slopeVisual.localRotation =
             slopeVisualBaseRotation *
-            Quaternion.Euler(0f, 0f, targetSlopeAngle);
+            Quaternion.Euler(
+                0f,
+                0f,
+                targetSlopeAngle
+            );
     }
 
     private void OnDrawGizmosSelected()
@@ -481,34 +582,38 @@ public class PlayerController2D : MonoBehaviour
             return;
         }
 
-        // The green circle visualises the area used to decide whether jumping is allowed.
         Gizmos.color = Color.green;
+
         Gizmos.DrawWireSphere(
             groundCheck.position,
             groundCheckRadius
         );
 
-        // The cyan line visualises the raycast used to determine the slope normal.
         Gizmos.color = Color.cyan;
+
         Gizmos.DrawLine(
             groundCheck.position,
             groundCheck.position +
-            Vector3.down * slopeCheckDistance
+            Vector3.down *
+            slopeCheckDistance
         );
     }
 
-    public void Pause(InputAction.CallbackContext context)
+    public void Pause(
+        InputAction.CallbackContext context
+    )
     {
         if (!context.started)
         {
             return;
         }
 
-        // Player Input receives the action, while PauseManager remains responsible
-        // for the actual menu and time-scale behaviour.
         if (Pauser == null)
         {
-            Debug.LogWarning("PauseManager could not be found.");
+            Debug.LogWarning(
+                "PauseManager could not be found."
+            );
+
             return;
         }
 
@@ -526,28 +631,26 @@ public class PlayerController2D : MonoBehaviour
 
     public void ResetMovementInput()
     {
-        // Stored input is cleared during respawn so movement and jump requests from
-        // before death cannot continue when control returns.
         moveInput = 0f;
         jumpQueued = false;
-
-        // A jump must not continue generating light after the player dies or respawns.
+        isChannelingLocked = false;
         isInPlayerControlledJump = false;
 
         if (rb != null)
         {
-            // Respawn restores gravity in case death happened while the player was
-            // standing on a slope with gravity temporarily disabled.
-            rb.gravityScale = defaultGravityScale;
-            rb.linearVelocity = Vector2.zero;
+            rb.gravityScale =
+                defaultGravityScale;
+
+            rb.linearVelocity =
+                Vector2.zero;
+
             rb.angularVelocity = 0f;
         }
 
         if (slopeVisual != null)
         {
-            // Respawn restores the visual's original prefab orientation so a slope
-            // angle cannot carry into the respawn location.
-            slopeVisual.localRotation = slopeVisualBaseRotation;
+            slopeVisual.localRotation =
+                slopeVisualBaseRotation;
         }
 
         Debug.Log(
