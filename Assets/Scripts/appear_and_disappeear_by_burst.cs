@@ -3,58 +3,60 @@ using System.Collections;
 
 public class appear_and_disappeear_by_burst : MonoBehaviour
 {
-    private SpriteRenderer[] spriteRenderers;
-    private Collider2D[] platformColliders;
-    private float disappeearing = 0.3f;
-    private Coroutine disappeearingCoroutine;
-    
+    [Header("Platform Collider")]
+    [SerializeField] private Collider2D platformCollider;
+
+    [Header("Disable")]
+    [SerializeField] private float disable = 0.5f;
+
+    private Coroutine disableCoroutine;
     private void Awake()
     {
-        spriteRenderers = GetComponentsInChildren<SpriteRenderer>();
-        platformColliders = GetComponentsInChildren<Collider2D>();
-    }
-
-    private void Start()
-    {
-        HidePlatform();
-    }
-
-    
-    public void ShowPlatform()
-    {
-        foreach (SpriteRenderer sprite in spriteRenderers)
+        if (platformCollider == null)
         {
-            sprite.enabled = true;
+            platformCollider = GetComponent<Collider2D>();
         }
 
-        foreach (Collider2D platformCollider in platformColliders)
-        {
-            platformCollider.enabled = true;
-        }
-        
-        if (disappeearingCoroutine != null)
-        {
-            StopCoroutine(disappeearingCoroutine);
-        }
+         enableCollider(false);
 
-            disappeearingCoroutine = StartCoroutine(becomehide());
+        SpriteRenderer[] sprites = GetComponentsInChildren<SpriteRenderer>(true);
+
+        foreach (SpriteRenderer sprite in sprites)
+        {
+            if (sprite != null)
+            {
+                sprite.enabled = true;
+                sprite.maskInteraction = SpriteMaskInteraction.VisibleInsideMask;
+            }
+        }
     }
 
-    private IEnumerator becomehide()
-    {
-        yield return new WaitForSeconds(disappeearing);
 
-        HidePlatform();
-        disappeearingCoroutine = null;
-    }
-
-    private void HidePlatform()
+    public void ActivatePlatform()
     {
-        
-        foreach (SpriteRenderer sprite in spriteRenderers)
+        enableCollider(true);
+
+        if (disableCoroutine != null)
         {
-            sprite.enabled = false;
+            StopCoroutine(disableCoroutine);
         }
 
+        disableCoroutine = StartCoroutine(TurnoffCollider());
+    }
+
+    private IEnumerator TurnoffCollider()
+    {
+        yield return new WaitForSeconds(disable);
+
+        enableCollider(false);
+        disableCoroutine = null;
+    }
+
+        private void enableCollider(bool enable)
+    {
+        if (platformCollider != null)
+        {
+            platformCollider.enabled = enable;
+        }
     }
 }
