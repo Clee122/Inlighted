@@ -18,7 +18,7 @@ public class HealthHUD : MonoBehaviour
     private Coroutine shakeRoutine;
 
     [Header("Health Regen Juice Overshoot")]
-    [SerializeField] private float overShotScale = 1.2f; //how big the health bumps up to before going back to og size when regening 
+    [SerializeField] private float overShotScale = 0.2f; //how big the health bumps up to before going back to og size when regening by %
     [SerializeField] private float overShotDuration = 0.3f; //how long it takes for it to bump up and settle
 
     private Vector3 originalScale;
@@ -84,7 +84,7 @@ public class HealthHUD : MonoBehaviour
 
     private void PlayOverShoot()
     {
-        if (overShootRoutine != null) ; //stops stacking of the overshoot
+        if (overShootRoutine != null) //stops stacking of the overshoot
         {
             StopCoroutine(overShootRoutine);
             rectTransform.localScale = originalScale; //resets scale before starting a fresh overshoot 
@@ -98,8 +98,9 @@ public class HealthHUD : MonoBehaviour
         float elapsed = 0f;
         while (elapsed < overShotDuration)
         {
-            float t = elapsed / overShotDuration; //0 - 1 over the duration 
-            float scaleAmount = Mathf.Sin(t * Mathf.PI) * (overShotScale - 1f); //quickly bumps upthen eases back down to original size using a bounce curve 
+            //0 - 1 over the duration  
+            float t = elapsed / overShotDuration; // t holds a fraction of 0 to 1 and is not mesured in seconds 
+            float scaleAmount = Mathf.Sin(t * Mathf.PI) * (overShotScale); //quickly bumps upthen eases back down to original size using a sin wave 
             rectTransform.localScale = originalScale * (1f + scaleAmount);
             elapsed += Time.deltaTime;
             yield return null;
