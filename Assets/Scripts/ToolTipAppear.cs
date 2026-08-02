@@ -14,6 +14,7 @@ public class ToolTipAppear : MonoBehaviour
     private void OnTriggerEnter2D(Collider2D other)
     {
         SpawnToolTip();
+        Debug.Log("Collided");
     }
 
     private void OnTriggerExit2D(Collider2D other)
