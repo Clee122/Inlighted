@@ -1,6 +1,6 @@
 using System;
-using UnityEngine;
 using System.Collections;
+using UnityEngine;
 using UnityEngine.UI;
 
 public class PlayerLifeSystem : MonoBehaviour
@@ -9,47 +9,52 @@ public class PlayerLifeSystem : MonoBehaviour
     [SerializeField] private int maxLives = 3;
     private int currentLives;
 
+    // The event remains static so Eladio's HUD can subscribe without needing a
+    // direct reference to the specific PlayerLifeSystem component.
+    public static event Action<int, int> OnLivesChanged;
+
     [Header("Damage Settings")]
     [SerializeField] private float invulnerabilityDuration = 1f;
 
     private bool isInvulnerable = false;
     private bool isDead = false;
 
-    [Header("Darkness Indicator settings")]
+    [Header("Darkness Indicator Settings")]
     public Image DarknessIndicator;
     private Color tempColor;
-    public float AMult; // set to 1/3
+
+    // This should normally be set to one divided by the maximum number of lives
+    // so each damage step increases the overlay by an equal amount.
+    public float AMult;
+
     private int DarknessDamage;
     private float ResetAlpha = 0.001f;
 
     private PlayerAnimationController playerAnimationController;
     private PlayerLightChannel playerLightChannel;
 
-    // Health UI and other feedback systems can listen to one shared event for
-    // damage, channel healing, checkpoints, and respawning.
-    public event Action<int, int> OnLivesChanged;
-
     private void Awake()
     {
-        // The animation controller is cached so the life system can request hurt feedback
-        // without directly managing the Animator states itself.
-        playerAnimationController = GetComponent<PlayerAnimationController>();
+        // The animation controller is cached so the life system can request hurt
+        // feedback without directly controlling Animator states itself.
+        playerAnimationController =
+            GetComponent<PlayerAnimationController>();
 
         // Damage and death must be able to interrupt channel healing immediately.
-        playerLightChannel = GetComponent<PlayerLightChannel>();
+        playerLightChannel =
+            GetComponent<PlayerLightChannel>();
     }
 
     private void Start()
     {
         currentLives = maxLives;
 
-        // This tracks how much darkness damage has been taken so the screen overlay can become darker.
-        // It is reset on start so the player begins each run with a clean visual state.
+        // Darkness damage begins at zero so each new run starts with a clean
+        // screen overlay rather than inheriting damage feedback.
         DarknessDamage = 0;
 
-        // The null check is important because UI references can break during merges or scene changes.
-        // If the darkness indicator is not assigned, the life system should still work instead of
-        // causing death/respawn to break.
+        // The life system must continue functioning even if a UI reference is
+        // temporarily missing because of a prefab or scene merge.
         if (DarknessIndicator != null)
         {
             tempColor = DarknessIndicator.color;
@@ -60,13 +65,15 @@ public class PlayerLifeSystem : MonoBehaviour
 
     public void TakeDamage(int amount)
     {
-        // Damage is ignored while dead or briefly invulnerable so the player does not lose multiple lives
-        // instantly from the same hazard.
+        // Damage is ignored while dead or briefly invulnerable so one hazard
+        // cannot remove several lives during the same contact.
         if (isDead || isInvulnerable)
+        {
             return;
+        }
 
-        // Only valid damage interrupts channeling. Damage attempts ignored by
-        // invulnerability do not repeatedly cancel a channel attempt.
+        // Only accepted damage interrupts channeling. Ignored damage attempts
+        // should not repeatedly cancel the player's healing attempt.
         if (playerLightChannel != null)
         {
             playerLightChannel.InterruptByDamage();
@@ -75,12 +82,18 @@ public class PlayerLifeSystem : MonoBehaviour
         currentLives -= amount;
         DarknessDamage += amount;
 
-        if (currentLives < 0)
-            currentLives = 0;
+        currentLives = Mathf.Clamp(
+            currentLives,
+            0,
+            maxLives
+        );
 
         NotifyLivesChanged();
 
-        Debug.Log("Player took damage. Lives left: " + currentLives);
+        Debug.Log(
+            "Player took damage. Lives left: " +
+            currentLives
+        );
 
         if (currentLives <= 0)
         {
@@ -88,11 +101,12 @@ public class PlayerLifeSystem : MonoBehaviour
         }
         else
         {
-            // The hurt animation only plays when the player survives the hit.
-            // The final hit should go into the death animation instead.
+            // The hurt animation plays only when the player survives the hit.
+            // The final hit should transition into death behaviour instead.
             if (playerAnimationController == null)
             {
-                playerAnimationController = GetComponent<PlayerAnimationController>();
+                playerAnimationController =
+                    GetComponent<PlayerAnimationController>();
             }
 
             if (playerAnimationController != null)
@@ -101,10 +115,14 @@ public class PlayerLifeSystem : MonoBehaviour
             }
             else
             {
-                Debug.LogWarning("PlayerAnimationController was not found, so hurt animation could not play.");
+                Debug.LogWarning(
+                    "PlayerAnimationController was not found, so the hurt animation could not play."
+                );
             }
 
-            StartCoroutine(InvulnerabilityCoroutine());
+            StartCoroutine(
+                InvulnerabilityCoroutine()
+            );
         }
 
         UpdateDarknessIndicator();
@@ -112,8 +130,8 @@ public class PlayerLifeSystem : MonoBehaviour
 
     public bool RestoreOneLife(string sourceName)
     {
-        // Channel healing restores health in whole-life steps because the current
-        // health system uses integer lives rather than partial health values.
+        // Channel healing restores complete lives because the current health
+        // system stores health as integers rather than partial values.
         if (isDead)
         {
             Debug.Log(
@@ -130,14 +148,15 @@ public class PlayerLifeSystem : MonoBehaviour
         }
 
         currentLives += 1;
+
         currentLives = Mathf.Clamp(
             currentLives,
             0,
             maxLives
         );
 
-        // Healing one life also removes one level of darkness feedback so the
-        // screen state continues to match the restored health value.
+        // Restoring one life also removes one darkness-overlay step so the visual
+        // damage feedback remains consistent with the player's actual health.
         DarknessDamage = Mathf.Max(
             0,
             DarknessDamage - 1
@@ -159,37 +178,55 @@ public class PlayerLifeSystem : MonoBehaviour
 
     private void Die()
     {
-        // This prevents death logic from running repeatedly if the player is already dead.
-        // Without this, respawn could be triggered multiple times by the same hazard.
+        // This prevents death and respawn logic from being started repeatedly
+        // by additional hazards after the player has already died.
         if (isDead)
+        {
             return;
+        }
 
         isDead = true;
         isInvulnerable = true;
+        currentLives = 0;
 
+        // Death permanently ends the active channel attempt. Respawning handles
+        // the later health and light restoration separately.
         if (playerLightChannel != null)
         {
             playerLightChannel.InterruptByDeath();
         }
 
+        NotifyLivesChanged();
+
         Debug.Log("Player died");
 
-        PlayerRespawn playerRespawn = GetComponent<PlayerRespawn>();
+        PlayerRespawn playerRespawn =
+            GetComponent<PlayerRespawn>();
 
-        // RespawnPlayer is called immediately because PlayerRespawn already shows the death UI
-        // at the start of its routine, then waits before moving the player back.
+        // PlayerRespawn already manages the death delay, UI and teleport, so the
+        // life system only needs to request that routine once.
         if (playerRespawn != null)
         {
             playerRespawn.RespawnPlayer();
+        }
+        else
+        {
+            Debug.LogWarning(
+                "PlayerRespawn was not found, so the player could not respawn."
+            );
         }
     }
 
     private IEnumerator InvulnerabilityCoroutine()
     {
-        // Temporary invulnerability keeps damage readable and fair, especially inside darkness zones
-        // where the player could otherwise take damage too quickly.
+        // Temporary invulnerability keeps repeated darkness damage readable and
+        // prevents the player from losing several lives almost instantly.
         isInvulnerable = true;
-        yield return new WaitForSeconds(invulnerabilityDuration);
+
+        yield return new WaitForSeconds(
+            invulnerabilityDuration
+        );
+
         isInvulnerable = false;
     }
 
@@ -215,21 +252,25 @@ public class PlayerLifeSystem : MonoBehaviour
 
     public void RestoreFullLives()
     {
-        // Respawn needs to reset both health and death state so the player can continue playing normally.
-        // This also lets the Animator leave the death state after the player has respawned.
+        // Respawning restores health and clears the death and invulnerability
+        // states so normal damage and animation behaviour can resume.
         currentLives = maxLives;
         isDead = false;
         isInvulnerable = false;
 
+        // The shared notification updates Eladio's HUD and any other health
+        // feedback system through the same event used by damage and healing.
         NotifyLivesChanged();
     }
 
     public void DarknessIndicatorReset()
     {
-        Debug.Log("reached code for alpha change");
+        Debug.Log(
+            "Reached darkness-indicator alpha reset."
+        );
 
-        // This resets the visual damage buildup after respawn so the screen does not stay dark
-        // after the player has been restored.
+        // Respawning and checkpoints clear accumulated darkness feedback so the
+        // screen does not remain dark after health has been restored.
         DarknessDamage = 0;
 
         if (DarknessIndicator != null)
@@ -241,8 +282,8 @@ public class PlayerLifeSystem : MonoBehaviour
 
     private void UpdateDarknessIndicator()
     {
-        // Damage and channel healing both change the darkness buildup, so this
-        // helper keeps the visual update consistent in either direction.
+        // Damage and channel healing both modify darkness buildup, so one helper
+        // keeps the visual alpha calculation consistent in either direction.
         if (DarknessIndicator == null)
         {
             return;
@@ -257,29 +298,44 @@ public class PlayerLifeSystem : MonoBehaviour
 
     private void NotifyLivesChanged()
     {
+        // All health changes pass through this method so the HUD receives one
+        // notification per change instead of duplicate event calls.
         OnLivesChanged?.Invoke(
             currentLives,
             maxLives
         );
     }
 
-    private void OnCollisionEnter2D(Collision2D collision)
+    private void OnCollisionEnter2D(
+        Collision2D collision
+    )
     {
-        // The dead pit instantly triggers death because falling into it should be treated as a fail state,
-        // not as normal tick damage from darkness.
-        if (collision.gameObject.tag == "dead pit")
+        // The dead pit is an immediate fail state rather than ordinary darkness
+        // damage, so it enters death behaviour directly.
+        if (collision.gameObject.CompareTag("dead pit"))
         {
             Die();
         }
     }
 
-    private void OnTriggerEnter2D(Collider2D collision)
+    private void OnTriggerEnter2D(
+        Collider2D collision
+    )
     {
-        if (collision.gameObject.tag == "check point")
+        if (collision.gameObject.CompareTag("check point"))
         {
+            // Checkpoints restore full health and clear the darkness overlay while
+            // notifying the HUD through the same shared event.
             currentLives = maxLives;
+            isDead = false;
+            isInvulnerable = false;
+
             DarknessIndicatorReset();
             NotifyLivesChanged();
+
+            Debug.Log(
+                "Checkpoint restored the player's lives."
+            );
         }
     }
 }
