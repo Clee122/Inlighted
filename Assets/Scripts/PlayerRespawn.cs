@@ -8,6 +8,8 @@ public class PlayerRespawn : MonoBehaviour
     [SerializeField] private float respawnDelay = 1f;
 
     private PlayerLifeSystem playerLifeSystem;
+    private PlayerLightResource playerLightResource;
+    private PlayerLightChannel playerLightChannel;
     private Rigidbody2D rb;
     private PlayerController2D playerController;
     private PlayerAnimationController playerAnimationController;
@@ -18,8 +20,11 @@ public class PlayerRespawn : MonoBehaviour
     private void Awake()
     {
         // These references are stored once because respawn needs to coordinate player health,
-        // movement, animation, and physics without making those systems handle respawn by themselves.
+        // light, movement, channeling, animation, and physics without making those systems
+        // handle the complete respawn process themselves.
         playerLifeSystem = GetComponent<PlayerLifeSystem>();
+        playerLightResource = GetComponent<PlayerLightResource>();
+        playerLightChannel = GetComponent<PlayerLightChannel>();
         rb = GetComponent<Rigidbody2D>();
         playerController = GetComponent<PlayerController2D>();
         playerAnimationController = GetComponent<PlayerAnimationController>();
@@ -30,6 +35,14 @@ public class PlayerRespawn : MonoBehaviour
         {
             DeathMessage.SetActive(false);
         }
+
+        if (playerLightResource == null)
+        {
+            Debug.LogError(
+                "PlayerRespawn could not find PlayerLightResource. " +
+                "Light will not be restored after respawning."
+            );
+        }
     }
 
     public void RespawnPlayer()
@@ -39,6 +52,15 @@ public class PlayerRespawn : MonoBehaviour
 
     private IEnumerator RespawnRoutine()
     {
+        Debug.Log("Player respawn routine started.");
+
+        // Respawning clears channel progress and pending refunds before health and
+        // light are restored to their full values.
+        if (playerLightChannel != null)
+        {
+            playerLightChannel.ResetForRespawn();
+        }
+
         // Showing the death message here gives feedback before the player is moved back.
         // If no death UI is assigned, the gameplay respawn should still continue normally.
         if (DeathMessage != null)
@@ -66,33 +88,52 @@ public class PlayerRespawn : MonoBehaviour
         if (respawnPoint != null)
         {
             transform.position = respawnPoint.position;
+
+            Debug.Log(
+                "Player moved to respawn point: " +
+                respawnPoint.name
+            );
+        }
+        else
+        {
+            Debug.LogWarning(
+                "No respawn point is assigned. The player could not be moved."
+            );
         }
 
-        // Clear velocity again after teleporting because physics/input can sometimes apply
-        // one more frame of movement before the respawn position fully settles.
+        // Velocity is cleared again after teleporting because physics or input may
+        // otherwise apply one additional frame of movement at the respawn position.
         if (rb != null)
         {
             rb.linearVelocity = Vector2.zero;
             rb.angularVelocity = 0f;
         }
 
-        // The life system handles restoring health and resetting the damage overlay,
-        // while this script only decides when that reset should happen.
+        // Health is fully restored after death so the player can retry the section.
         if (playerLifeSystem != null)
         {
             playerLifeSystem.DarknessIndicatorReset();
             playerLifeSystem.RestoreFullLives();
+
+            Debug.Log("Player health restored during respawn.");
+        }
+
+        // Respawning restores the complete light resource so the player can retry
+        // the section without being disadvantaged by the previous failed attempt.
+        if (playerLightResource != null)
+        {
+            playerLightResource.RestoreFullLight("Respawn");
         }
 
         if (playerAnimationController != null)
         {
-            // Respawn always resets the placeholder character to face the default/front direction,
+            // Respawn always resets CatMoth to face the default/right direction,
             // so the player does not reappear facing the direction they died in.
             playerAnimationController.ResetFacingDirection();
         }
 
-        // Waiting one frame before re-enabling movement helps avoid stored input or physics
-        // immediately pushing the player on the same frame they respawn.
+        // Waiting one frame before re-enabling movement helps prevent stored input
+        // or physics from immediately pushing the player after respawning.
         yield return null;
 
         if (rb != null)
@@ -113,12 +154,28 @@ public class PlayerRespawn : MonoBehaviour
         {
             DeathMessage.SetActive(false);
         }
+
+        Debug.Log("Player respawn routine completed.");
     }
 
     public void SetCheckpoint(Transform newCheckpoint)
     {
-        // This lets future checkpoint objects update where the player respawns
+        if (newCheckpoint == null)
+        {
+            Debug.LogWarning(
+                "PlayerRespawn received an empty checkpoint reference."
+            );
+
+            return;
+        }
+
+        // This lets checkpoint objects update where the player respawns
         // without needing to rewrite the respawn routine.
         respawnPoint = newCheckpoint;
+
+        Debug.Log(
+            "Respawn point updated to: " +
+            newCheckpoint.name
+        );
     }
 }
