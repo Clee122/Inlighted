@@ -6,6 +6,9 @@ public class PlayerAnimationController : MonoBehaviour
     [SerializeField] private Animator catMothAnimator;
     [SerializeField] private SpriteRenderer catMothSpriteRenderer;
 
+    [Header("Death Visual Priority")]
+    [SerializeField] private int deathOrderInLayer = 100;
+
     [Header("Movement Check")]
     [SerializeField] private Rigidbody2D playerRigidbody;
     [SerializeField] private float runningThreshold = 0.2f;
@@ -19,6 +22,9 @@ public class PlayerAnimationController : MonoBehaviour
     [SerializeField] private bool showDebugLogs = false;
 
     private PlayerLifeSystem playerLifeSystem;
+
+    private int originalOrderInLayer;
+    private int originalSortingLayerID;
 
     private void Awake()
     {
@@ -46,6 +52,16 @@ public class PlayerAnimationController : MonoBehaviour
         {
             catMothSpriteRenderer = GetComponentInChildren<SpriteRenderer>();
         }
+
+        if (catMothSpriteRenderer != null)
+        {
+            // The original sorting values are saved so death can briefly appear above darkness,
+            // then safely return to normal gameplay sorting after respawn.
+            originalOrderInLayer = catMothSpriteRenderer.sortingOrder;
+            originalSortingLayerID = catMothSpriteRenderer.sortingLayerID;
+        }
+
+        Debug.Log("ANIM CHECK 0: PlayerAnimationController Awake completed.");
     }
 
     private void Update()
@@ -54,7 +70,7 @@ public class PlayerAnimationController : MonoBehaviour
         {
             if (showDebugLogs)
             {
-                Debug.LogWarning("PlayerAnimationController is missing Animator or Rigidbody2D reference.");
+                Debug.LogWarning("ANIM CHECK FAILED: Missing Animator or Rigidbody2D reference.");
             }
 
             return;
@@ -75,10 +91,12 @@ public class PlayerAnimationController : MonoBehaviour
         if (showDebugLogs)
         {
             Debug.Log(
-                "Anim State | X Velocity: " + horizontalVelocity +
-                " | isRunning: " + isRunning +
-                " | isGrounded: " + isGrounded +
-                " | isDead: " + isDead
+                "ANIM CHECK: Animator target = " + catMothAnimator.gameObject.name +
+                " | X Velocity = " + horizontalVelocity +
+                " | isRunning = " + isRunning +
+                " | isGrounded = " + isGrounded +
+                " | isDead sent = " + isDead +
+                " | Animator isDead value = " + catMothAnimator.GetBool("isDead")
             );
         }
     }
@@ -110,12 +128,47 @@ public class PlayerAnimationController : MonoBehaviour
     public void ResetFacingDirection()
     {
         if (catMothSpriteRenderer == null)
+        {
+            Debug.LogWarning("ANIM CHECK FAILED: Cannot reset facing because CatMoth SpriteRenderer is missing.");
             return;
+        }
 
         // Respawn resets the CatMoth to face the default/right direction
         // so it does not keep facing the direction it died in.
-        // For this CatMoth asset, Flip X = false is the right/front direction.
         catMothSpriteRenderer.flipX = false;
+
+        Debug.Log("ANIM CHECK: CatMoth facing direction reset to default/right.");
+    }
+
+    public void SetDeathVisualPriority()
+    {
+        if (catMothSpriteRenderer == null)
+        {
+            Debug.LogWarning("ANIM CHECK FAILED: Cannot set death visual priority because CatMoth SpriteRenderer is missing.");
+            return;
+        }
+
+        // Death should briefly appear above darkness so the player can actually see
+        // the death animation before the respawn UI and teleport happen.
+        catMothSpriteRenderer.sortingOrder = deathOrderInLayer;
+
+        Debug.Log("ANIM CHECK: Death visual priority set. Order in Layer = " + deathOrderInLayer);
+    }
+
+    public void ResetVisualPriority()
+    {
+        if (catMothSpriteRenderer == null)
+        {
+            Debug.LogWarning("ANIM CHECK FAILED: Cannot reset visual priority because CatMoth SpriteRenderer is missing.");
+            return;
+        }
+
+        // Respawn restores the CatMoth's normal sorting so it does not permanently
+        // stay above darkness, platforms, or other level visuals after death.
+        catMothSpriteRenderer.sortingLayerID = originalSortingLayerID;
+        catMothSpriteRenderer.sortingOrder = originalOrderInLayer;
+
+        Debug.Log("ANIM CHECK: CatMoth visual priority reset to original order: " + originalOrderInLayer);
     }
 
     private bool CheckGrounded()
@@ -156,10 +209,11 @@ public class PlayerAnimationController : MonoBehaviour
             catMothAnimator.ResetTrigger("hurt");
             catMothAnimator.SetTrigger("hurt");
 
-            if (showDebugLogs)
-            {
-                Debug.Log("Hurt animation triggered");
-            }
+            Debug.Log("ANIM CHECK: Hurt animation trigger sent.");
+        }
+        else
+        {
+            Debug.LogWarning("ANIM CHECK FAILED: Cannot play hurt animation because CatMoth Animator is missing.");
         }
     }
 

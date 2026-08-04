@@ -1,0 +1,457 @@
+fileFormatVersion: 2
+guid: 79f3562c5dbd2e64493fe4a3ce7e6e5a
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -1889958840982596585
+    second: CatMoth Death_0
+  - first:
+      213: 3365951369826261290
+    second: CatMoth Death_1
+  - first:
+      213: -1864055007783267870
+    second: CatMoth Death_2
+  - first:
+      213: 6829205072532300391
+    second: CatMoth Death_3
+  - first:
+      213: 4182517013916018623
+    second: CatMoth Death_4
+  - first:
+      213: -626879653921567349
+    second: CatMoth Death_5
+  - first:
+      213: 1943483900081276220
+    second: CatMoth Death_6
+  - first:
+      213: -840651684625359385
+    second: CatMoth Death_7
+  - first:
+      213: 7651411938476350390
+    second: CatMoth Death_8
+  - first:
+      213: 7792189718473264047
+    second: CatMoth Death_9
+  - first:
+      213: -687644658124791419
+    second: CatMoth Death_10
+  - first:
+      213: -6177532398626629721
+    second: CatMoth Death_11
+  - first:
+      213: -2986968002828281262
+    second: CatMoth Death_12
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 800
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: CatMoth Death_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 3240
+        width: 1854
+        height: 1080
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7149f13927485c5e0800000000000000
+      internalID: -1889958840982596585
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CatMoth Death_1
+      rect:
+        serializedVersion: 2
+        x: 1854
+        y: 3240
+        width: 1854
+        height: 1080
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a29dbb1ffe246be20800000000000000
+      internalID: 3365951369826261290
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CatMoth Death_2
+      rect:
+        serializedVersion: 2
+        x: 3708
+        y: 3240
+        width: 1854
+        height: 1080
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2e15a4bb8db8126e0800000000000000
+      internalID: -1864055007783267870
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CatMoth Death_3
+      rect:
+        serializedVersion: 2
+        x: 5562
+        y: 3240
+        width: 1854
+        height: 1080
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 762659ea4d536ce50800000000000000
+      internalID: 6829205072532300391
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CatMoth Death_4
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 2160
+        width: 1854
+        height: 1080
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fb7ed7170194b0a30800000000000000
+      internalID: 4182517013916018623
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CatMoth Death_5
+      rect:
+        serializedVersion: 2
+        x: 1854
+        y: 2160
+        width: 1854
+        height: 1080
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b8dc51fa640ec47f0800000000000000
+      internalID: -626879653921567349
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CatMoth Death_6
+      rect:
+        serializedVersion: 2
+        x: 3708
+        y: 2160
+        width: 1854
+        height: 1080
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c3509036f44a8fa10800000000000000
+      internalID: 1943483900081276220
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CatMoth Death_7
+      rect:
+        serializedVersion: 2
+        x: 5562
+        y: 2160
+        width: 1854
+        height: 1080
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7ed521e2fb76554f0800000000000000
+      internalID: -840651684625359385
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CatMoth Death_8
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 1080
+        width: 1854
+        height: 1080
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6bbd01f7e964f2a60800000000000000
+      internalID: 7651411938476350390
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CatMoth Death_9
+      rect:
+        serializedVersion: 2
+        x: 1854
+        y: 1080
+        width: 1854
+        height: 1080
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fabcc00a34b632c60800000000000000
+      internalID: 7792189718473264047
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CatMoth Death_10
+      rect:
+        serializedVersion: 2
+        x: 3708
+        y: 1080
+        width: 1854
+        height: 1080
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 581e6c4a3def476f0800000000000000
+      internalID: -687644658124791419
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CatMoth Death_11
+      rect:
+        serializedVersion: 2
+        x: 5562
+        y: 1080
+        width: 1854
+        height: 1080
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7a7946f630ff44aa0800000000000000
+      internalID: -6177532398626629721
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CatMoth Death_12
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 1854
+        height: 1080
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 25a56f35d682c86d0800000000000000
+      internalID: -2986968002828281262
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: fbdd292cab6fd804090520844c2744f3
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries:
+      - key: SpriteEditor.SliceSettings
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":4.0,"y":4.0},"gridSpriteSize":{"x":1854.0,"y":1080.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":2,"keepEmptyRects":false,"isAlternate":false}'
+    nameFileIdTable:
+      CatMoth Death_0: -1889958840982596585
+      CatMoth Death_1: 3365951369826261290
+      CatMoth Death_10: -687644658124791419
+      CatMoth Death_11: -6177532398626629721
+      CatMoth Death_12: -2986968002828281262
+      CatMoth Death_2: -1864055007783267870
+      CatMoth Death_3: 6829205072532300391
+      CatMoth Death_4: 4182517013916018623
+      CatMoth Death_5: -626879653921567349
+      CatMoth Death_6: 1943483900081276220
+      CatMoth Death_7: -840651684625359385
+      CatMoth Death_8: 7651411938476350390
+      CatMoth Death_9: 7792189718473264047
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

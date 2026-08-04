@@ -7,6 +7,10 @@ public class PlayerRespawn : MonoBehaviour
     [SerializeField] private Transform respawnPoint;
     [SerializeField] private float respawnDelay = 1f;
 
+    [Header("Death Timing")]
+    [SerializeField] private float deathAnimationViewTime = 1f;
+    [SerializeField] private float deathMessageViewTime = 0.3f;
+
     private PlayerLifeSystem playerLifeSystem;
     private PlayerLightResource playerLightResource;
     private PlayerLightChannel playerLightChannel;
@@ -39,50 +43,80 @@ public class PlayerRespawn : MonoBehaviour
         if (playerLightResource == null)
         {
             Debug.LogError(
-                "PlayerRespawn could not find PlayerLightResource. " +
+                "RESPAWN CHECK FAILED: PlayerRespawn could not find PlayerLightResource. " +
                 "Light will not be restored after respawning."
             );
         }
+
+        Debug.Log("RESPAWN CHECK 0: PlayerRespawn Awake completed.");
     }
 
     public void RespawnPlayer()
     {
+        Debug.Log("RESPAWN CHECK 1: RespawnPlayer() was called.");
         StartCoroutine(RespawnRoutine());
     }
 
     private IEnumerator RespawnRoutine()
     {
-        Debug.Log("Player respawn routine started.");
+        Debug.Log("RESPAWN CHECK 2: RespawnRoutine() started.");
 
         // Respawning clears channel progress and pending refunds before health and
         // light are restored to their full values.
         if (playerLightChannel != null)
         {
+            Debug.Log("RESPAWN CHECK 3: Resetting light channel for respawn.");
             playerLightChannel.ResetForRespawn();
         }
-
-        // Showing the death message here gives feedback before the player is moved back.
-        // If no death UI is assigned, the gameplay respawn should still continue normally.
-        if (DeathMessage != null)
+        else
         {
-            DeathMessage.SetActive(true);
+            Debug.Log("RESPAWN CHECK 3: No PlayerLightChannel found. Skipping channel reset.");
         }
 
-        // Movement is disabled during death so held input cannot keep affecting the player
-        // while the death animation and respawn delay are happening.
+        // Movement is disabled immediately so the player cannot keep controlling
+        // the character while the death animation is being shown.
         if (playerController != null)
         {
+            Debug.Log("RESPAWN CHECK 4: Disabling PlayerController2D.");
             playerController.enabled = false;
+        }
+        else
+        {
+            Debug.LogWarning("RESPAWN CHECK 4 FAILED: PlayerController2D is missing.");
         }
 
         // Clearing velocity immediately stops any falling, jumping, or running momentum
-        // from continuing during the death state.
+        // from continuing during the visible death animation.
         if (rb != null)
         {
+            Debug.Log("RESPAWN CHECK 5: Clearing Rigidbody velocity before death animation wait.");
             rb.linearVelocity = Vector2.zero;
             rb.angularVelocity = 0f;
         }
+        else
+        {
+            Debug.LogWarning("RESPAWN CHECK 5 FAILED: Rigidbody2D is missing.");
+        }
 
+        Debug.Log("RESPAWN CHECK 6: Waiting for death animation view time: " + deathAnimationViewTime);
+        yield return new WaitForSeconds(deathAnimationViewTime);
+
+        // Showing the death message after the animation delay lets the player see the
+        // character death first, then receive respawn feedback.
+        if (DeathMessage != null)
+        {
+            Debug.Log("RESPAWN CHECK 7: DeathMessage found. Showing death message.");
+            DeathMessage.SetActive(true);
+        }
+        else
+        {
+            Debug.LogWarning("RESPAWN CHECK 7 FAILED: DeathMessage is not assigned in the Inspector.");
+        }
+
+        Debug.Log("RESPAWN CHECK 8: Waiting for death message view time: " + deathMessageViewTime);
+        yield return new WaitForSeconds(deathMessageViewTime);
+
+        Debug.Log("RESPAWN CHECK 9: Waiting for respawn delay: " + respawnDelay);
         yield return new WaitForSeconds(respawnDelay);
 
         if (respawnPoint != null)
@@ -90,14 +124,14 @@ public class PlayerRespawn : MonoBehaviour
             transform.position = respawnPoint.position;
 
             Debug.Log(
-                "Player moved to respawn point: " +
+                "RESPAWN CHECK 10: Player moved to respawn point: " +
                 respawnPoint.name
             );
         }
         else
         {
             Debug.LogWarning(
-                "No respawn point is assigned. The player could not be moved."
+                "RESPAWN CHECK 10 FAILED: No respawn point is assigned. The player could not be moved."
             );
         }
 
@@ -105,6 +139,7 @@ public class PlayerRespawn : MonoBehaviour
         // otherwise apply one additional frame of movement at the respawn position.
         if (rb != null)
         {
+            Debug.Log("RESPAWN CHECK 11: Clearing Rigidbody velocity after teleport.");
             rb.linearVelocity = Vector2.zero;
             rb.angularVelocity = 0f;
         }
@@ -112,24 +147,37 @@ public class PlayerRespawn : MonoBehaviour
         // Health is fully restored after death so the player can retry the section.
         if (playerLifeSystem != null)
         {
+            Debug.Log("RESPAWN CHECK 12: Resetting darkness indicator and restoring lives.");
             playerLifeSystem.DarknessIndicatorReset();
             playerLifeSystem.RestoreFullLives();
 
-            Debug.Log("Player health restored during respawn.");
+            Debug.Log("RESPAWN CHECK 12 COMPLETE: Player health restored during respawn.");
+        }
+        else
+        {
+            Debug.LogWarning("RESPAWN CHECK 12 FAILED: PlayerLifeSystem is missing.");
         }
 
         // Respawning restores the complete light resource so the player can retry
         // the section without being disadvantaged by the previous failed attempt.
         if (playerLightResource != null)
         {
+            Debug.Log("RESPAWN CHECK 13: Restoring full light resource.");
             playerLightResource.RestoreFullLight("Respawn");
+        }
+        else
+        {
+            Debug.LogWarning("RESPAWN CHECK 13 FAILED: PlayerLightResource is missing.");
         }
 
         if (playerAnimationController != null)
         {
-            // Respawn always resets CatMoth to face the default/right direction,
-            // so the player does not reappear facing the direction they died in.
+            Debug.Log("RESPAWN CHECK 14: Resetting CatMoth facing direction.");
             playerAnimationController.ResetFacingDirection();
+        }
+        else
+        {
+            Debug.LogWarning("RESPAWN CHECK 14 FAILED: PlayerAnimationController is missing.");
         }
 
         // Waiting one frame before re-enabling movement helps prevent stored input
@@ -138,24 +186,29 @@ public class PlayerRespawn : MonoBehaviour
 
         if (rb != null)
         {
+            Debug.Log("RESPAWN CHECK 15: Final velocity clear before movement is re-enabled.");
             rb.linearVelocity = Vector2.zero;
             rb.angularVelocity = 0f;
         }
 
         if (playerController != null)
         {
-            // Reset input before re-enabling movement so the player does not continue
-            // running or jumping from input held before death.
+            Debug.Log("RESPAWN CHECK 16: Resetting movement input and re-enabling PlayerController2D.");
             playerController.ResetMovementInput();
             playerController.enabled = true;
+        }
+        else
+        {
+            Debug.LogWarning("RESPAWN CHECK 16 FAILED: PlayerController2D is missing.");
         }
 
         if (DeathMessage != null)
         {
+            Debug.Log("RESPAWN CHECK 17: Hiding death message.");
             DeathMessage.SetActive(false);
         }
 
-        Debug.Log("Player respawn routine completed.");
+        Debug.Log("RESPAWN CHECK 18: RespawnRoutine() completed.");
     }
 
     public void SetCheckpoint(Transform newCheckpoint)
@@ -163,7 +216,7 @@ public class PlayerRespawn : MonoBehaviour
         if (newCheckpoint == null)
         {
             Debug.LogWarning(
-                "PlayerRespawn received an empty checkpoint reference."
+                "RESPAWN CHECKPOINT FAILED: PlayerRespawn received an empty checkpoint reference."
             );
 
             return;
@@ -174,7 +227,7 @@ public class PlayerRespawn : MonoBehaviour
         respawnPoint = newCheckpoint;
 
         Debug.Log(
-            "Respawn point updated to: " +
+            "RESPAWN CHECKPOINT: Respawn point updated to: " +
             newCheckpoint.name
         );
     }
