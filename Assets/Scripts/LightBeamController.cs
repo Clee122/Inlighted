@@ -24,10 +24,6 @@ public class LightBeamController : MonoBehaviour
     [SerializeField] private GameObject beamIndicatorVisual;
     [SerializeField] private GameObject beamVisual;
 
-    // The Particle System is controlled directly so every Beam activation
-    // begins cleanly instead of reusing particles from an earlier shot.
-    private ParticleSystem beamParticleSystem;
-
     private bool isAiming = false;
     private bool isBeamActive = false;
     private bool isOnCooldown = false;
@@ -35,6 +31,8 @@ public class LightBeamController : MonoBehaviour
     private Coroutine beamCoroutine;
     private Coroutine cooldownCoroutine;
 
+    // These values contain the current aiming result while the red indicator
+    // follows the mouse and shortens when it encounters a wall.
     private Vector2 lastBeamCenter;
     private Vector2 lastBeamSize;
 
@@ -42,6 +40,17 @@ public class LightBeamController : MonoBehaviour
         Vector2.right;
 
     private float lastBeamAngle = 0f;
+
+    // These values capture the final aiming result when the player confirms
+    // the shot so the active Beam cannot move or rotate with the mouse.
+    private Vector2 lockedBeamCenter;
+    private Vector2 lockedBeamSize;
+
+    private Vector2 lockedBeamDirection =
+        Vector2.right;
+
+    private float lockedBeamAngle = 0f;
+    private Vector2 lockedBeamOrigin;
 
     private Camera mainCamera;
     private PlayerAbilityUnlocks abilityUnlocks;
@@ -73,8 +82,8 @@ public class LightBeamController : MonoBehaviour
 
         if (beamIndicatorVisual != null)
         {
-            // The aiming indicator is detached because the script controls its
-            // world position and rotation independently from the player.
+            // The indicator is detached because the script controls its world
+            // position independently while the player continues moving.
             beamIndicatorVisual.transform.SetParent(
                 null,
                 true
@@ -88,8 +97,8 @@ public class LightBeamController : MonoBehaviour
 
         if (beamVisual != null)
         {
-            // Beam Visual should be a neutral pivot object. The imported VFX
-            // remains as its child so it can keep its required local rotation.
+            // The fired Beam is detached so it can remain fixed at the position
+            // where the player confirmed the shot.
             beamVisual.transform.SetParent(
                 null,
                 true
@@ -97,36 +106,6 @@ public class LightBeamController : MonoBehaviour
 
             beamVisual.transform.localScale =
                 Vector3.one;
-
-            // The prefab stores its Particle System inside the hierarchy rather
-            // than directly on the Beam Visual pivot.
-            beamParticleSystem =
-                beamVisual.GetComponentInChildren<ParticleSystem>(
-                    true
-                );
-
-            if (beamParticleSystem == null)
-            {
-                Debug.LogError(
-                    "LightBeamController could not find a ParticleSystem inside " +
-                    beamVisual.name +
-                    "."
-                );
-            }
-            else
-            {
-                // The script controls playback so the imported effect does not
-                // remain active before the player fires the ability.
-                beamParticleSystem.Stop(
-                    true,
-                    ParticleSystemStopBehavior.StopEmittingAndClear
-                );
-
-                Debug.Log(
-                    "LightBeamController found Particle System: " +
-                    beamParticleSystem.gameObject.name
-                );
-            }
 
             beamVisual.SetActive(false);
         }
@@ -144,6 +123,8 @@ public class LightBeamController : MonoBehaviour
             return;
         }
 
+        // The aiming preview is recalculated only while aiming. Once the player
+        // fires, Update stops changing the Beam trajectory.
         UpdateBeamPreview(
             beamIndicatorVisual
         );
@@ -366,6 +347,26 @@ public class LightBeamController : MonoBehaviour
             return;
         }
 
+        // The final red indicator result becomes the fixed fired trajectory.
+        // The active Beam will continue using these values even if the player
+        // moves the mouse or changes position after confirming the shot.
+        lockedBeamCenter =
+            lastBeamCenter;
+
+        lockedBeamSize =
+            lastBeamSize;
+
+        lockedBeamDirection =
+            lastBeamDirection;
+
+        lockedBeamAngle =
+            lastBeamAngle;
+
+        lockedBeamOrigin =
+            beamOrigin != null
+                ? (Vector2)beamOrigin.position
+                : (Vector2)transform.position;
+
         isAiming = false;
 
         if (beamIndicatorVisual != null)
@@ -400,7 +401,8 @@ public class LightBeamController : MonoBehaviour
         Debug.Log(
             "Light Beam successfully fired after spending " +
             lightCost.ToString("0.0") +
-            " light."
+            " light. Locked length: " +
+            lockedBeamSize.x.ToString("0.00")
         );
     }
 
@@ -412,37 +414,23 @@ public class LightBeamController : MonoBehaviour
         {
             beamVisual.SetActive(true);
 
-            if (beamParticleSystem != null)
-            {
-                // Clearing existing particles ensures every shot begins from
-                // the start of the effect instead of continuing an older shot.
-                beamParticleSystem.Stop(
-                    true,
-                    ParticleSystemStopBehavior.StopEmittingAndClear
-                );
-
-                beamParticleSystem.Play(
-                    true
-                );
-
-                Debug.Log(
-                    "Light Beam Particle System started."
-                );
-            }
+            // The yellow Beam is positioned once using the locked indicator
+            // result instead of being recalculated from the mouse every frame.
+            ApplyLockedBeamVisual();
         }
 
+        // Gameplay detection uses the same locked dimensions as the visual so
+        // darkness dispelling remains aligned with the yellow Beam.
+        ApplyLockedBeamCollisionValues();
+
         Debug.Log(
-            "Light beam active"
+            "Light beam active with locked trajectory."
         );
 
         float timer = 0f;
 
         while (timer < beamActiveDuration)
         {
-            UpdateBeamPreview(
-                beamVisual
-            );
-
             DispelDarknessInBeam();
             CheckLightGateInBeam();
 
@@ -458,23 +446,13 @@ public class LightBeamController : MonoBehaviour
 
         if (beamVisual != null)
         {
-            if (beamParticleSystem != null)
-            {
-                // The effect is cleared when gameplay detection ends so the
-                // visible Beam cannot remain after it stops affecting darkness.
-                beamParticleSystem.Stop(
-                    true,
-                    ParticleSystemStopBehavior.StopEmittingAndClear
-                );
-            }
-
             beamVisual.SetActive(false);
         }
 
         beamCoroutine = null;
 
         Debug.Log(
-            "Light beam ended"
+            "Light beam ended."
         );
     }
 
@@ -521,38 +499,10 @@ public class LightBeamController : MonoBehaviour
         lastBeamDirection = direction;
         lastBeamAngle = angle;
 
-        if (visualObject == null)
+        if (visualObject != null)
         {
-            return;
-        }
-
-        if (visualObject == beamVisual)
-        {
-            // The fired VFX pivot remains exactly at Beam Origin so the visible
-            // Beam starts from the player instead of being centred over them.
             visualObject.transform.position =
                 originPosition;
-
-            // The neutral pivot rotates towards the mouse. Any special imported
-            // rotation, such as X -90, stays on the child VFX object.
-            visualObject.transform.rotation =
-                Quaternion.Euler(
-                    0f,
-                    0f,
-                    angle
-                );
-
-            // The Particle System is not stretched or moved halfway forwards
-            // because it needs to emit outward from the Beam Origin.
-            visualObject.transform.localScale =
-                Vector3.one;
-        }
-        else
-        {
-            // The aiming indicator uses a centred sprite, so it must sit halfway
-            // between the player and the final Beam endpoint.
-            visualObject.transform.position =
-                boxCenter;
 
             visualObject.transform.rotation =
                 Quaternion.Euler(
@@ -567,7 +517,67 @@ public class LightBeamController : MonoBehaviour
                     beamWidth,
                     1f
                 );
+
+            // The indicator uses a centred sprite, so it is moved halfway along
+            // the calculated range to begin at the player and end at the wall.
+            visualObject.transform.Translate(
+                Vector3.right *
+                (actualRange * 0.5f),
+                Space.Self
+            );
         }
+    }
+
+    private void ApplyLockedBeamVisual()
+    {
+        if (beamVisual == null)
+        {
+            return;
+        }
+
+        // The fired visual copies the exact origin and angle used by the final
+        // aiming indicator rather than following the current mouse position.
+        beamVisual.transform.position =
+            lockedBeamOrigin;
+
+        beamVisual.transform.rotation =
+            Quaternion.Euler(
+                0f,
+                0f,
+                lockedBeamAngle
+            );
+
+        beamVisual.transform.localScale =
+            new Vector3(
+                lockedBeamSize.x,
+                lockedBeamSize.y,
+                1f
+            );
+
+        // The Beam Visual uses the same centred-sprite arrangement as the
+        // indicator, keeping both visuals the same size, shape and length.
+        beamVisual.transform.Translate(
+            Vector3.right *
+            (lockedBeamSize.x * 0.5f),
+            Space.Self
+        );
+    }
+
+    private void ApplyLockedBeamCollisionValues()
+    {
+        // Existing darkness and gate checks use the lastBeam values. Replacing
+        // them with the locked result keeps gameplay fixed throughout the shot.
+        lastBeamCenter =
+            lockedBeamCenter;
+
+        lastBeamSize =
+            lockedBeamSize;
+
+        lastBeamDirection =
+            lockedBeamDirection;
+
+        lastBeamAngle =
+            lockedBeamAngle;
     }
 
     private Vector2 GetMouseAimDirection(
@@ -667,7 +677,7 @@ public class LightBeamController : MonoBehaviour
         isOnCooldown = true;
 
         Debug.Log(
-            "Light beam cooldown started"
+            "Light beam cooldown started."
         );
 
         yield return new WaitForSeconds(
@@ -678,7 +688,7 @@ public class LightBeamController : MonoBehaviour
         cooldownCoroutine = null;
 
         Debug.Log(
-            "Light beam cooldown ended"
+            "Light beam cooldown ended."
         );
     }
 
@@ -833,8 +843,8 @@ public class LightBeamController : MonoBehaviour
             .CallbackContext context
     )
     {
-        // This remains available so existing Player Input event references do
-        // not break even though the Beam now uses direct mouse aiming.
+        // No longer needed for mouse aiming, but kept so existing Player Input
+        // events do not break.
     }
 
     private void CheckLightGateInBeam()
