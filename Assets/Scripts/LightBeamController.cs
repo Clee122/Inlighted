@@ -24,6 +24,10 @@ public class LightBeamController : MonoBehaviour
     [SerializeField] private GameObject beamIndicatorVisual;
     [SerializeField] private GameObject beamVisual;
 
+    // The Particle System is controlled directly so every Beam activation
+    // begins cleanly instead of reusing particles from an earlier shot.
+    private ParticleSystem beamParticleSystem;
+
     private bool isAiming = false;
     private bool isBeamActive = false;
     private bool isOnCooldown = false;
@@ -33,6 +37,7 @@ public class LightBeamController : MonoBehaviour
 
     private Vector2 lastBeamCenter;
     private Vector2 lastBeamSize;
+
     private Vector2 lastBeamDirection =
         Vector2.right;
 
@@ -68,6 +73,8 @@ public class LightBeamController : MonoBehaviour
 
         if (beamIndicatorVisual != null)
         {
+            // The aiming indicator is detached because the script controls its
+            // world position and rotation independently from the player.
             beamIndicatorVisual.transform.SetParent(
                 null,
                 true
@@ -81,6 +88,8 @@ public class LightBeamController : MonoBehaviour
 
         if (beamVisual != null)
         {
+            // Beam Visual should be a neutral pivot object. The imported VFX
+            // remains as its child so it can keep its required local rotation.
             beamVisual.transform.SetParent(
                 null,
                 true
@@ -88,6 +97,36 @@ public class LightBeamController : MonoBehaviour
 
             beamVisual.transform.localScale =
                 Vector3.one;
+
+            // The prefab stores its Particle System inside the hierarchy rather
+            // than directly on the Beam Visual pivot.
+            beamParticleSystem =
+                beamVisual.GetComponentInChildren<ParticleSystem>(
+                    true
+                );
+
+            if (beamParticleSystem == null)
+            {
+                Debug.LogError(
+                    "LightBeamController could not find a ParticleSystem inside " +
+                    beamVisual.name +
+                    "."
+                );
+            }
+            else
+            {
+                // The script controls playback so the imported effect does not
+                // remain active before the player fires the ability.
+                beamParticleSystem.Stop(
+                    true,
+                    ParticleSystemStopBehavior.StopEmittingAndClear
+                );
+
+                Debug.Log(
+                    "LightBeamController found Particle System: " +
+                    beamParticleSystem.gameObject.name
+                );
+            }
 
             beamVisual.SetActive(false);
         }
@@ -372,6 +411,24 @@ public class LightBeamController : MonoBehaviour
         if (beamVisual != null)
         {
             beamVisual.SetActive(true);
+
+            if (beamParticleSystem != null)
+            {
+                // Clearing existing particles ensures every shot begins from
+                // the start of the effect instead of continuing an older shot.
+                beamParticleSystem.Stop(
+                    true,
+                    ParticleSystemStopBehavior.StopEmittingAndClear
+                );
+
+                beamParticleSystem.Play(
+                    true
+                );
+
+                Debug.Log(
+                    "Light Beam Particle System started."
+                );
+            }
         }
 
         Debug.Log(
@@ -392,16 +449,25 @@ public class LightBeamController : MonoBehaviour
             timer +=
                 beamCheckInterval;
 
-            yield return
-                new WaitForSeconds(
-                    beamCheckInterval
-                );
+            yield return new WaitForSeconds(
+                beamCheckInterval
+            );
         }
 
         isBeamActive = false;
 
         if (beamVisual != null)
         {
+            if (beamParticleSystem != null)
+            {
+                // The effect is cleared when gameplay detection ends so the
+                // visible Beam cannot remain after it stops affecting darkness.
+                beamParticleSystem.Stop(
+                    true,
+                    ParticleSystemStopBehavior.StopEmittingAndClear
+                );
+            }
+
             beamVisual.SetActive(false);
         }
 
@@ -455,10 +521,38 @@ public class LightBeamController : MonoBehaviour
         lastBeamDirection = direction;
         lastBeamAngle = angle;
 
-        if (visualObject != null)
+        if (visualObject == null)
         {
+            return;
+        }
+
+        if (visualObject == beamVisual)
+        {
+            // The fired VFX pivot remains exactly at Beam Origin so the visible
+            // Beam starts from the player instead of being centred over them.
             visualObject.transform.position =
                 originPosition;
+
+            // The neutral pivot rotates towards the mouse. Any special imported
+            // rotation, such as X -90, stays on the child VFX object.
+            visualObject.transform.rotation =
+                Quaternion.Euler(
+                    0f,
+                    0f,
+                    angle
+                );
+
+            // The Particle System is not stretched or moved halfway forwards
+            // because it needs to emit outward from the Beam Origin.
+            visualObject.transform.localScale =
+                Vector3.one;
+        }
+        else
+        {
+            // The aiming indicator uses a centred sprite, so it must sit halfway
+            // between the player and the final Beam endpoint.
+            visualObject.transform.position =
+                boxCenter;
 
             visualObject.transform.rotation =
                 Quaternion.Euler(
@@ -473,12 +567,6 @@ public class LightBeamController : MonoBehaviour
                     beamWidth,
                     1f
                 );
-
-            visualObject.transform.Translate(
-                Vector3.right *
-                (actualRange * 0.5f),
-                Space.Self
-            );
         }
     }
 
@@ -582,10 +670,9 @@ public class LightBeamController : MonoBehaviour
             "Light beam cooldown started"
         );
 
-        yield return
-            new WaitForSeconds(
-                beamCooldown
-            );
+        yield return new WaitForSeconds(
+            beamCooldown
+        );
 
         isOnCooldown = false;
         cooldownCoroutine = null;
@@ -746,8 +833,8 @@ public class LightBeamController : MonoBehaviour
             .CallbackContext context
     )
     {
-        // No longer needed for mouse aiming, but kept so existing Player Input
-        // events do not break.
+        // This remains available so existing Player Input event references do
+        // not break even though the Beam now uses direct mouse aiming.
     }
 
     private void CheckLightGateInBeam()
@@ -763,8 +850,7 @@ public class LightBeamController : MonoBehaviour
         foreach (Collider2D hit in hits)
         {
             spawn_platform gate =
-                hit.GetComponentInParent
-                <spawn_platform>();
+                hit.GetComponentInParent<spawn_platform>();
 
             if (gate != null)
             {
