@@ -224,7 +224,7 @@ GameObject:
   - component: {fileID: 7655028678954374869}
   - component: {fileID: 206950330458505285}
   m_Layer: 6
-  m_Name: Player Light Glow
+  m_Name: PlayerLightGlow
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -493,6 +493,7 @@ Transform:
   - {fileID: 684125697628875248}
   - {fileID: 2672677469397855562}
   - {fileID: 7655028678954374869}
+  - {fileID: 3181116454793184628}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &4475843189792088534
@@ -801,22 +802,6 @@ MonoBehaviour:
     m_ActionId: 404c45a5-a185-41d2-a917-b0c861efc2f7
     m_ActionName: 'Player/Beam[/Keyboard/e]'
   - m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1333727836847387598}
-        m_TargetAssemblyTypeName: PlayerAbilityUnlocks, Assembly-CSharp
-        m_MethodName: OnInteract
-        m_Mode: 0
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-    m_ActionId: 4449d40a-a024-4afc-8b35-64fcef5921c9
-    m_ActionName: Player/Interact1
-  - m_PersistentCalls:
       m_Calls: []
     m_ActionId: 2fef7768-73ed-42d5-82f7-7cd70c1b8b1e
     m_ActionName: 'Player/Zoom[/Mouse/scroll]'
@@ -834,8 +819,24 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-    m_ActionId: e21b8995-aa19-485d-96ff-9924b8485bef
+    m_ActionId: 7df90b09-0f94-488c-94c9-a0826f159af3
     m_ActionName: 'Player/Channel[/Keyboard/q]'
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1333727836847387598}
+        m_TargetAssemblyTypeName: PlayerAbilityUnlocks, Assembly-CSharp
+        m_MethodName: OnInteract
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_ActionId: 9ccdcf1b-87c1-4a8c-afd4-bb7fd19423c0
+    m_ActionName: 'Player/Interact1[/Keyboard/c]'
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: 
   m_DefaultActionMap: Player
@@ -899,8 +900,63 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LightBurstController
   burstDuration: 1
+  burstExpansionDuration: 1
+  startingBurstRadius: 0.2
+  burstExpansionCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 0.25
+      value: 0.5
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 0.5
+      value: 0.8
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 0.75
+      value: 0.95
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
   lightCost: 25
-  burstVisual: {fileID: 7726757575506062778}
+  burstVisual: {fileID: 0}
+  burstWallVisual: {fileID: 6800330690928581940}
+  revealMask: {fileID: 0}
   burstDispelRadius: 3
   darknessLayer:
     serializedVersion: 2
@@ -908,6 +964,11 @@ MonoBehaviour:
   GroundLayer:
     serializedVersion: 2
     m_Bits: 0
+  wallLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  showBurstDebug: 1
+  debugCircleSegments: 48
 --- !u!114 &6434395042197927662
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -922,6 +983,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerRespawn
   respawnPoint: {fileID: 0}
   respawnDelay: 1
+  deathAnimationViewTime: 1
+  deathMessageViewTime: 0.3
   DeathMessage: {fileID: 0}
 --- !u!114 &6088018624262454599
 MonoBehaviour:
@@ -992,6 +1055,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerAnimationController
   catMothAnimator: {fileID: 5175401410128997756}
   catMothSpriteRenderer: {fileID: 2999778295786663979}
+  deathOrderInLayer: 100
   playerRigidbody: {fileID: 5995141665719187509}
   runningThreshold: 0.2
   groundCheckPoint: {fileID: 2408163920154985248}
@@ -1063,6 +1127,125 @@ MonoBehaviour:
   fullLightRadius: 3.5
   visualChangeSpeed: 5
   showDebugLogs: 1
+--- !u!1 &6800330690928581940
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3181116454793184628}
+  - component: {fileID: 6234619811285507208}
+  - component: {fileID: 8933161621390092127}
+  - component: {fileID: 6083030327508842627}
+  m_Layer: 6
+  m_Name: BurstWallMesh
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3181116454793184628
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6800330690928581940}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8007050867395820475}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!33 &6234619811285507208
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6800330690928581940}
+  m_Mesh: {fileID: 0}
+--- !u!23 &8933161621390092127
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6800330690928581940}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: 14e07990ad9f9244b938238e478a8b0c, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_MaskInteraction: 0
+  m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &6083030327508842627
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6800330690928581940}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 291f30e1b704a68409142a9c94372c78, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LightBurstWallMesh
+  lightBurstController: {fileID: -5335877252066859057}
+  wallLayer:
+    serializedVersion: 2
+    m_Bits: 128
+  wallOverlap: 0.03
+  rayOriginVerticalOffset: 0.2
+  rayCount: 96
+  ringThickness: 0.15
+  edgeRefinementDepth: 4
+  edgeDistanceThreshold: 0.2
+  innerGlowDistance: 3
+  nearGlowAlpha: 0.18
+  middleGlowAlpha: 0.08
+  faintGlowAlpha: 0.02
+  showWallRays: 0
+  showAdaptiveRays: 0
 --- !u!1 &7726757575506062778
 GameObject:
   m_ObjectHideFlags: 0
