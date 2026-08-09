@@ -31,12 +31,26 @@ public class LightBeamController : MonoBehaviour
     private Coroutine beamCoroutine;
     private Coroutine cooldownCoroutine;
 
+    // These values contain the current aiming result while the red indicator
+    // follows the mouse and shortens when it encounters a wall.
     private Vector2 lastBeamCenter;
     private Vector2 lastBeamSize;
+
     private Vector2 lastBeamDirection =
         Vector2.right;
 
     private float lastBeamAngle = 0f;
+
+    // These values capture the final aiming result when the player confirms
+    // the shot so the active Beam cannot move or rotate with the mouse.
+    private Vector2 lockedBeamCenter;
+    private Vector2 lockedBeamSize;
+
+    private Vector2 lockedBeamDirection =
+        Vector2.right;
+
+    private float lockedBeamAngle = 0f;
+    private Vector2 lockedBeamOrigin;
 
     private Camera mainCamera;
     private PlayerAbilityUnlocks abilityUnlocks;
@@ -68,6 +82,8 @@ public class LightBeamController : MonoBehaviour
 
         if (beamIndicatorVisual != null)
         {
+            // The indicator is detached because the script controls its world
+            // position independently while the player continues moving.
             beamIndicatorVisual.transform.SetParent(
                 null,
                 true
@@ -81,6 +97,8 @@ public class LightBeamController : MonoBehaviour
 
         if (beamVisual != null)
         {
+            // The fired Beam is detached so it can remain fixed at the position
+            // where the player confirmed the shot.
             beamVisual.transform.SetParent(
                 null,
                 true
@@ -105,6 +123,8 @@ public class LightBeamController : MonoBehaviour
             return;
         }
 
+        // The aiming preview is recalculated only while aiming. Once the player
+        // fires, Update stops changing the Beam trajectory.
         UpdateBeamPreview(
             beamIndicatorVisual
         );
@@ -327,6 +347,26 @@ public class LightBeamController : MonoBehaviour
             return;
         }
 
+        // The final red indicator result becomes the fixed fired trajectory.
+        // The active Beam will continue using these values even if the player
+        // moves the mouse or changes position after confirming the shot.
+        lockedBeamCenter =
+            lastBeamCenter;
+
+        lockedBeamSize =
+            lastBeamSize;
+
+        lockedBeamDirection =
+            lastBeamDirection;
+
+        lockedBeamAngle =
+            lastBeamAngle;
+
+        lockedBeamOrigin =
+            beamOrigin != null
+                ? (Vector2)beamOrigin.position
+                : (Vector2)transform.position;
+
         isAiming = false;
 
         if (beamIndicatorVisual != null)
@@ -361,7 +401,8 @@ public class LightBeamController : MonoBehaviour
         Debug.Log(
             "Light Beam successfully fired after spending " +
             lightCost.ToString("0.0") +
-            " light."
+            " light. Locked length: " +
+            lockedBeamSize.x.ToString("0.00")
         );
     }
 
@@ -372,30 +413,33 @@ public class LightBeamController : MonoBehaviour
         if (beamVisual != null)
         {
             beamVisual.SetActive(true);
+
+            // The yellow Beam is positioned once using the locked indicator
+            // result instead of being recalculated from the mouse every frame.
+            ApplyLockedBeamVisual();
         }
 
+        // Gameplay detection uses the same locked dimensions as the visual so
+        // darkness dispelling remains aligned with the yellow Beam.
+        ApplyLockedBeamCollisionValues();
+
         Debug.Log(
-            "Light beam active"
+            "Light beam active with locked trajectory."
         );
 
         float timer = 0f;
 
         while (timer < beamActiveDuration)
         {
-            UpdateBeamPreview(
-                beamVisual
-            );
-
             DispelDarknessInBeam();
             CheckLightGateInBeam();
 
             timer +=
                 beamCheckInterval;
 
-            yield return
-                new WaitForSeconds(
-                    beamCheckInterval
-                );
+            yield return new WaitForSeconds(
+                beamCheckInterval
+            );
         }
 
         isBeamActive = false;
@@ -408,7 +452,7 @@ public class LightBeamController : MonoBehaviour
         beamCoroutine = null;
 
         Debug.Log(
-            "Light beam ended"
+            "Light beam ended."
         );
     }
 
@@ -474,12 +518,66 @@ public class LightBeamController : MonoBehaviour
                     1f
                 );
 
+            // The indicator uses a centred sprite, so it is moved halfway along
+            // the calculated range to begin at the player and end at the wall.
             visualObject.transform.Translate(
                 Vector3.right *
                 (actualRange * 0.5f),
                 Space.Self
             );
         }
+    }
+
+    private void ApplyLockedBeamVisual()
+    {
+        if (beamVisual == null)
+        {
+            return;
+        }
+
+        // The fired visual copies the exact origin and angle used by the final
+        // aiming indicator rather than following the current mouse position.
+        beamVisual.transform.position =
+            lockedBeamOrigin;
+
+        beamVisual.transform.rotation =
+            Quaternion.Euler(
+                0f,
+                0f,
+                lockedBeamAngle
+            );
+
+        beamVisual.transform.localScale =
+            new Vector3(
+                lockedBeamSize.x,
+                lockedBeamSize.y,
+                1f
+            );
+
+        // The Beam Visual uses the same centred-sprite arrangement as the
+        // indicator, keeping both visuals the same size, shape and length.
+        beamVisual.transform.Translate(
+            Vector3.right *
+            (lockedBeamSize.x * 0.5f),
+            Space.Self
+        );
+    }
+
+    private void ApplyLockedBeamCollisionValues()
+    {
+        // Existing darkness and gate checks use the lastBeam values. Replacing
+        // them with the locked result keeps gameplay fixed throughout the shot.
+        lastBeamCenter =
+            lockedBeamCenter;
+
+        lastBeamSize =
+            lockedBeamSize;
+
+        lastBeamDirection =
+            lockedBeamDirection;
+
+        lastBeamAngle =
+            lockedBeamAngle;
     }
 
     private Vector2 GetMouseAimDirection(
@@ -579,19 +677,18 @@ public class LightBeamController : MonoBehaviour
         isOnCooldown = true;
 
         Debug.Log(
-            "Light beam cooldown started"
+            "Light beam cooldown started."
         );
 
-        yield return
-            new WaitForSeconds(
-                beamCooldown
-            );
+        yield return new WaitForSeconds(
+            beamCooldown
+        );
 
         isOnCooldown = false;
         cooldownCoroutine = null;
 
         Debug.Log(
-            "Light beam cooldown ended"
+            "Light beam cooldown ended."
         );
     }
 
@@ -763,8 +860,7 @@ public class LightBeamController : MonoBehaviour
         foreach (Collider2D hit in hits)
         {
             spawn_platform gate =
-                hit.GetComponentInParent
-                <spawn_platform>();
+                hit.GetComponentInParent<spawn_platform>();
 
             if (gate != null)
             {

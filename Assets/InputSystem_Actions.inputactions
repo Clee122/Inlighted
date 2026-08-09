@@ -43,6 +43,15 @@
                     "initialStateCheck": false
                 },
                 {
+                    "name": "Interact1",
+                    "type": "Button",
+                    "id": "9ccdcf1b-87c1-4a8c-afd4-bb7fd19423c0",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
                     "name": "Crouch",
                     "type": "Button",
                     "id": "27c5f898-bc57-4ee1-8800-db469aca5fe3",
@@ -109,15 +118,6 @@
                     "name": "Beam",
                     "type": "Button",
                     "id": "404c45a5-a185-41d2-a917-b0c861efc2f7",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "Interact1",
-                    "type": "Button",
-                    "id": "4449d40a-a024-4afc-8b35-64fcef5921c9",
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
@@ -487,7 +487,7 @@
                 {
                     "name": "",
                     "id": "1c04ea5f-b012-41d1-a6f7-02e963b52893",
-                    "path": "<Keyboard>/e",
+                    "path": "<Keyboard>/c",
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
@@ -503,6 +503,17 @@
                     "processors": "",
                     "groups": "Gamepad",
                     "action": "Interact",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "4f0fdb63-8a98-4176-b5e1-7ff4cfa7584a",
+                    "path": "<Keyboard>/c",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Keyboard&Mouse",
+                    "action": "Interact1",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -558,17 +569,6 @@
                     "processors": "",
                     "groups": ";Keyboard&Mouse",
                     "action": "Beam",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "6b583459-eaef-49ea-a473-cb57c97987e0",
-                    "path": "<Keyboard>/c",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "Interact1",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
