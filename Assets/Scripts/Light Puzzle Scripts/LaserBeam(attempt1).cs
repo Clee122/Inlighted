@@ -1,7 +1,6 @@
 using NUnit.Framework;
 using UnityEngine;
 
-/*
 public class LaserBeam
 {
     Vector3 pos, dir;
@@ -24,4 +23,3 @@ public class LaserBeam
 
     }
 }
-*/
