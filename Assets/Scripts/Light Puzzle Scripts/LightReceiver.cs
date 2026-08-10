@@ -3,99 +3,94 @@ using static AbilityUnlockObject;
 
 public class LightReceiver : MonoBehaviour
 {
-    //public choose what color input: blue, yellow, any
-
-    public enum ListColors //make sure the tags share the same exact name as these 
+    // Public choose what colour input: blue, yellow, any.
+    public enum ListColors // Make sure the tags share the same exact name as these.
     {
         BeamBlue,
         BeamYellow,
         BeamAny
     }
+
     [Header("Color Input")]
-    public ListColors ChooseColorInput;
+
+    // This is serialised so the required beam colour can be selected in the Inspector.
+    [SerializeField] private ListColors ChooseColorInput;
+
     private string ColorInput;
-    //make visual for color inputted
+
+    // Make visual for colour inputted.
 
     [Header("Activates")]
     public GameObject activatee;
     private Door ActivateScript;
-    //choose object for activation
-    public enum ListActivations //add any more interactions for the light receiver
+
+    // Choose object for activation.
+    public enum ListActivations // Add any more interactions for the light receiver.
     {
         Door,
         Platform
     }
 
-    public float Radius = 3f;
     public ListActivations ActivateObject;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    // Store the configured colour and find the script on the object this
+    // receiver is expected to activate before any beam interaction occurs.
     void Start()
     {
+        // Store the selected enum value in the class variable so it remains
+        // available when a collider later enters the receiver trigger.
         ColorInput = ChooseColorInput.ToString();
-        Debug.Log(ColorInput);
 
         if (activatee != null)
         {
             ActivateScript = activatee.GetComponent<Door>();
-        }
 
-        if (activatee == null) { Debug.LogError("Cannot find activatee object!"); }
-        if (ActivateScript == null) { Debug.LogError("Cannot find activatee script!");}
-    }
-
-    void Update()
-    {
-
-        RaycastHit2D hit = Physics2D.CircleCast(transform.position, Radius, Vector2.left);
-        
-
-        if (hit.collider.CompareTag("BeamBlue"))
-        {
-            Debug.Log("specific color hit");
-            //activate public gameobject script section
-            ActivateScript.Activate();
-        }
-        else if (ColorInput == "BeamAny")
-        {
-            if (hit.collider.CompareTag("BeamBlue") || hit.collider.CompareTag("BeamYellow") /* add any more beam colours */ )
+            if (ActivateScript == null)
             {
-                Debug.Log("any color hit");
-                //activate public gameobject script section
-                ActivateScript.Activate();
-
+                Debug.LogError(
+                    "The assigned activation object does not contain a Door component.",
+                    this
+                );
             }
         }
+        else
+        {
+            Debug.LogError(
+                "LightReceiver requires an activation object to be assigned.",
+                this
+            );
+        }
     }
 
-    private void OnDrawGizmos()
-    {
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(transform.position, Radius);
-    }
-
-
-    /*
+    // The receiver now responds to the beam collider entering its trigger instead
+    // of searching for the visual beam with a CircleCast every frame.
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        Debug.Log("triggered");
-
         if (collision.CompareTag(ColorInput))
         {
             Debug.Log("specific color hit");
-            //activate public gameobject script section
-            ActivateScript.Activate();
-        }
-        else if (ColorInput == "BeamAny")
-        {
-            if  (collision.CompareTag("BeamBlue") || collision.CompareTag("BeamYellow")  add any more beam colours )
+
+            // Only attempt activation when a valid Door component was found,
+            // preventing a missing reference from stopping the interaction.
+            if (ActivateScript != null)
             {
-                Debug.Log("any color hit");
-                //activate public gameobject script section
                 ActivateScript.Activate();
             }
         }
-    
+        else if (ColorInput == "BeamAny")
+        {
+            if (collision.CompareTag("BeamBlue") ||
+                collision.CompareTag("BeamYellow"))
+            {
+                Debug.Log("any color hit");
+
+                // BeamAny accepts any supported beam colour while still requiring
+                // a valid activation target before calling its activation method.
+                if (ActivateScript != null)
+                {
+                    ActivateScript.Activate();
+                }
+            }
+        }
     }
-    */
 }
