@@ -8,6 +8,7 @@ public class ShootLaser : MonoBehaviour
     LaserBeam beam;
 
     public AppearingPlatformReceiver APReceiver;
+    public MovingPlatformReceiver MPReceiver;
 
     /*
     // Update is called once per frame
@@ -31,7 +32,8 @@ public class ShootLaser : MonoBehaviour
             transform.position,
             transform.right,
             material,
-            APReceiver
+            APReceiver,
+            MPReceiver
         );
 
         //beam.tag = "BeamBlue";
@@ -48,6 +50,20 @@ public class ShootLaser : MonoBehaviour
                 this
             );
         }
+
+        // Begin with the platform at original location until the beam reaches the receiver.
+        if (MPReceiver != null)
+        {
+            MPReceiver.DeActivate();
+        }
+        else
+        {
+            Debug.LogError(
+                "ShootLaser requires a MovingPlatformReceiver to be assigned.",
+                this
+            );
+        }
+
     }
 
     private void Update()

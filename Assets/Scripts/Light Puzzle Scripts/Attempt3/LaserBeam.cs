@@ -13,16 +13,19 @@ public class LaserBeam
     // LaserBeam is a normal C# class rather than a MonoBehaviour, so the
     // receiver reference must be provided when the beam is created.
     private AppearingPlatformReceiver APReceiver;
+    private MovingPlatformReceiver MPReceiver;
 
     public LaserBeam(
         Vector3 pos,
         Vector3 dir,
         Material material,
-        AppearingPlatformReceiver receiver)
+        AppearingPlatformReceiver receiver,
+        MovingPlatformReceiver Mreceiver)
     {
         // Store the receiver so the laser can tell it when the beam is or is
         // not hitting the correct light receiver.
         this.APReceiver = receiver;
+        this.MPReceiver = Mreceiver;
 
         this.laserObj = new GameObject();
         this.laserObj.name = "Laser Beam";
@@ -64,6 +67,11 @@ public class LaserBeam
             if (APReceiver != null)
             {
                 APReceiver.DeActivate();
+            }
+
+            if (MPReceiver != null)
+            {
+                MPReceiver.DeActivate();
             }
         }
     }
@@ -112,21 +120,45 @@ public class LaserBeam
                 );
             }
         }
+        else if (
+            hitInfo.collider.CompareTag(
+                "MovingPlatformLightReceiver"))
+        {
+            laserIndices.Add(hitInfo.point);
+            UpdateLaser();
+
+            // The receiver is responsible for moving the platform when it is
+            // reached by the reflected laser.
+            if (MPReceiver != null)
+            {
+                MPReceiver.Activate();
+            }
+            else
+            {
+                Debug.LogError(
+                    "LaserBeam does not have a MovingPlatformReceiver reference."
+                );
+            }
+        }
         else
         {
             laserIndices.Add(hitInfo.point);
             UpdateLaser();
 
             // Any non-mirror object other than the intended receiver stops the
-            // beam and hides the platform.
+            // beam and hides/moves the platform.
             if (APReceiver != null)
             {
                 APReceiver.DeActivate();
             }
+            else if (MPReceiver !=null)
+            {
+                MPReceiver.DeActivate();
+            }
             else
             {
                 Debug.LogError(
-                    "LaserBeam does not have an AppearingPlatformReceiver reference."
+                    "LaserBeam does not have an AppearingPlatformReceiver or MovingPlatformReceiver reference."
                 );
             }
         }
