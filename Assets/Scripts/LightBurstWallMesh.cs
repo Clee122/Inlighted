@@ -45,16 +45,10 @@ public class LightBurstWallMesh : MonoBehaviour
     [SerializeField] private float edgeDistanceThreshold = 0.2f;
 
     [Header("Inner Glow")]
+
+    // The mesh extends inward by this distance so the Shader Graph has enough
+    // geometry and UV range to create one continuous glow towards the player.
     [SerializeField] private float innerGlowDistance = 3f;
-
-    [Range(0f, 1f)]
-    [SerializeField] private float nearGlowAlpha = 0.18f;
-
-    [Range(0f, 1f)]
-    [SerializeField] private float middleGlowAlpha = 0.08f;
-
-    [Range(0f, 1f)]
-    [SerializeField] private float faintGlowAlpha = 0.02f;
 
     private Mesh burstMesh;
     private MeshFilter meshFilter;
@@ -517,8 +511,9 @@ public class LightBurstWallMesh : MonoBehaviour
         int connectionCount =
             sampleCount - 1;
 
-        // Every neighbouring sample has five visual bands, and each band uses
-        // two triangles to connect the glow and bright ring continuously.
+        // Every neighbouring sample has five connected radial sections. The UVs
+        // across these sections allow the Shader Graph to create a continuous
+        // inward glow while keeping the outer ring sharply defined.
         triangles =
             new int[
                 connectionCount *
@@ -543,7 +538,7 @@ public class LightBurstWallMesh : MonoBehaviour
                 ringThickness
             );
 
-        // The glow is built inward from the same collision boundary as the white
+        // The glow begins inward from the same collision boundary as the white
         // ring so it cannot independently extend through blocked geometry.
         float glowStartDistance =
             Mathf.Max(
@@ -552,6 +547,8 @@ public class LightBurstWallMesh : MonoBehaviour
                 innerGlowDistance
             );
 
+        // Intermediate positions remain in the mesh because their UV values
+        // provide enough geometry for the shader to interpolate a smooth glow.
         float faintDistance =
             Mathf.Lerp(
                 glowStartDistance,
@@ -644,6 +641,9 @@ public class LightBurstWallMesh : MonoBehaviour
                 1f
             );
 
+        // UV Y now describes the radial position from the inner transparent
+        // boundary to the bright outer edge. The Shader Graph uses this smoothly
+        // interpolated value instead of relying on several separate alpha bands.
         uvs[baseIndex] =
             new Vector2(
                 normalisedAngle,
@@ -680,43 +680,18 @@ public class LightBurstWallMesh : MonoBehaviour
                 1f
             );
 
-        colours[baseIndex] =
-            new Color(
-                1f,
-                1f,
-                1f,
-                0f
-            );
-
-        colours[baseIndex + 1] =
-            new Color(
-                1f,
-                1f,
-                1f,
-                faintGlowAlpha
-            );
-
-        colours[baseIndex + 2] =
-            new Color(
-                1f,
-                1f,
-                1f,
-                middleGlowAlpha
-            );
-
-        colours[baseIndex + 3] =
-            new Color(
-                1f,
-                1f,
-                1f,
-                nearGlowAlpha
-            );
-
-        colours[baseIndex + 4] =
-            Color.white;
-
-        colours[baseIndex + 5] =
-            Color.white;
+        // Vertex colours no longer control the glow strength. Keeping them fully
+        // white allows the Shader Graph's UV-based gradient to control transparency
+        // consistently across the entire generated Burst mesh.
+        for (
+            int i = 0;
+            i < VerticesPerRay;
+            i++
+        )
+        {
+            colours[baseIndex + i] =
+                Color.white;
+        }
     }
 
     private void BuildTriangles(
