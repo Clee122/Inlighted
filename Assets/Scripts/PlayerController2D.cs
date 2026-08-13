@@ -425,8 +425,8 @@ public class PlayerController2D : MonoBehaviour
     }
 
     public void OnMove(
-        InputAction.CallbackContext context
-    )
+    InputAction.CallbackContext context
+)
     {
         Vector2 input =
             context.ReadValue<Vector2>();
@@ -442,17 +442,9 @@ public class PlayerController2D : MonoBehaviour
             return;
         }
 
-        if (
-            lightBeamController != null &&
-            lightBeamController.IsBeamActive()
-        )
-        {
-            // Movement input is cleared while the Beam is active so held input
-            // cannot continue moving the player during the shot.
-            moveInput = 0f;
-            return;
-        }
-
+        // Movement input is still recorded while the Beam is active. ApplyMovement
+        // blocks the Rigidbody during the shot, so held input can resume movement
+        // immediately once the Beam ends.
         moveInput = input.x;
     }
 
