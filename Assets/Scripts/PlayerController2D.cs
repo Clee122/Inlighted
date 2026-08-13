@@ -53,6 +53,11 @@ public class PlayerController2D : MonoBehaviour
     private Quaternion slopeVisualBaseRotation;
 
     private PlayerLightChannel playerLightChannel;
+
+    // The movement controller checks the Beam state so movement and jumping are
+    // disabled while the fired Beam is active.
+    private LightBeamController lightBeamController;
+
     private bool isChannelingLocked;
 
     public PauseManager Pauser;
@@ -97,6 +102,11 @@ public class PlayerController2D : MonoBehaviour
         // instead of ending the channel and moving the player on the same frame.
         playerLightChannel =
             GetComponent<PlayerLightChannel>();
+
+        // The Beam controller is checked separately from channeling because the
+        // player should remain still for the full duration of a fired Beam.
+        lightBeamController =
+            GetComponent<LightBeamController>();
 
         if (showMovementDebugLogs)
         {
@@ -239,6 +249,19 @@ public class PlayerController2D : MonoBehaviour
             return;
         }
 
+        if (
+            lightBeamController != null &&
+            lightBeamController.IsBeamActive()
+        )
+        {
+            // The player stays completely still while the Beam is active so the
+            // fired Beam remains lined up with the position where it was fired.
+            rb.gravityScale = 0f;
+            rb.linearVelocity = Vector2.zero;
+
+            return;
+        }
+
         float targetSpeed =
             moveInput * moveSpeed;
 
@@ -366,6 +389,17 @@ public class PlayerController2D : MonoBehaviour
         }
 
         if (
+            lightBeamController != null &&
+            lightBeamController.IsBeamActive()
+        )
+        {
+            // Clear any jump that was queued before the Beam fired so it cannot
+            // happen during the shot or immediately after it ends.
+            jumpQueued = false;
+            return;
+        }
+
+        if (
             isGrounded &&
             rb != null
         )
@@ -408,6 +442,17 @@ public class PlayerController2D : MonoBehaviour
             return;
         }
 
+        if (
+            lightBeamController != null &&
+            lightBeamController.IsBeamActive()
+        )
+        {
+            // Movement input is cleared while the Beam is active so held input
+            // cannot continue moving the player during the shot.
+            moveInput = 0f;
+            return;
+        }
+
         moveInput = input.x;
     }
 
@@ -433,6 +478,24 @@ public class PlayerController2D : MonoBehaviour
             {
                 Debug.Log(
                     "Jump input was blocked because the player is channeling."
+                );
+            }
+
+            return;
+        }
+
+        if (
+            lightBeamController != null &&
+            lightBeamController.IsBeamActive()
+        )
+        {
+            // Jump input is ignored for the duration of the fired Beam.
+            jumpQueued = false;
+
+            if (showMovementDebugLogs)
+            {
+                Debug.Log(
+                    "Jump input was blocked because the Light Beam is active."
                 );
             }
 
@@ -470,6 +533,15 @@ public class PlayerController2D : MonoBehaviour
     {
         if (isChannelingLocked)
         {
+            return false;
+        }
+
+        if (
+            lightBeamController != null &&
+            lightBeamController.IsBeamActive()
+        )
+        {
+            // Ability use does not count as movement for light regeneration.
             return false;
         }
 

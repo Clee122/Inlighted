@@ -14,6 +14,11 @@ public class LightBeamController : MonoBehaviour
 
     [Header("Beam Timing")]
     [SerializeField] private float beamActiveDuration = 0.5f;
+
+    // The Beam reaches its final length before the ability ends so it can travel
+    // out from the player and still remain visible at full length for a moment.
+    [SerializeField] private float beamExpansionDuration = 0.2f;
+
     [SerializeField] private float beamCooldown = 2f;
     [SerializeField] private float beamCheckInterval = 0.05f;
 
@@ -23,6 +28,24 @@ public class LightBeamController : MonoBehaviour
     [Header("Beam Visuals")]
     [SerializeField] private GameObject beamIndicatorVisual;
     [SerializeField] private GameObject beamVisual;
+
+    // The fired beam uses a Line Renderer so its end point can grow outwards
+    // and stop at the same distance found by the wall check.
+    [SerializeField] private LineRenderer beamLineRenderer;
+
+    // The particle effect is controlled separately so it can restart cleanly
+    // for each shot and use the same overall timing as the beam.
+    [SerializeField] private ParticleSystem beamParticles;
+
+    // Keeps the fired beam lined up with the aiming indicator without changing
+    // the position used by the gameplay checks.
+    [SerializeField]
+    private Vector2 beamVisualOffset =
+        new Vector2(0f, 0.5f);
+
+    // Lets the visible beam thickness be adjusted without changing the width
+    // used for darkness and gate detection.
+    [SerializeField] private float beamVisualWidthMultiplier = 1f;
 
     private bool isAiming = false;
     private bool isBeamActive = false;
@@ -51,6 +74,15 @@ public class LightBeamController : MonoBehaviour
 
     private float lockedBeamAngle = 0f;
     private Vector2 lockedBeamOrigin;
+
+    // The current Line Renderer start point is kept so any local offset already
+    // set on the beam prefab is not lost when its length is changed.
+    private Vector3 beamLineStartLocalPosition =
+        Vector3.zero;
+
+    // The original particle lifetime is kept so the playback speed can adjust
+    // automatically if the Beam Active Duration is changed later.
+    private float originalParticleLifetime = 1f;
 
     private Camera mainCamera;
     private PlayerAbilityUnlocks abilityUnlocks;
@@ -107,7 +139,53 @@ public class LightBeamController : MonoBehaviour
             beamVisual.transform.localScale =
                 Vector3.one;
 
+            // Use the child references automatically if they were not assigned
+            // in the Inspector.
+            if (beamLineRenderer == null)
+            {
+                beamLineRenderer =
+                    beamVisual.GetComponentInChildren<LineRenderer>(
+                        true
+                    );
+            }
+
+            if (beamParticles == null)
+            {
+                beamParticles =
+                    beamVisual.GetComponentInChildren<ParticleSystem>(
+                        true
+                    );
+            }
+
             beamVisual.SetActive(false);
+        }
+
+        if (
+            beamLineRenderer != null &&
+            beamLineRenderer.positionCount > 0
+        )
+        {
+            // Keep the existing local start point instead of assuming the line
+            // begins at exactly zero.
+            beamLineStartLocalPosition =
+                beamLineRenderer.GetPosition(
+                    0
+                );
+        }
+
+        if (beamParticles != null)
+        {
+            ParticleSystem.MainModule main =
+                beamParticles.main;
+
+            // Use the longest starting lifetime as the timing reference.
+            originalParticleLifetime =
+                Mathf.Max(
+                    0.01f,
+                    main.startLifetime.constantMax
+                );
+
+            ConfigureBeamParticleWallCollision();
         }
 
         Debug.Log(
@@ -414,35 +492,91 @@ public class LightBeamController : MonoBehaviour
         {
             beamVisual.SetActive(true);
 
-            // The yellow Beam is positioned once using the locked indicator
-            // result instead of being recalculated from the mouse every frame.
-            ApplyLockedBeamVisual();
+            // The fired Beam is positioned once using the locked aiming result.
+            // Its length then grows without following later mouse movement.
+            PrepareLockedBeamVisual();
         }
 
-        // Gameplay detection uses the same locked dimensions as the visual so
-        // darkness dispelling remains aligned with the yellow Beam.
-        ApplyLockedBeamCollisionValues();
+        // Expansion is capped by the full Beam duration so changing either
+        // value in the Inspector cannot make the growth outlive the ability.
+        float actualExpansionDuration =
+            Mathf.Clamp(
+                beamExpansionDuration,
+                0f,
+                beamActiveDuration
+            );
+
+        float timer = 0f;
+        float gameplayCheckTimer = 0f;
 
         Debug.Log(
             "Light beam active with locked trajectory."
         );
 
-        float timer = 0f;
-
         while (timer < beamActiveDuration)
         {
-            DispelDarknessInBeam();
-            CheckLightGateInBeam();
+            float expansionProgress =
+                actualExpansionDuration <= 0f
+                    ? 1f
+                    : Mathf.Clamp01(
+                        timer /
+                        actualExpansionDuration
+                    );
+
+            float currentBeamLength =
+                Mathf.Lerp(
+                    0f,
+                    lockedBeamSize.x,
+                    expansionProgress
+                );
+
+            // Grow the visible line from the player towards the locked end point.
+            UpdateBeamLineLength(
+                currentBeamLength
+            );
+
+            // Gameplay uses the same growing length so it does not get ahead
+            // of the visible Beam.
+            ApplyCurrentBeamCollisionValues(
+                currentBeamLength
+            );
+
+            if (
+                gameplayCheckTimer <= 0f &&
+                currentBeamLength > 0.001f
+            )
+            {
+                DispelDarknessInBeam();
+                CheckLightGateInBeam();
+
+                gameplayCheckTimer =
+                    Mathf.Max(
+                        0.001f,
+                        beamCheckInterval
+                    );
+            }
+
+            gameplayCheckTimer -=
+                Time.deltaTime;
 
             timer +=
-                beamCheckInterval;
+                Time.deltaTime;
 
-            yield return new WaitForSeconds(
-                beamCheckInterval
-            );
+            // Update every frame so the outward movement stays smooth.
+            yield return null;
         }
 
         isBeamActive = false;
+
+        if (beamParticles != null)
+        {
+            // Clear particles between shots so the next Beam starts cleanly.
+            beamParticles.Stop(
+                true,
+                ParticleSystemStopBehavior
+                    .StopEmittingAndClear
+            );
+        }
 
         if (beamVisual != null)
         {
@@ -528,17 +662,28 @@ public class LightBeamController : MonoBehaviour
         }
     }
 
-    private void ApplyLockedBeamVisual()
+    private void PrepareLockedBeamVisual()
     {
         if (beamVisual == null)
         {
             return;
         }
 
-        // The fired visual copies the exact origin and angle used by the final
-        // aiming indicator rather than following the current mouse position.
+        // Rotate the visual offset with the shot so the same adjustment works
+        // when aiming horizontally, vertically or diagonally.
+        Vector2 rotatedVisualOffset =
+            Quaternion.Euler(
+                0f,
+                0f,
+                lockedBeamAngle
+            ) *
+            beamVisualOffset;
+
+        // The fired visual keeps the exact locked origin and angle from the
+        // final aiming preview, with only the visual alignment offset added.
         beamVisual.transform.position =
-            lockedBeamOrigin;
+            lockedBeamOrigin +
+            rotatedVisualOffset;
 
         beamVisual.transform.rotation =
             Quaternion.Euler(
@@ -547,37 +692,137 @@ public class LightBeamController : MonoBehaviour
                 lockedBeamAngle
             );
 
+        // Keep the root at normal scale so changing Beam length does not stretch
+        // the particle effect.
         beamVisual.transform.localScale =
-            new Vector3(
-                lockedBeamSize.x,
-                lockedBeamSize.y,
-                1f
+            Vector3.one;
+
+        if (beamLineRenderer != null)
+        {
+            // Keep visual thickness separate from the gameplay Beam width so it
+            // can be matched to the aiming indicator without changing collision.
+            float visualWidth =
+                beamWidth *
+                beamVisualWidthMultiplier;
+
+            beamLineRenderer.startWidth =
+                visualWidth;
+
+            beamLineRenderer.endWidth =
+                visualWidth;
+        }
+
+        // Start each shot at zero length so it visibly travels out from the player.
+        UpdateBeamLineLength(
+            0f
+        );
+
+        if (beamParticles != null)
+        {
+            ParticleSystem.MainModule main =
+                beamParticles.main;
+
+            // Speed the particle effect up or down to follow Beam Active Duration.
+            main.simulationSpeed =
+                originalParticleLifetime /
+                Mathf.Max(
+                    0.01f,
+                    beamActiveDuration
+                );
+
+            // Restart the effect from the beginning for every shot.
+            beamParticles.Stop(
+                true,
+                ParticleSystemStopBehavior
+                    .StopEmittingAndClear
             );
 
-        // The Beam Visual uses the same centred-sprite arrangement as the
-        // indicator, keeping both visuals the same size, shape and length.
-        beamVisual.transform.Translate(
+            beamParticles.Play(
+                true
+            );
+        }
+    }
+
+    private void UpdateBeamLineLength(
+        float currentLength
+    )
+    {
+        if (beamLineRenderer == null)
+        {
+            return;
+        }
+
+        beamLineRenderer.positionCount = 2;
+
+        beamLineRenderer.SetPosition(
+            0,
+            beamLineStartLocalPosition
+        );
+
+        // The Beam root already carries the locked rotation, so the line only
+        // needs to extend along its local X axis.
+        beamLineRenderer.SetPosition(
+            1,
+            beamLineStartLocalPosition +
             Vector3.right *
-            (lockedBeamSize.x * 0.5f),
-            Space.Self
+            Mathf.Max(
+                0f,
+                currentLength
+            )
         );
     }
 
-    private void ApplyLockedBeamCollisionValues()
+    private void ApplyCurrentBeamCollisionValues(
+        float currentLength
+    )
     {
-        // Existing darkness and gate checks use the lastBeam values. Replacing
-        // them with the locked result keeps gameplay fixed throughout the shot.
+        // Darkness and gate checks use the same growing length as the visible
+        // Beam so gameplay remains lined up with the effect.
         lastBeamCenter =
-            lockedBeamCenter;
+            lockedBeamOrigin +
+            lockedBeamDirection *
+            (currentLength * 0.5f);
 
         lastBeamSize =
-            lockedBeamSize;
+            new Vector2(
+                currentLength,
+                lockedBeamSize.y
+            );
 
         lastBeamDirection =
             lockedBeamDirection;
 
         lastBeamAngle =
             lockedBeamAngle;
+    }
+
+    private void ConfigureBeamParticleWallCollision()
+    {
+        if (beamParticles == null)
+        {
+            return;
+        }
+
+        ParticleSystem.CollisionModule collision =
+            beamParticles.collision;
+
+        // Use the same wall layer as the Beam raycast so particles stop on the
+        // same surfaces that stop the ability.
+        collision.enabled = true;
+        collision.type =
+            ParticleSystemCollisionType.World;
+
+        collision.mode =
+            ParticleSystemCollisionMode.Collision2D;
+
+        collision.collidesWith =
+            wallLayer;
+
+        // Remove particles when they hit a wall instead of allowing them to
+        // bounce or continue through it.
+        collision.lifetimeLoss = 1f;
+        collision.bounce = 0f;
+        collision.dampen = 1f;
     }
 
     private Vector2 GetMouseAimDirection(

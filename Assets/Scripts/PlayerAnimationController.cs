@@ -6,6 +6,9 @@ public class PlayerAnimationController : MonoBehaviour
     [SerializeField] private Animator catMothAnimator;
     [SerializeField] private SpriteRenderer catMothSpriteRenderer;
 
+    [Header("Light Beam Origin")]
+    [SerializeField] private Transform beamOrigin;
+
     [Header("Death Visual Priority")]
     [SerializeField] private int deathOrderInLayer = 100;
 
@@ -25,6 +28,10 @@ public class PlayerAnimationController : MonoBehaviour
 
     private int originalOrderInLayer;
     private int originalSortingLayerID;
+
+    // The original Beam Origin position is kept so only the horizontal side
+    // changes when CatMoth turns around.
+    private Vector3 beamOriginDefaultLocalPosition;
 
     private void Awake()
     {
@@ -59,6 +66,14 @@ public class PlayerAnimationController : MonoBehaviour
             // then safely return to normal gameplay sorting after respawn.
             originalOrderInLayer = catMothSpriteRenderer.sortingOrder;
             originalSortingLayerID = catMothSpriteRenderer.sortingLayerID;
+        }
+
+        if (beamOrigin != null)
+        {
+            // Keep the starting position so the Beam can switch sides without
+            // losing its original height or distance from the player.
+            beamOriginDefaultLocalPosition =
+                beamOrigin.localPosition;
         }
 
         Debug.Log("ANIM CHECK 0: PlayerAnimationController Awake completed.");
@@ -104,6 +119,7 @@ public class PlayerAnimationController : MonoBehaviour
     private void LateUpdate()
     {
         FlipCatMothVisual();
+        UpdateBeamOriginFacing();
     }
 
     private void FlipCatMothVisual()
@@ -125,6 +141,30 @@ public class PlayerAnimationController : MonoBehaviour
         }
     }
 
+    private void UpdateBeamOriginFacing()
+    {
+        if (
+            beamOrigin == null ||
+            catMothSpriteRenderer == null
+        )
+        {
+            return;
+        }
+
+        Vector3 targetPosition =
+            beamOriginDefaultLocalPosition;
+
+        // The Beam Origin moves to the opposite side when the sprite flips so
+        // the Beam continues to start near CatMoth's face.
+        targetPosition.x =
+            catMothSpriteRenderer.flipX
+                ? -Mathf.Abs(beamOriginDefaultLocalPosition.x)
+                : Mathf.Abs(beamOriginDefaultLocalPosition.x);
+
+        beamOrigin.localPosition =
+            targetPosition;
+    }
+
     public void ResetFacingDirection()
     {
         if (catMothSpriteRenderer == null)
@@ -136,6 +176,17 @@ public class PlayerAnimationController : MonoBehaviour
         // Respawn resets the CatMoth to face the default/right direction
         // so it does not keep facing the direction it died in.
         catMothSpriteRenderer.flipX = false;
+
+        if (beamOrigin != null)
+        {
+            // Reset the Beam Origin to the same side as the default facing direction.
+            beamOrigin.localPosition =
+                new Vector3(
+                    Mathf.Abs(beamOriginDefaultLocalPosition.x),
+                    beamOriginDefaultLocalPosition.y,
+                    beamOriginDefaultLocalPosition.z
+                );
+        }
 
         Debug.Log("ANIM CHECK: CatMoth facing direction reset to default/right.");
     }
