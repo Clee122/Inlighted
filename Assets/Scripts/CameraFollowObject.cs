@@ -14,23 +14,23 @@ public CinemachineVirtualCamera vcam;
 
 void Start()
 {
-targetOrtho = vcam.m_Lens.OrthographicSize;
+//targetOrtho = vcam.m_Lens.OrthographicSize;
 }
 
 void Update()
 
 
 {
-    Vector2 vec = UnityEngine.InputSystem.Mouse.current.scroll.ReadValue();
-    float scroll = vec.y;
+    //Vector2 vec = UnityEngine.InputSystem.Mouse.current.scroll.ReadValue();
+    //float scroll = vec.y;
     
-    if (scroll != 0.0f)
+    //if (scroll != 0.0f)
     {
-    targetOrtho -= scroll * zoomSpeed;
-    targetOrtho = Mathf.Clamp(targetOrtho, minOrtho, maxOrtho);
+    //targetOrtho -= scroll * zoomSpeed;
+    //targetOrtho = Mathf.Clamp(targetOrtho, minOrtho, maxOrtho);
     }
 
-    vcam.m_Lens.OrthographicSize = Mathf.MoveTowards(vcam.m_Lens.OrthographicSize, targetOrtho, smoothSpeed * Time.deltaTime);
+    //vcam.m_Lens.OrthographicSize = Mathf.MoveTowards(vcam.m_Lens.OrthographicSize, targetOrtho, smoothSpeed * Time.deltaTime);
 
 }
 
