@@ -66,6 +66,10 @@ public class LightBurstController : MonoBehaviour
     private PlayerLightResource playerLightResource;
     private PlayerLightChannel playerLightChannel;
 
+    // Existing Burst effects are allowed to continue through a dash, but this
+    // reference temporarily blocks beginning a new Burst during the dash itself.
+    private PlayerDash playerDash;
+
     private void Awake()
     {
         // The unlock system controls whether the player has earned access to
@@ -82,6 +86,11 @@ public class LightBurstController : MonoBehaviour
         // visuals because healing and ability use must remain mutually exclusive.
         playerLightChannel =
             GetComponent<PlayerLightChannel>();
+
+        // New Burst activation during dash remains disabled for this prototype.
+        // This does not affect a Burst that was already active before dashing.
+        playerDash =
+            GetComponent<PlayerDash>();
 
         if (playerLightResource == null)
         {
@@ -153,6 +162,20 @@ public class LightBurstController : MonoBehaviour
             // and activate a light ability at the same time.
             Debug.Log(
                 "Light Burst was blocked because the player is channeling."
+            );
+
+            return;
+        }
+
+        if (
+            playerDash != null &&
+            playerDash.IsDashing()
+        )
+        {
+            // Casting Burst during dash remains disabled while this interaction
+            // is still being tested. A Burst started before dash is not cancelled.
+            Debug.Log(
+                "Light Burst activation was blocked because the player is dashing."
             );
 
             return;

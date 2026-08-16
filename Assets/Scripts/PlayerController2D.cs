@@ -58,6 +58,10 @@ public class PlayerController2D : MonoBehaviour
     // disabled while the fired Beam is active.
     private LightBeamController lightBeamController;
 
+    // The dash temporarily takes direct control of the Rigidbody, so normal
+    // movement must stop applying velocity until dash movement has finished.
+    private PlayerDash playerDash;
+
     private bool isChannelingLocked;
 
     public PauseManager Pauser;
@@ -107,6 +111,11 @@ public class PlayerController2D : MonoBehaviour
         // player should remain still for the full duration of a fired Beam.
         lightBeamController =
             GetComponent<LightBeamController>();
+
+        // Dash is kept in its own component because its movement has different
+        // timing and collision requirements from normal running and jumping.
+        playerDash =
+            GetComponent<PlayerDash>();
 
         if (showMovementDebugLogs)
         {
@@ -250,6 +259,16 @@ public class PlayerController2D : MonoBehaviour
         }
 
         if (
+            playerDash != null &&
+            playerDash.IsDashing()
+        )
+        {
+            // PlayerDash owns Rigidbody position, velocity and gravity for the
+            // short dash period. Normal movement must not fight against it.
+            return;
+        }
+
+        if (
             lightBeamController != null &&
             lightBeamController.IsBeamActive()
         )
@@ -389,6 +408,17 @@ public class PlayerController2D : MonoBehaviour
         }
 
         if (
+            playerDash != null &&
+            playerDash.IsDashing()
+        )
+        {
+            // Jump cannot execute while dash owns movement. Clearing the queued
+            // input prevents a delayed jump from firing immediately after dash.
+            jumpQueued = false;
+            return;
+        }
+
+        if (
             lightBeamController != null &&
             lightBeamController.IsBeamActive()
         )
@@ -425,8 +455,8 @@ public class PlayerController2D : MonoBehaviour
     }
 
     public void OnMove(
-    InputAction.CallbackContext context
-)
+        InputAction.CallbackContext context
+    )
     {
         Vector2 input =
             context.ReadValue<Vector2>();
@@ -442,9 +472,8 @@ public class PlayerController2D : MonoBehaviour
             return;
         }
 
-        // Movement input is still recorded while the Beam is active. ApplyMovement
-        // blocks the Rigidbody during the shot, so held input can resume movement
-        // immediately once the Beam ends.
+        // Movement input continues being recorded during Beam and dash locks.
+        // This lets held input resume immediately once normal movement returns.
         moveInput = input.x;
     }
 
@@ -470,6 +499,25 @@ public class PlayerController2D : MonoBehaviour
             {
                 Debug.Log(
                     "Jump input was blocked because the player is channeling."
+                );
+            }
+
+            return;
+        }
+
+        if (
+            playerDash != null &&
+            playerDash.IsDashing()
+        )
+        {
+            // Dash is a committed movement action, so jumping is ignored until
+            // normal player movement has returned.
+            jumpQueued = false;
+
+            if (showMovementDebugLogs)
+            {
+                Debug.Log(
+                    "Jump input was blocked because the player is dashing."
                 );
             }
 
@@ -511,6 +559,13 @@ public class PlayerController2D : MonoBehaviour
         return Mathf.Abs(moveInput) > 0.01f;
     }
 
+    public float GetHorizontalMovementInput()
+    {
+        // Dash needs the actual left/right input value so it can choose direction
+        // without duplicating movement-input handling in another component.
+        return moveInput;
+    }
+
     public bool IsInPlayerControlledJump()
     {
         return isInPlayerControlledJump;
@@ -519,6 +574,20 @@ public class PlayerController2D : MonoBehaviour
     public bool IsGrounded()
     {
         return isGrounded;
+    }
+
+    public bool IsOnWalkableSlope()
+    {
+        // Dash uses the same slope result as normal movement so grounded dashes
+        // can follow the level surface instead of moving through or away from it.
+        return isOnWalkableSlope;
+    }
+
+    public Vector2 GetSlopeDirection()
+    {
+        // Exposing the already-calculated tangent keeps dash movement consistent
+        // with the direction used by ordinary slope movement.
+        return slopeDirection;
     }
 
     public bool IsActivelyGeneratingLight()
@@ -620,7 +689,8 @@ public class PlayerController2D : MonoBehaviour
         if (showMovementDebugLogs)
         {
             Debug.Log(
-                "Grounded: " + isGrounded +
+                "Grounded: " +
+                isGrounded +
                 " | On slope: " +
                 isOnWalkableSlope +
                 " | Detected angle: " +
@@ -646,14 +716,16 @@ public class PlayerController2D : MonoBehaviour
             return;
         }
 
-        Gizmos.color = Color.green;
+        Gizmos.color =
+            Color.green;
 
         Gizmos.DrawWireSphere(
             groundCheck.position,
             groundCheckRadius
         );
 
-        Gizmos.color = Color.cyan;
+        Gizmos.color =
+            Color.cyan;
 
         Gizmos.DrawLine(
             groundCheck.position,
@@ -690,7 +762,8 @@ public class PlayerController2D : MonoBehaviour
             Pauser.UnPause();
         }
 
-        IsPaused = !IsPaused;
+        IsPaused =
+            !IsPaused;
     }
 
     public void ResetMovementInput()
@@ -699,6 +772,13 @@ public class PlayerController2D : MonoBehaviour
         jumpQueued = false;
         isChannelingLocked = false;
         isInPlayerControlledJump = false;
+
+        if (playerDash != null)
+        {
+            // Respawning clears active dash and cooldown state so temporary
+            // movement information from the previous life cannot carry over.
+            playerDash.ResetDashState();
+        }
 
         if (rb != null)
         {

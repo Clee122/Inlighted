@@ -466,6 +466,7 @@ GameObject:
   - component: {fileID: 4330560771201811758}
   - component: {fileID: 1710765735611916135}
   - component: {fileID: 47331580341496888}
+  - component: {fileID: 1176628217749975682}
   m_Layer: 6
   m_Name: Player
   m_TagString: Player
@@ -838,6 +839,22 @@ MonoBehaviour:
         m_CallState: 2
     m_ActionId: 9ccdcf1b-87c1-4a8c-afd4-bb7fd19423c0
     m_ActionName: 'Player/Interact1[/Keyboard/c]'
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1176628217749975682}
+        m_TargetAssemblyTypeName: PlayerDash, Assembly-CSharp
+        m_MethodName: OnDash
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_ActionId: fcff2c05-565a-4660-b9bb-06faad276392
+    m_ActionName: 'Player/Dash[/Keyboard/shift]'
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: 
   m_DefaultActionMap: Player
@@ -1134,6 +1151,26 @@ MonoBehaviour:
   fullLightRadius: 3.5
   visualChangeSpeed: 5
   showDebugLogs: 1
+--- !u!114 &1176628217749975682
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6740553540052544372}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 838658c9e9e293940b3329157c634581, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerDash
+  dashDistance: 2
+  dashDuration: 0.12
+  dashCooldown: 0.45
+  dashCollisionLayer:
+    serializedVersion: 2
+    m_Bits: 128
+  wallSkinWidth: 0.02
+  showDashDebugLogs: 0
 --- !u!1 &6800330690928581940
 GameObject:
   m_ObjectHideFlags: 0

@@ -12,13 +12,23 @@ public class PlayerDarknessTracker : MonoBehaviour
 
     private PlayerLifeSystem playerLifeSystem;
     private LightBurstController lightBurstController;
+    private PlayerDash playerDash;
 
     private void Awake()
     {
-        // These references are stored once because this script constantly checks player health
-        // and burst protection while the player is inside darkness.
-        playerLifeSystem = GetComponent<PlayerLifeSystem>();
-        lightBurstController = GetComponent<LightBurstController>();
+        // These references are stored once because this script constantly checks
+        // player health and temporary protection while the player is inside darkness.
+        playerLifeSystem =
+            GetComponent<PlayerLifeSystem>();
+
+        lightBurstController =
+            GetComponent<LightBurstController>();
+
+        // Dash protection is checked without removing the player from DarknessZone
+        // tracking. This allows darkness to become dangerous immediately if the
+        // dash ends before the player has successfully crossed the zone.
+        playerDash =
+            GetComponent<PlayerDash>();
     }
 
     public void EnterDarkness()
@@ -29,7 +39,10 @@ public class PlayerDarknessTracker : MonoBehaviour
 
         if (damageCoroutine == null)
         {
-            damageCoroutine = StartCoroutine(DarknessDamageRoutine());
+            damageCoroutine =
+                StartCoroutine(
+                    DarknessDamageRoutine()
+                );
         }
     }
 
@@ -44,9 +57,15 @@ public class PlayerDarknessTracker : MonoBehaviour
         }
 
         // Damage stops only when the player has exited all darkness zones, not just one of them.
-        if (darknessZoneCount == 0 && damageCoroutine != null)
+        if (
+            darknessZoneCount == 0 &&
+            damageCoroutine != null
+        )
         {
-            StopCoroutine(damageCoroutine);
+            StopCoroutine(
+                damageCoroutine
+            );
+
             damageCoroutine = null;
         }
     }
@@ -54,35 +73,69 @@ public class PlayerDarknessTracker : MonoBehaviour
     private IEnumerator DarknessDamageRoutine()
     {
         // This loop centralises darkness damage on the player.
-        // The darkness zones only report enter/exit, while this script controls the actual damage timing.
-        while (darknessZoneCount > 0 && playerLifeSystem != null)
+        // Darkness zones only report enter/exit, while this script controls the
+        // actual damage timing and temporary protection from light or dash.
+        while (
+            darknessZoneCount > 0 &&
+            playerLifeSystem != null
+        )
         {
-            // If the player dies while inside darkness, the tracker clears its state so old darkness damage
-            // does not continue after respawn.
+            // If the player dies while inside darkness, the tracker clears its
+            // state so old darkness damage cannot continue after respawn.
             if (playerLifeSystem.IsDead())
             {
                 darknessZoneCount = 0;
                 damageCoroutine = null;
+
                 yield break;
             }
 
-            bool burstActive = lightBurstController != null && lightBurstController.IsBurstActive();
+            bool dashActive =
+                playerDash != null &&
+                playerDash.IsDashing();
 
-            // Light Burst protects the player from darkness while active.
-            // This makes the burst function as a survival tool, not just a visual effect.
-            if (!burstActive)
+            if (dashActive)
             {
-                playerLifeSystem.TakeDamage(damageAmount);
-
-                if (playerLifeSystem.IsDead())
-                {
-                    darknessZoneCount = 0;
-                    damageCoroutine = null;
-                    yield break;
-                }
+                // Dash protection must exist only for the actual dash duration.
+                // Checking again next frame avoids accidentally giving the player
+                // the full darkness damage interval as extra protection after dash ends.
+                yield return null;
+                continue;
             }
 
-            yield return new WaitForSeconds(damageInterval);
+            bool burstActive =
+                lightBurstController != null &&
+                lightBurstController.IsBurstActive();
+
+            if (burstActive)
+            {
+                // Light Burst intentionally protects the player for its active
+                // duration. Checking regularly allows darkness to become dangerous
+                // again shortly after Burst protection has actually finished.
+                yield return null;
+                continue;
+            }
+
+            // Once neither Dash nor Light Burst is protecting the player,
+            // darkness damage should happen immediately while they remain inside.
+            playerLifeSystem.TakeDamage(
+                damageAmount
+            );
+
+            if (playerLifeSystem.IsDead())
+            {
+                darknessZoneCount = 0;
+                damageCoroutine = null;
+
+                yield break;
+            }
+
+            // The normal damage interval applies only after actual darkness
+            // damage occurs. Temporary dash protection should never consume
+            // this timer or create extra protection after movement ends.
+            yield return new WaitForSeconds(
+                damageInterval
+            );
         }
 
         damageCoroutine = null;

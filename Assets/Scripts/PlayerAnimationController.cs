@@ -165,6 +165,39 @@ public class PlayerAnimationController : MonoBehaviour
             targetPosition;
     }
 
+    public int GetFacingDirection()
+    {
+        // Dash uses visual facing when no horizontal movement input is currently
+        // held so a standing dash continues in CatMoth's expected direction.
+        if (catMothSpriteRenderer == null)
+        {
+            return 1;
+        }
+
+        return
+            catMothSpriteRenderer.flipX
+                ? -1
+                : 1;
+    }
+
+    public void SetFacingDirection(
+        float horizontalDirection
+    )
+    {
+        if (
+            catMothSpriteRenderer == null ||
+            Mathf.Abs(horizontalDirection) <= 0.01f
+        )
+        {
+            return;
+        }
+
+        // Dash can begin before Rigidbody velocity changes, so directly updating
+        // the sprite prevents CatMoth visually dashing backwards for the first frame.
+        catMothSpriteRenderer.flipX =
+            horizontalDirection < 0f;
+    }
+
     public void ResetFacingDirection()
     {
         if (catMothSpriteRenderer == null)
