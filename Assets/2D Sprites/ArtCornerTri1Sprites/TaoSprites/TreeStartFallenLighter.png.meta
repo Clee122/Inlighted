@@ -1,34 +1,34 @@
 fileFormatVersion: 2
-guid: 531a47b75d4a7724fbdd6c5b20347ecf
+guid: 3c8b192ad10ea794db1539bc42ef2ebd
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -2181142245539560066
-    second: TileMap2Clear_0
+      213: 3113067625228486275
+    second: TreeStartFallenLighter_0
   - first:
-      213: 8357343194744374142
-    second: TileMap2Clear_1
+      213: 6015233088449870337
+    second: TreeStartFallenLighter_1
   - first:
-      213: -1671416796633609177
-    second: TileMap2Clear_2
+      213: 7180061601613113798
+    second: TreeStartFallenLighter_2
   - first:
-      213: -1601403410905693580
-    second: TileMap2Clear_3
+      213: 7461680122226946329
+    second: TreeStartFallenLighter_3
   - first:
-      213: -8571219626477812413
-    second: TileMap2Clear_4
+      213: -8154857775629596194
+    second: TreeStartFallenLighter_4
   - first:
-      213: -2842916076144396476
-    second: TileMap2Clear_5
+      213: -6432346480124105393
+    second: TreeStartFallenLighter_5
   - first:
-      213: -1224486275729439740
-    second: TileMap2Clear_6
+      213: -2330323216062282495
+    second: TreeStartFallenLighter_6
   - first:
-      213: -5384163605795117189
-    second: TileMap2Clear_7
+      213: 7926407527419687360
+    second: TreeStartFallenLighter_7
   - first:
-      213: -7911051172663168404
-    second: TileMap2Clear_8
+      213: 6320799839536986439
+    second: TreeStartFallenLighter_8
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -71,11 +71,11 @@ TextureImporter:
   lightmap: 0
   compressionQuality: 50
   spriteMode: 2
-  spriteExtrude: 0
+  spriteExtrude: 1
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 395
+  spritePixelsToUnits: 100
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -96,7 +96,7 @@ TextureImporter:
   platformSettings:
   - serializedVersion: 4
     buildTarget: DefaultTexturePlatform
-    maxTextureSize: 4096
+    maxTextureSize: 8192
     resizeAlgorithm: 0
     textureFormat: -1
     textureCompression: 0
@@ -124,215 +124,199 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: TileMap2Clear_0
+      name: TreeStartFallenLighter_0
       rect:
         serializedVersion: 2
-        x: 1149
-        y: 1181
-        width: 451
-        height: 414
-      alignment: 9
-      pivot: {x: 0.56, y: 0.48}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape:
-      - - {x: 225.5, y: 190}
-        - {x: 174.5, y: 190}
-        - {x: -225.5, y: -207}
-        - {x: 225.5, y: -207}
-      tessellationDetail: 0
-      bones: []
-      spriteID: e7544021fa60bb1e0800000000000000
-      internalID: -2181142245539560066
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: TileMap2Clear_1
-      rect:
-        serializedVersion: 2
-        x: 2227
-        y: 1797
-        width: 117
-        height: 114
+        x: 34
+        y: 2363
+        width: 78
+        height: 83
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: 0
+      tessellationDetail: -1
       bones: []
-      spriteID: e7344c44b5f3bf370800000000000000
-      internalID: 8357343194744374142
+      spriteID: 386438be286d33b20800000000000000
+      internalID: 3113067625228486275
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: TileMap2Clear_2
+      name: TreeStartFallenLighter_1
       rect:
         serializedVersion: 2
-        x: 671
-        y: 1611
-        width: 9
-        height: 11
+        x: 130
+        y: 2364
+        width: 71
+        height: 84
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: 0
+      tessellationDetail: -1
       bones: []
-      spriteID: 72c480d674fedc8e0800000000000000
-      internalID: -1671416796633609177
+      spriteID: 10afa36bf966a7350800000000000000
+      internalID: 6015233088449870337
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: TileMap2Clear_3
+      name: TreeStartFallenLighter_2
       rect:
         serializedVersion: 2
-        x: 1230
-        y: 1614
-        width: 9
-        height: 11
+        x: 217
+        y: 2357
+        width: 83
+        height: 87
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: 0
+      tessellationDetail: -1
       bones: []
-      spriteID: 4720ed6151ca6c9e0800000000000000
-      internalID: -1601403410905693580
+      spriteID: 6c9629d2cf3b4a360800000000000000
+      internalID: 7180061601613113798
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: TileMap2Clear_4
+      name: TreeStartFallenLighter_3
       rect:
         serializedVersion: 2
-        x: 2385
-        y: 1611
-        width: 7
-        height: 8
+        x: 313
+        y: 2349
+        width: 81
+        height: 100
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: 0
+      tessellationDetail: -1
       bones: []
-      spriteID: 3450fe77929ec0980800000000000000
-      internalID: -8571219626477812413
+      spriteID: 9113ee899863d8760800000000000000
+      internalID: 7461680122226946329
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: TileMap2Clear_5
+      name: TreeStartFallenLighter_4
       rect:
         serializedVersion: 2
-        x: 2549
-        y: 1177
-        width: 449
-        height: 406
-      alignment: 9
-      pivot: {x: 0.55, y: 0.49}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape:
-      - - {x: -129.5, y: 184}
-        - {x: -224.5, y: 184}
-        - {x: -224.5, y: -203}
-        - {x: 224.5, y: -203}
-      tessellationDetail: 0
-      bones: []
-      spriteID: 4477a2324eeeb88d0800000000000000
-      internalID: -2842916076144396476
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: TileMap2Clear_6
-      rect:
-        serializedVersion: 2
-        x: 2940
-        y: 1611
-        width: 7
-        height: 8
+        x: 415
+        y: 2352
+        width: 77
+        height: 91
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: 0
+      tessellationDetail: -1
       bones: []
-      spriteID: 4044ec64830c10fe0800000000000000
-      internalID: -1224486275729439740
+      spriteID: ed904c13f0024de80800000000000000
+      internalID: -8154857775629596194
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: TileMap2Clear_7
+      name: TreeStartFallenLighter_5
       rect:
         serializedVersion: 2
-        x: 599
-        y: 1177
-        width: 453
-        height: 367
-      alignment: 9
-      pivot: {x: 0.45, y: 0.54}
+        x: 524
+        y: 2345
+        width: 91
+        height: 98
+      alignment: 0
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
-      physicsShape:
-      - - {x: 226.5, y: -183.5}
-        - {x: 226.5, y: 174.5}
-        - {x: 119.5, y: 175.5}
-        - {x: -226.5, y: -183.5}
-      tessellationDetail: 0
+      physicsShape: []
+      tessellationDetail: -1
       bones: []
-      spriteID: b77eeff1abb9745b0800000000000000
-      internalID: -5384163605795117189
+      spriteID: f4de7f3d4f6bbb6a0800000000000000
+      internalID: -6432346480124105393
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: TileMap2Clear_8
+      name: TreeStartFallenLighter_6
       rect:
         serializedVersion: 2
-        x: 2001
-        y: 1177
-        width: 442
-        height: 406
-      alignment: 9
-      pivot: {x: 0.45, y: 0.49}
+        x: 644
+        y: 2294
+        width: 161
+        height: 154
+      alignment: 0
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
-      physicsShape:
-      - - {x: -176, y: 188}
-        - {x: -221, y: 188}
-        - {x: -221, y: -203}
-        - {x: 221, y: -203}
-      tessellationDetail: 0
+      physicsShape: []
+      tessellationDetail: -1
       bones: []
-      spriteID: c62797d7fdc463290800000000000000
-      internalID: -7911051172663168404
+      spriteID: 10503cea16709afd0800000000000000
+      internalID: -2330323216062282495
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TreeStartFallenLighter_7
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 400
+        width: 3503
+        height: 1370
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0c135d876a1400e60800000000000000
+      internalID: 7926407527419687360
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TreeStartFallenLighter_8
+      rect:
+        serializedVersion: 2
+        x: 3228
+        y: 1758
+        width: 26
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 749b2fb07fdf7b750800000000000000
+      internalID: 6320799839536986439
       vertices: []
       indices: 
       edges: []
@@ -341,7 +325,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: bcedd75c451fdbc4b9817ce9b94bccd6
+    spriteID: 
     internalID: 0
     vertices: []
     indices: 
@@ -351,15 +335,15 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      TileMap2Clear_0: -2181142245539560066
-      TileMap2Clear_1: 8357343194744374142
-      TileMap2Clear_2: -1671416796633609177
-      TileMap2Clear_3: -1601403410905693580
-      TileMap2Clear_4: -8571219626477812413
-      TileMap2Clear_5: -2842916076144396476
-      TileMap2Clear_6: -1224486275729439740
-      TileMap2Clear_7: -5384163605795117189
-      TileMap2Clear_8: -7911051172663168404
+      TreeStartFallenLighter_0: 3113067625228486275
+      TreeStartFallenLighter_1: 6015233088449870337
+      TreeStartFallenLighter_2: 7180061601613113798
+      TreeStartFallenLighter_3: 7461680122226946329
+      TreeStartFallenLighter_4: -8154857775629596194
+      TreeStartFallenLighter_5: -6432346480124105393
+      TreeStartFallenLighter_6: -2330323216062282495
+      TreeStartFallenLighter_7: 7926407527419687360
+      TreeStartFallenLighter_8: 6320799839536986439
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
