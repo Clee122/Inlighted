@@ -106,6 +106,7 @@ public class LaserBeam
         {
             laserIndices.Add(hitInfo.point);
             UpdateLaser();
+            MPReceiver.DeActivate();
 
             // The receiver is responsible for showing the platform when it is
             // reached by the reflected laser.
@@ -126,6 +127,7 @@ public class LaserBeam
         {
             laserIndices.Add(hitInfo.point);
             UpdateLaser();
+            APReceiver.DeActivate();
 
             // The receiver is responsible for moving the platform when it is
             // reached by the reflected laser.

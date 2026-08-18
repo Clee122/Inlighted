@@ -16,6 +16,7 @@ public class MirrorRotate : MonoBehaviour
 
     public float angle;
     public float angleIncrement;
+    public float initialAngleChange;
 
     public GameObject Player;
 
@@ -33,6 +34,8 @@ public class MirrorRotate : MonoBehaviour
         {
             Debug.Log("player interact not null");
         }
+
+        transform.Rotate(0, 0, initialAngleChange);
     }
 
 
@@ -55,7 +58,7 @@ public class MirrorRotate : MonoBehaviour
                 Debug.Log("if 1 success");
                 if (playerInteract.WasPressedThisFrame())
                 {
-                    angle = +90;
+                    angle =+ angleIncrement;
                     transform.Rotate(0, 0, angle);
                 }
             }
