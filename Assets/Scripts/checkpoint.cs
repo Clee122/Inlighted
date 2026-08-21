@@ -2,6 +2,11 @@ using UnityEngine;
 
 public class checkpoint : MonoBehaviour
 {
+    [Header("Audio")]
+    // Checkpoint audio belongs to the checkpoint itself so different checkpoint
+    // prefabs can later use different sounds without changing player systems.
+    [SerializeField] private AudioClip checkpointSound;
+
     private PlayerRespawn respawn;
     private PlayerLightResource playerLightResource;
 
@@ -65,6 +70,18 @@ public class checkpoint : MonoBehaviour
             // giving the player access to their full resource again.
             playerLightResource.RestoreFullLight(
                 "Checkpoint " + gameObject.name
+            );
+        }
+
+        // The checkpoint sound plays only after the Player has legitimately
+        // entered the checkpoint trigger and its gameplay effects have run.
+        if (
+            checkpointSound != null &&
+            AudioManager.Instance != null
+        )
+        {
+            AudioManager.Instance.PlaySFX(
+                checkpointSound
             );
         }
     }

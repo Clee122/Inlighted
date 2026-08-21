@@ -12,6 +12,11 @@ public class LightBeamController : MonoBehaviour
     [Header("Light Resource Cost")]
     [SerializeField] private float lightCost = 15f;
 
+    [Header("Audio")]
+    // Beam audio belongs to the committed shot rather than the aiming preview,
+    // allowing the final clip to be assigned later without changing input logic.
+    [SerializeField] private AudioClip beamSound;
+
     [Header("Beam Timing")]
     [SerializeField] private float beamActiveDuration = 0.5f;
 
@@ -446,6 +451,19 @@ public class LightBeamController : MonoBehaviour
             );
 
             return;
+        }
+
+        // Beam audio plays only after the shot has passed every validation check
+        // and successfully spent light. Aiming, cancelling or blocked fire
+        // attempts therefore cannot produce the final Beam sound.
+        if (
+            beamSound != null &&
+            AudioManager.Instance != null
+        )
+        {
+            AudioManager.Instance.PlaySFX(
+                beamSound
+            );
         }
 
         // The final red indicator result becomes the fixed fired trajectory.
