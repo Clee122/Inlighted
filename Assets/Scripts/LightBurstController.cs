@@ -30,6 +30,11 @@ public class LightBurstController : MonoBehaviour
     [Header("Light Resource Cost")]
     [SerializeField] private float lightCost = 25f;
 
+    [Header("Audio")]
+    // Burst audio is assigned independently from the VFX so the final sound
+    // can be added later without changing the ability's gameplay behaviour.
+    [SerializeField] private AudioClip burstSound;
+
     [Header("Burst Visual")]
     [SerializeField] private GameObject burstVisual;
 
@@ -236,6 +241,19 @@ public class LightBurstController : MonoBehaviour
             );
 
             return;
+        }
+
+        // Burst audio is triggered only after every gameplay requirement has
+        // succeeded and the light cost has been paid. This prevents blocked
+        // Burst attempts from producing misleading activation audio.
+        if (
+            burstSound != null &&
+            AudioManager.Instance != null
+        )
+        {
+            AudioManager.Instance.PlaySFX(
+                burstSound
+            );
         }
 
         if (burstCoroutine != null)
