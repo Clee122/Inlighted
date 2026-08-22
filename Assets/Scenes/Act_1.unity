@@ -10892,8 +10892,12 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1646749639}
     - target: {fileID: 3660991711021142853, guid: c898284517d91964e88b99c7a7a8ce62, type: 3}
+      propertyPath: radius
+      value: 0.75
+      objectReference: {fileID: 0}
+    - target: {fileID: 3660991711021142853, guid: c898284517d91964e88b99c7a7a8ce62, type: 3}
       propertyPath: distance
-      value: 1
+      value: 0.75
       objectReference: {fileID: 0}
     - target: {fileID: 7374644871520518504, guid: c898284517d91964e88b99c7a7a8ce62, type: 3}
       propertyPath: m_Name
@@ -21569,8 +21573,12 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1646749639}
     - target: {fileID: 3660991711021142853, guid: c898284517d91964e88b99c7a7a8ce62, type: 3}
+      propertyPath: radius
+      value: 0.75
+      objectReference: {fileID: 0}
+    - target: {fileID: 3660991711021142853, guid: c898284517d91964e88b99c7a7a8ce62, type: 3}
       propertyPath: distance
-      value: 1
+      value: 0.75
       objectReference: {fileID: 0}
     - target: {fileID: 3660991711021142853, guid: c898284517d91964e88b99c7a7a8ce62, type: 3}
       propertyPath: initialAngleChange
@@ -23633,8 +23641,12 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1646749639}
     - target: {fileID: 3660991711021142853, guid: c898284517d91964e88b99c7a7a8ce62, type: 3}
+      propertyPath: radius
+      value: 0.75
+      objectReference: {fileID: 0}
+    - target: {fileID: 3660991711021142853, guid: c898284517d91964e88b99c7a7a8ce62, type: 3}
       propertyPath: distance
-      value: 1
+      value: 0.75
       objectReference: {fileID: 0}
     - target: {fileID: 3660991711021142853, guid: c898284517d91964e88b99c7a7a8ce62, type: 3}
       propertyPath: initialAngleChange
@@ -27009,7 +27021,7 @@ GameObject:
   m_Component:
   - component: {fileID: 240271087}
   - component: {fileID: 240271089}
-  - component: {fileID: 240271088}
+  - component: {fileID: 240271090}
   m_Layer: 0
   m_Name: LaserObstacle
   m_TagString: LaserObstacle
@@ -27032,52 +27044,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1066862662}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!61 &240271088
-BoxCollider2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 240271086}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_ForceSendLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ForceReceiveLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ContactCaptureLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_CallbackLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_IsTrigger: 0
-  m_UsedByEffector: 0
-  m_CompositeOperation: 0
-  m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0}
-  m_SpriteTilingProperty:
-    border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1, y: 1}
-    newSize: {x: 1, y: 1}
-    adaptiveTilingThreshold: 0.5
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
-  m_Size: {x: 1, y: 1}
-  m_EdgeRadius: 0
 --- !u!212 &240271089
 SpriteRenderer:
   serializedVersion: 2
@@ -27137,6 +27103,27 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+--- !u!65 &240271090
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 240271086}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1, y: 1, z: 0.2}
+  m_Center: {x: -0.0000038146973, y: -0.0000019073486, z: 0}
 --- !u!1001 &240473822
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -42099,7 +42086,7 @@ GameObject:
   m_Component:
   - component: {fileID: 382241091}
   - component: {fileID: 382241093}
-  - component: {fileID: 382241092}
+  - component: {fileID: 382241094}
   m_Layer: 0
   m_Name: LaserObstacle
   m_TagString: LaserObstacle
@@ -42122,52 +42109,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1814202557}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!61 &382241092
-BoxCollider2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 382241090}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_ForceSendLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ForceReceiveLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ContactCaptureLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_CallbackLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_IsTrigger: 0
-  m_UsedByEffector: 0
-  m_CompositeOperation: 0
-  m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0}
-  m_SpriteTilingProperty:
-    border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1, y: 1}
-    newSize: {x: 1, y: 1}
-    adaptiveTilingThreshold: 0.5
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
-  m_Size: {x: 1, y: 1}
-  m_EdgeRadius: 0
 --- !u!212 &382241093
 SpriteRenderer:
   serializedVersion: 2
@@ -42227,6 +42168,27 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+--- !u!65 &382241094
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 382241090}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1, y: 1, z: 0.2}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1001 &382303173
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -177452,8 +177414,12 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1646749639}
     - target: {fileID: 3660991711021142853, guid: c898284517d91964e88b99c7a7a8ce62, type: 3}
+      propertyPath: radius
+      value: 0.75
+      objectReference: {fileID: 0}
+    - target: {fileID: 3660991711021142853, guid: c898284517d91964e88b99c7a7a8ce62, type: 3}
       propertyPath: distance
-      value: 1
+      value: 0.75
       objectReference: {fileID: 0}
     - target: {fileID: 3660991711021142853, guid: c898284517d91964e88b99c7a7a8ce62, type: 3}
       propertyPath: initialAngleChange
@@ -211799,8 +211765,12 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1646749639}
     - target: {fileID: 3660991711021142853, guid: c898284517d91964e88b99c7a7a8ce62, type: 3}
+      propertyPath: radius
+      value: 0.75
+      objectReference: {fileID: 0}
+    - target: {fileID: 3660991711021142853, guid: c898284517d91964e88b99c7a7a8ce62, type: 3}
       propertyPath: distance
-      value: 1
+      value: 0.75
       objectReference: {fileID: 0}
     - target: {fileID: 3660991711021142853, guid: c898284517d91964e88b99c7a7a8ce62, type: 3}
       propertyPath: initialAngleChange
@@ -215056,8 +215026,12 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1646749639}
     - target: {fileID: 3660991711021142853, guid: c898284517d91964e88b99c7a7a8ce62, type: 3}
+      propertyPath: radius
+      value: 0.75
+      objectReference: {fileID: 0}
+    - target: {fileID: 3660991711021142853, guid: c898284517d91964e88b99c7a7a8ce62, type: 3}
       propertyPath: distance
-      value: 1
+      value: 0.75
       objectReference: {fileID: 0}
     - target: {fileID: 3660991711021142853, guid: c898284517d91964e88b99c7a7a8ce62, type: 3}
       propertyPath: initialAngleChange
@@ -217905,8 +217879,12 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1646749639}
     - target: {fileID: 3660991711021142853, guid: c898284517d91964e88b99c7a7a8ce62, type: 3}
+      propertyPath: radius
+      value: 0.75
+      objectReference: {fileID: 0}
+    - target: {fileID: 3660991711021142853, guid: c898284517d91964e88b99c7a7a8ce62, type: 3}
       propertyPath: distance
-      value: 1
+      value: 0.75
       objectReference: {fileID: 0}
     - target: {fileID: 3660991711021142853, guid: c898284517d91964e88b99c7a7a8ce62, type: 3}
       propertyPath: initialAngleChange
@@ -229386,8 +229364,12 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1646749639}
     - target: {fileID: 3660991711021142853, guid: c898284517d91964e88b99c7a7a8ce62, type: 3}
+      propertyPath: radius
+      value: 0.75
+      objectReference: {fileID: 0}
+    - target: {fileID: 3660991711021142853, guid: c898284517d91964e88b99c7a7a8ce62, type: 3}
       propertyPath: distance
-      value: 1
+      value: 0.75
       objectReference: {fileID: 0}
     - target: {fileID: 3660991711021142853, guid: c898284517d91964e88b99c7a7a8ce62, type: 3}
       propertyPath: initialAngleChange
@@ -229952,7 +229934,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1138052739}
   - component: {fileID: 1138052741}
-  - component: {fileID: 1138052740}
+  - component: {fileID: 1138052742}
   m_Layer: 0
   m_Name: LaserObstacle
   m_TagString: LaserObstacle
@@ -229975,52 +229957,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1623565791}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!61 &1138052740
-BoxCollider2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1138052738}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_ForceSendLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ForceReceiveLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ContactCaptureLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_CallbackLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_IsTrigger: 0
-  m_UsedByEffector: 0
-  m_CompositeOperation: 0
-  m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0}
-  m_SpriteTilingProperty:
-    border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1, y: 1}
-    newSize: {x: 1, y: 1}
-    adaptiveTilingThreshold: 0.5
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
-  m_Size: {x: 1, y: 1}
-  m_EdgeRadius: 0
 --- !u!212 &1138052741
 SpriteRenderer:
   serializedVersion: 2
@@ -230080,6 +230016,27 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+--- !u!65 &1138052742
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1138052738}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1, y: 1, z: 0.2}
+  m_Center: {x: -0.0000038146973, y: 0, z: 0}
 --- !u!1001 &1139027985
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -236763,7 +236720,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1203732566}
   - component: {fileID: 1203732568}
-  - component: {fileID: 1203732567}
+  - component: {fileID: 1203732569}
   m_Layer: 0
   m_Name: LaserObstacle
   m_TagString: LaserObstacle
@@ -236786,52 +236743,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 437738880}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!61 &1203732567
-BoxCollider2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1203732565}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_ForceSendLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ForceReceiveLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ContactCaptureLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_CallbackLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_IsTrigger: 0
-  m_UsedByEffector: 0
-  m_CompositeOperation: 0
-  m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0}
-  m_SpriteTilingProperty:
-    border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1, y: 1}
-    newSize: {x: 1, y: 1}
-    adaptiveTilingThreshold: 0.5
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
-  m_Size: {x: 1, y: 1}
-  m_EdgeRadius: 0
 --- !u!212 &1203732568
 SpriteRenderer:
   serializedVersion: 2
@@ -236891,6 +236802,27 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+--- !u!65 &1203732569
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1203732565}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1, y: 1, z: 0.2}
+  m_Center: {x: 0, y: 0.0000009536743, z: 0}
 --- !u!1001 &1204777766
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -239683,8 +239615,12 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1646749639}
     - target: {fileID: 3660991711021142853, guid: c898284517d91964e88b99c7a7a8ce62, type: 3}
+      propertyPath: radius
+      value: 0.75
+      objectReference: {fileID: 0}
+    - target: {fileID: 3660991711021142853, guid: c898284517d91964e88b99c7a7a8ce62, type: 3}
       propertyPath: distance
-      value: 1
+      value: 0.75
       objectReference: {fileID: 0}
     - target: {fileID: 3660991711021142853, guid: c898284517d91964e88b99c7a7a8ce62, type: 3}
       propertyPath: initialAngleChange
@@ -246943,8 +246879,12 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1646749639}
     - target: {fileID: 3660991711021142853, guid: c898284517d91964e88b99c7a7a8ce62, type: 3}
+      propertyPath: radius
+      value: 0.75
+      objectReference: {fileID: 0}
+    - target: {fileID: 3660991711021142853, guid: c898284517d91964e88b99c7a7a8ce62, type: 3}
       propertyPath: distance
-      value: 1
+      value: 0.75
       objectReference: {fileID: 0}
     - target: {fileID: 7374644871520518504, guid: c898284517d91964e88b99c7a7a8ce62, type: 3}
       propertyPath: m_Name
@@ -247943,7 +247883,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1298225521}
   - component: {fileID: 1298225523}
-  - component: {fileID: 1298225522}
+  - component: {fileID: 1298225524}
   m_Layer: 0
   m_Name: LaserObstacle
   m_TagString: LaserObstacle
@@ -247966,52 +247906,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1643477454}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!61 &1298225522
-BoxCollider2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1298225520}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_ForceSendLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ForceReceiveLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ContactCaptureLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_CallbackLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_IsTrigger: 0
-  m_UsedByEffector: 0
-  m_CompositeOperation: 0
-  m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0}
-  m_SpriteTilingProperty:
-    border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1, y: 1}
-    newSize: {x: 1, y: 1}
-    adaptiveTilingThreshold: 0.5
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
-  m_Size: {x: 1, y: 1}
-  m_EdgeRadius: 0
 --- !u!212 &1298225523
 SpriteRenderer:
   serializedVersion: 2
@@ -248071,6 +247965,27 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+--- !u!65 &1298225524
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1298225520}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1, y: 1, z: 0.2}
+  m_Center: {x: -0.00000047683716, y: 0, z: 0}
 --- !u!1001 &1298258231
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -271866,7 +271781,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1485136102}
   - component: {fileID: 1485136104}
-  - component: {fileID: 1485136103}
+  - component: {fileID: 1485136105}
   m_Layer: 0
   m_Name: LaserObstacle
   m_TagString: LaserObstacle
@@ -271889,52 +271804,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 491105203}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!61 &1485136103
-BoxCollider2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1485136101}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_ForceSendLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ForceReceiveLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ContactCaptureLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_CallbackLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_IsTrigger: 0
-  m_UsedByEffector: 0
-  m_CompositeOperation: 0
-  m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0}
-  m_SpriteTilingProperty:
-    border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1, y: 1}
-    newSize: {x: 1, y: 1}
-    adaptiveTilingThreshold: 0.5
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
-  m_Size: {x: 1, y: 1}
-  m_EdgeRadius: 0
 --- !u!212 &1485136104
 SpriteRenderer:
   serializedVersion: 2
@@ -271994,6 +271863,27 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+--- !u!65 &1485136105
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1485136101}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1, y: 1, z: 0.2}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1001 &1485257835
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -309441,8 +309331,12 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1646749639}
     - target: {fileID: 3660991711021142853, guid: c898284517d91964e88b99c7a7a8ce62, type: 3}
+      propertyPath: radius
+      value: 0.75
+      objectReference: {fileID: 0}
+    - target: {fileID: 3660991711021142853, guid: c898284517d91964e88b99c7a7a8ce62, type: 3}
       propertyPath: distance
-      value: 1
+      value: 0.75
       objectReference: {fileID: 0}
     - target: {fileID: 7374644871520518504, guid: c898284517d91964e88b99c7a7a8ce62, type: 3}
       propertyPath: m_Name
@@ -313492,7 +313386,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1863334455}
   - component: {fileID: 1863334457}
-  - component: {fileID: 1863334456}
+  - component: {fileID: 1863334458}
   m_Layer: 0
   m_Name: LaserObstacle
   m_TagString: LaserObstacle
@@ -313515,52 +313409,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1692297042}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!61 &1863334456
-BoxCollider2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1863334454}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_ForceSendLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ForceReceiveLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ContactCaptureLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_CallbackLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_IsTrigger: 0
-  m_UsedByEffector: 0
-  m_CompositeOperation: 0
-  m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0}
-  m_SpriteTilingProperty:
-    border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1, y: 1}
-    newSize: {x: 1, y: 1}
-    adaptiveTilingThreshold: 0.5
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
-  m_Size: {x: 1, y: 1}
-  m_EdgeRadius: 0
 --- !u!212 &1863334457
 SpriteRenderer:
   serializedVersion: 2
@@ -313620,6 +313468,27 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+--- !u!65 &1863334458
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1863334454}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1, y: 1, z: 0.2}
+  m_Center: {x: -0.0000076293945, y: 0, z: 0}
 --- !u!1001 &1864039825
 PrefabInstance:
   m_ObjectHideFlags: 0
