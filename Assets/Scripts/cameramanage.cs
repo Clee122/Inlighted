@@ -5,17 +5,16 @@ using Cinemachine;
 
 public class cameramanage : MonoBehaviour
 {
-    public float speed = 5f;
+    public float speed = 10f;
 
     private Transform target;
     private Transform player;
 
     public float zoomSpeed = 5f;
     public float targetOrtho;
-    private float normalOrtho;
-    public float maxOrtho = 10.0f;
+    public float normalOrtho = 4;
+    public float maxOrtho = 17.0f;
     public CinemachineVirtualCamera vcam;
-
 
     void Awake()
     {
@@ -26,7 +25,6 @@ public class cameramanage : MonoBehaviour
         
         if (vcam == null)
         {
-            Debug.LogError("VCAM NOT FOUND - cameramanage must be on Virtual Camera");
             enabled = false;
             return;
         }
@@ -42,22 +40,13 @@ public class cameramanage : MonoBehaviour
 
     public void MoveCam()
     {
-        Vector3 newPos = new Vector3(
-            target.position.x,
-            target.position.y,
-            -10
-        );
+        Vector3 newPos = new Vector3(target.position.x, target.position.y +2, -10);
 
-        transform.position = Vector3.MoveTowards(
-            transform.position,
-            newPos,
-            speed * Time.deltaTime
-        );
+        transform.position = Vector3.MoveTowards(transform.position, newPos, speed * Time.deltaTime);
     }
         public void ZoomCam()
     {
-        vcam.m_Lens.OrthographicSize = Mathf.MoveTowards(
-            vcam.m_Lens.OrthographicSize, targetOrtho, zoomSpeed * Time.deltaTime);
+        vcam.m_Lens.OrthographicSize = Mathf.MoveTowards(vcam.m_Lens.OrthographicSize, targetOrtho, zoomSpeed * Time.deltaTime);
     }
 
     public void Movetocameraspace(Transform cameraspace)
@@ -70,5 +59,12 @@ public class cameramanage : MonoBehaviour
     {
         target = player;
         targetOrtho = normalOrtho;
+
+        Vector3 TpPos = new Vector3(player.position.x, player.position.y + 2, -10);
+
+        transform.position = TpPos;
+        vcam.ForceCameraPosition(TpPos, transform.rotation);
+        vcam.PreviousStateIsValid = false;
+        vcam.m_Lens.OrthographicSize = normalOrtho;
     }
 }

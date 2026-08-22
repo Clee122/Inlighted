@@ -16,6 +16,7 @@ public class PlayerRespawn : MonoBehaviour
     // Keeping it separate from death audio makes the two gameplay moments easier
     // to distinguish and lets the final sound be assigned later in the Inspector.
     [SerializeField] private AudioClip respawnSound;
+    [SerializeField] private cameramanage cameraManager;
 
     private PlayerLifeSystem playerLifeSystem;
     private PlayerLightResource playerLightResource;
@@ -55,6 +56,12 @@ public class PlayerRespawn : MonoBehaviour
         }
 
         Debug.Log("RESPAWN CHECK 0: PlayerRespawn Awake completed.");
+
+        if (cameraManager == null)
+        {
+            cameraManager = FindFirstObjectByType<cameramanage>();
+        }
+
     }
 
     public void RespawnPlayer()
@@ -128,6 +135,13 @@ public class PlayerRespawn : MonoBehaviour
         if (respawnPoint != null)
         {
             transform.position = respawnPoint.position;
+
+            Physics2D.SyncTransforms();
+            if (cameraManager != null)
+            {
+                cameraManager.Movecamback();
+            }
+
 
             // Respawn audio is tied to the successful teleport rather than the start
             // of the death routine, so the sound communicates that gameplay is returning.
