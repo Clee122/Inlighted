@@ -13190,6 +13190,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: LightAbilityUnlockObject (2)
       objectReference: {fileID: 0}
+    - target: {fileID: 2941586180050793022, guid: 226a539e60bebf1488521c69759a466a, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2942761728511424725, guid: 226a539e60bebf1488521c69759a466a, type: 3}
       propertyPath: promptObject
       value: 
@@ -162904,6 +162908,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 227656325}
     m_Modifications:
+    - target: {fileID: 5279802086105655944, guid: 618a41195abf9444c89a8674f2dedc24, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -0.354
+      objectReference: {fileID: 0}
     - target: {fileID: 7321695640662405119, guid: 618a41195abf9444c89a8674f2dedc24, type: 3}
       propertyPath: m_Name
       value: Check point gameobject (3)
@@ -195429,7 +195437,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4751962675397519084, guid: ca870d499805af34abb58c087d6ed43b, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -271393,6 +271401,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: LightAbilityUnlockObject (3)
       objectReference: {fileID: 0}
+    - target: {fileID: 2941586180050793022, guid: 226a539e60bebf1488521c69759a466a, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2942761728511424725, guid: 226a539e60bebf1488521c69759a466a, type: 3}
       propertyPath: promptObject
       value: 
@@ -301017,6 +301029,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 227656325}
     m_Modifications:
+    - target: {fileID: 3180168937006919928, guid: 618a41195abf9444c89a8674f2dedc24, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7321695640662405119, guid: 618a41195abf9444c89a8674f2dedc24, type: 3}
       propertyPath: m_Name
       value: Check point gameobject (1)
@@ -340545,7 +340561,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1852412878395821119, guid: 226a539e60bebf1488521c69759a466a, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -30.49
+      value: -30.649
       objectReference: {fileID: 0}
     - target: {fileID: 1852412878395821119, guid: 226a539e60bebf1488521c69759a466a, type: 3}
       propertyPath: m_LocalPosition.z
