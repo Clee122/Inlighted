@@ -42,7 +42,14 @@ public class cameramanage : MonoBehaviour
     {
         Vector3 newPos = new Vector3(target.position.x, target.position.y +2, -10);
 
-        transform.position = Vector3.MoveTowards(transform.position, newPos, speed * Time.deltaTime);
+        if (target == player)
+        {
+            transform.position = newPos;
+        }
+        else
+        {
+            transform.position = Vector3.MoveTowards(transform.position, newPos, speed * Time.deltaTime);
+        }
     }
         public void ZoomCam()
     {
@@ -60,10 +67,8 @@ public class cameramanage : MonoBehaviour
         target = player;
         targetOrtho = normalOrtho;
 
-        Vector3 TpPos = new Vector3(player.position.x, player.position.y + 2, -10);
+        transform.position = new Vector3(player.position.x, player.position.y + 2, -10);
 
-        transform.position = TpPos;
-        vcam.ForceCameraPosition(TpPos, transform.rotation);
         vcam.PreviousStateIsValid = false;
         vcam.m_Lens.OrthographicSize = normalOrtho;
     }
