@@ -118,12 +118,12 @@ TextureImporter:
       name: week 5 - shrine ability unlock_0
       rect:
         serializedVersion: 2
-        x: 85
-        y: 108
-        width: 740
+        x: 82
+        y: 107
+        width: 738
         height: 804
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -140,12 +140,12 @@ TextureImporter:
       name: week 5 - shrine ability unlock_1
       rect:
         serializedVersion: 2
-        x: 361
-        y: 106
-        width: 13
-        height: 9
+        x: 374
+        y: 108
+        width: 5
+        height: 5
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -162,12 +162,12 @@ TextureImporter:
       name: week 5 - shrine ability unlock_2
       rect:
         serializedVersion: 2
-        x: 373
+        x: 1018
         y: 107
-        width: 7
-        height: 7
+        width: 580
+        height: 754
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -184,12 +184,12 @@ TextureImporter:
       name: week 5 - shrine ability unlock_3
       rect:
         serializedVersion: 2
-        x: 1016
+        x: 1223
         y: 108
-        width: 583
-        height: 754
+        width: 5
+        height: 5
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -202,55 +202,11 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
-    - serializedVersion: 2
-      name: week 5 - shrine ability unlock_4
-      rect:
-        serializedVersion: 2
-        x: 1210
-        y: 106
-        width: 13
-        height: 9
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 4358d2d6e64d4a2a0800000000000000
-      internalID: -6727018372641487564
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: week 5 - shrine ability unlock_5
-      rect:
-        serializedVersion: 2
-        x: 1222
-        y: 107
-        width: 7
-        height: 7
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 81481c723d9bb8260800000000000000
-      internalID: 7100973554035950616
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
     outline: []
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: e501d9bc2449f814c8bd9f2c64b8ae9e
     internalID: 0
     vertices: []
     indices: 
@@ -258,14 +214,14 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     spriteCustomMetadata:
-      entries: []
+      entries:
+      - key: SpriteEditor.SliceSettings
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":64.0,"y":64.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":0,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
       week 5 - shrine ability unlock_0: -7568753313039883973
       week 5 - shrine ability unlock_1: -5009319116984081001
       week 5 - shrine ability unlock_2: 1183626555808830409
       week 5 - shrine ability unlock_3: 292990588664856402
-      week 5 - shrine ability unlock_4: -6727018372641487564
-      week 5 - shrine ability unlock_5: 7100973554035950616
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
