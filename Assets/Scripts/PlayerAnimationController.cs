@@ -95,7 +95,12 @@ public class PlayerAnimationController : MonoBehaviour
 
         // A small threshold prevents tiny leftover Rigidbody movement from being treated as running.
         bool isRunning = Mathf.Abs(horizontalVelocity) > runningThreshold;
+
+        // Grounded animation state should come from actual ground contact rather than
+        // vertical velocity because moving uphill can give the Rigidbody positive Y
+        // velocity even though CatMoth is still firmly touching the ground.
         bool isGrounded = CheckGrounded();
+
         bool isDead = playerLifeSystem != null && playerLifeSystem.IsDead();
 
         // These names must match the Animator parameters exactly.
@@ -108,6 +113,7 @@ public class PlayerAnimationController : MonoBehaviour
             Debug.Log(
                 "ANIM CHECK: Animator target = " + catMothAnimator.gameObject.name +
                 " | X Velocity = " + horizontalVelocity +
+                " | Y Velocity = " + playerRigidbody.linearVelocity.y +
                 " | isRunning = " + isRunning +
                 " | isGrounded = " + isGrounded +
                 " | isDead sent = " + isDead +
@@ -264,20 +270,22 @@ public class PlayerAnimationController : MonoBehaviour
             return true;
         }
 
+        // Only colliders on the configured Ground Layer should affect animation
+        // grounding. This prevents walls, triggers, puzzle objects, and other
+        // unrelated colliders from incorrectly keeping CatMoth in a grounded state.
         Collider2D[] hits = Physics2D.OverlapCircleAll(
             groundCheckPoint.position,
-            groundCheckRadius
+            groundCheckRadius,
+            groundLayer
         );
 
         foreach (Collider2D hit in hits)
         {
-            // The ground check may overlap the player's own collider, so we ignore the Player
-            // and any child objects under the Player.
+            // The ground check should never treat the Player or one of its children
+            // as valid ground if the layer setup changes later.
             if (hit.transform == transform || hit.transform.IsChildOf(transform))
                 continue;
 
-            // Any non-player 2D collider touching the GroundCheck counts as ground for now.
-            // This is simple and reliable for the current greybox/platform setup.
             return true;
         }
 

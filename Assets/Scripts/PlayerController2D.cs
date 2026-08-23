@@ -19,6 +19,16 @@ public class PlayerController2D : MonoBehaviour
     [SerializeField] private Transform slopeVisual;
     [SerializeField] private float visualRotationSpeed = 12f;
 
+    // Visual slope rotation checks the surface beneath both sides of the player.
+    // A genuine slope should support both probes, while a platform edge often
+    // supports only one side and should therefore leave CatMoth visually upright.
+    [SerializeField] private float slopeVisualProbeHalfWidth = 0.15f;
+
+    // Both visual probes should detect approximately the same surface angle.
+    // This prevents corners or irregular collider edges from being interpreted
+    // as a genuine slope and rotating CatMoth unexpectedly.
+    [SerializeField] private float slopeVisualAngleTolerance = 5f;
+
     [Header("Jump")]
     [SerializeField] private float jumpForce = 14f;
 
@@ -26,6 +36,15 @@ public class PlayerController2D : MonoBehaviour
     [SerializeField] private Transform groundCheck;
     [SerializeField] private float groundCheckRadius = 0.2f;
     [SerializeField] private LayerMask groundLayer;
+
+    [Header("Audio")]
+    [SerializeField] private AudioClip walkingSound;
+    [SerializeField] private AudioClip jumpSound;
+
+    // Walking audio checks actual Rigidbody movement rather than input alone.
+    // This prevents footsteps from continuing when the player holds against
+    // a wall or another system has successfully stopped their movement.
+    [SerializeField] private float walkingAudioSpeedThreshold = 0.1f;
 
     [Header("Debug")]
     [SerializeField] private bool showMovementDebugLogs = false;
@@ -128,6 +147,10 @@ public class PlayerController2D : MonoBehaviour
     private void Update()
     {
         UpdateGroundedState();
+
+        // Walking audio is checked after grounded state so footsteps stop as soon
+        // as CatMoth leaves the floor and resume only after valid grounded movement.
+        UpdateWalkingAudio();
     }
 
     private void FixedUpdate()
@@ -185,6 +208,66 @@ public class PlayerController2D : MonoBehaviour
             }
 
             isInPlayerControlledJump = false;
+        }
+    }
+
+    private void UpdateWalkingAudio()
+    {
+        // Leaving this empty is valid while the final audio assets are pending.
+        // Returning here also prevents an unassigned walking sound from interfering
+        // with another looping sound such as Light Channel.
+        if (
+            walkingSound == null ||
+            rb == null ||
+            AudioManager.Instance == null
+        )
+        {
+            return;
+        }
+
+        // Actual Rigidbody movement is checked alongside movement input so holding
+        // a direction against a wall does not incorrectly produce walking audio.
+        bool isActuallyMoving =
+            rb.linearVelocity.magnitude >
+            walkingAudioSpeedThreshold;
+
+        bool shouldPlayWalkingAudio =
+            isGrounded &&
+            isActuallyMoving &&
+            HasHorizontalMovementInput() &&
+            !isChannelingLocked;
+
+        if (
+            lightBeamController != null &&
+            lightBeamController.IsBeamActive()
+        )
+        {
+            // A fired Beam completely freezes the player, so footsteps must stop
+            // even when the movement key remains held for movement afterwards.
+            shouldPlayWalkingAudio = false;
+        }
+
+        if (
+            playerDash != null &&
+            playerDash.IsDashing()
+        )
+        {
+            // Dash remains experimental and is not treated as normal walking.
+            // Preventing footsteps here avoids giving dash unintended audio.
+            shouldPlayWalkingAudio = false;
+        }
+
+        if (shouldPlayWalkingAudio)
+        {
+            AudioManager.Instance.StartLoopingSFX(
+                walkingSound
+            );
+        }
+        else
+        {
+            AudioManager.Instance.StopLoopingSFX(
+                walkingSound
+            );
         }
     }
 
@@ -445,6 +528,19 @@ public class PlayerController2D : MonoBehaviour
 
             isInPlayerControlledJump = true;
 
+            // Jump audio happens only once the gameplay jump has successfully
+            // applied upward velocity. Invalid or blocked jump input therefore
+            // cannot produce a sound when CatMoth did not actually jump.
+            if (
+                jumpSound != null &&
+                AudioManager.Instance != null
+            )
+            {
+                AudioManager.Instance.PlaySFX(
+                    jumpSound
+                );
+            }
+
             Debug.Log(
                 "Player-controlled jump started. " +
                 "This jump can generate light while the player remains airborne."
@@ -673,17 +769,18 @@ public class PlayerController2D : MonoBehaviour
 
         float targetSlopeAngle = 0f;
 
+        // Normal movement can continue using the centre slope check, but the
+        // CatMoth visual only rotates when both sides detect a stable slope.
+        // This prevents platform lips from being mistaken for real inclines.
         if (
             isGrounded &&
-            isOnWalkableSlope
+            TryGetStableVisualSlopeAngle(
+                out float stableSlopeAngle
+            )
         )
         {
             targetSlopeAngle =
-                Mathf.Atan2(
-                    slopeDirection.y,
-                    slopeDirection.x
-                ) *
-                Mathf.Rad2Deg;
+                stableSlopeAngle;
         }
 
         if (showMovementDebugLogs)
@@ -691,9 +788,9 @@ public class PlayerController2D : MonoBehaviour
             Debug.Log(
                 "Grounded: " +
                 isGrounded +
-                " | On slope: " +
+                " | Movement slope: " +
                 isOnWalkableSlope +
-                " | Detected angle: " +
+                " | Visual slope angle: " +
                 targetSlopeAngle +
                 " | Visual: " +
                 slopeVisual.name
@@ -707,6 +804,118 @@ public class PlayerController2D : MonoBehaviour
                 0f,
                 targetSlopeAngle
             );
+    }
+
+    private bool TryGetStableVisualSlopeAngle(
+        out float visualSlopeAngle
+    )
+    {
+        visualSlopeAngle = 0f;
+
+        if (groundCheck == null)
+        {
+            return false;
+        }
+
+        Vector2 leftProbeOrigin =
+            (Vector2)groundCheck.position +
+            Vector2.left *
+            slopeVisualProbeHalfWidth;
+
+        Vector2 rightProbeOrigin =
+            (Vector2)groundCheck.position +
+            Vector2.right *
+            slopeVisualProbeHalfWidth;
+
+        // Both sides of CatMoth must find ground before the visual can rotate.
+        // At a platform edge one probe should normally lose contact, preventing
+        // CatMoth from adopting the angle of the collider's corner.
+        RaycastHit2D leftHit =
+            Physics2D.Raycast(
+                leftProbeOrigin,
+                Vector2.down,
+                slopeCheckDistance,
+                groundLayer
+            );
+
+        RaycastHit2D rightHit =
+            Physics2D.Raycast(
+                rightProbeOrigin,
+                Vector2.down,
+                slopeCheckDistance,
+                groundLayer
+            );
+
+        if (
+            !leftHit ||
+            !rightHit
+        )
+        {
+            return false;
+        }
+
+        float leftSlopeAngle =
+            Vector2.Angle(
+                leftHit.normal,
+                Vector2.up
+            );
+
+        float rightSlopeAngle =
+            Vector2.Angle(
+                rightHit.normal,
+                Vector2.up
+            );
+
+        // A large difference between the two normals usually means the probes
+        // are sitting across a corner or collider boundary rather than one
+        // continuous slope.
+        if (
+            Mathf.Abs(
+                leftSlopeAngle -
+                rightSlopeAngle
+            ) >
+            slopeVisualAngleTolerance
+        )
+        {
+            return false;
+        }
+
+        Vector2 averagedNormal =
+            (
+                leftHit.normal +
+                rightHit.normal
+            ).normalized;
+
+        float averagedSlopeAngle =
+            Vector2.Angle(
+                averagedNormal,
+                Vector2.up
+            );
+
+        // Flat surfaces keep the character upright, while surfaces steeper
+        // than the movement limit should not visually behave like walkable slopes.
+        if (
+            averagedSlopeAngle <= 0.1f ||
+            averagedSlopeAngle > maximumSlopeAngle
+        )
+        {
+            return false;
+        }
+
+        Vector2 visualSlopeDirection =
+            new Vector2(
+                averagedNormal.y,
+                -averagedNormal.x
+            ).normalized;
+
+        visualSlopeAngle =
+            Mathf.Atan2(
+                visualSlopeDirection.y,
+                visualSlopeDirection.x
+            ) *
+            Mathf.Rad2Deg;
+
+        return true;
     }
 
     private void OnDrawGizmosSelected()
@@ -727,9 +936,36 @@ public class PlayerController2D : MonoBehaviour
         Gizmos.color =
             Color.cyan;
 
+        // The centre ray remains the slope probe used by normal movement.
         Gizmos.DrawLine(
             groundCheck.position,
             groundCheck.position +
+            Vector3.down *
+            slopeCheckDistance
+        );
+
+        Vector3 leftProbeOrigin =
+            groundCheck.position +
+            Vector3.left *
+            slopeVisualProbeHalfWidth;
+
+        Vector3 rightProbeOrigin =
+            groundCheck.position +
+            Vector3.right *
+            slopeVisualProbeHalfWidth;
+
+        // The two additional rays verify that the visual is standing over one
+        // continuous slope rather than only touching a platform corner.
+        Gizmos.DrawLine(
+            leftProbeOrigin,
+            leftProbeOrigin +
+            Vector3.down *
+            slopeCheckDistance
+        );
+
+        Gizmos.DrawLine(
+            rightProbeOrigin,
+            rightProbeOrigin +
             Vector3.down *
             slopeCheckDistance
         );
@@ -797,8 +1033,36 @@ public class PlayerController2D : MonoBehaviour
                 slopeVisualBaseRotation;
         }
 
+        // Respawning clears movement, so any active footstep loop should also
+        // stop rather than carrying audio from the previous life into respawn.
+        if (
+            walkingSound != null &&
+            AudioManager.Instance != null
+        )
+        {
+            AudioManager.Instance.StopLoopingSFX(
+                walkingSound
+            );
+        }
+
         Debug.Log(
             "Player movement input and player-controlled jump state were reset."
         );
+    }
+
+    private void OnDisable()
+    {
+        // PlayerRespawn temporarily disables this controller during death.
+        // Stopping footsteps here prevents the walking loop from continuing
+        // while CatMoth is dead or movement control is otherwise disabled.
+        if (
+            walkingSound != null &&
+            AudioManager.Instance != null
+        )
+        {
+            AudioManager.Instance.StopLoopingSFX(
+                walkingSound
+            );
+        }
     }
 }

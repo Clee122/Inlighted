@@ -20,6 +20,12 @@ public class PlayerLightChannel : MonoBehaviour
     [Header("Voluntary Cancellation")]
     [SerializeField] private float refundDelay = 0.5f;
 
+    [Header("Audio")]
+    // Channel audio loops for the full duration of a valid channel attempt.
+    // Keeping the clip assignable means the final sound can be added later
+    // without changing any healing or input behaviour.
+    [SerializeField] private AudioClip channelSound;
+
     [Header("Debug")]
     [SerializeField] private bool showDebugLogs = true;
 
@@ -203,6 +209,10 @@ public class PlayerLightChannel : MonoBehaviour
         // Movement is locked while channeling so restoring health requires the
         // player to remain stationary and commit to the action.
         playerController.SetChannelingLocked(true);
+
+        // Channel audio begins only after every gameplay requirement has passed.
+        // Rejected channel attempts therefore cannot start the healing loop.
+        StartChannelAudio();
 
         if (showDebugLogs)
         {
@@ -435,6 +445,10 @@ public class PlayerLightChannel : MonoBehaviour
         isWaitingBetweenLives = false;
         delayBetweenLivesTimer = 0f;
 
+        // The loop must stop at the same moment the channel state ends so audio
+        // cannot continue during the delayed refund period.
+        StopChannelAudio();
+
         if (playerController != null)
         {
             playerController.SetChannelingLocked(false);
@@ -488,6 +502,10 @@ public class PlayerLightChannel : MonoBehaviour
         delayBetweenLivesTimer = 0f;
         lightSpentThisAttempt = 0f;
 
+        // Damage ends the channel immediately, so its audio must also stop
+        // before normal movement or hurt behaviour resumes.
+        StopChannelAudio();
+
         if (playerController != null)
         {
             playerController.SetChannelingLocked(false);
@@ -513,6 +531,10 @@ public class PlayerLightChannel : MonoBehaviour
         delayBetweenLivesTimer = 0f;
         lightSpentThisAttempt = 0f;
 
+        // Death must always clear the channel loop even if the channel state
+        // changes before the respawn sequence begins.
+        StopChannelAudio();
+
         if (playerController != null)
         {
             playerController.SetChannelingLocked(false);
@@ -537,6 +559,10 @@ public class PlayerLightChannel : MonoBehaviour
         delayBetweenLivesTimer = 0f;
         lightSpentThisAttempt = 0f;
 
+        // Respawn is another safety boundary for the loop. Stopping it here
+        // guarantees an interrupted death sequence cannot leave channel audio active.
+        StopChannelAudio();
+
         if (playerController != null)
         {
             playerController.SetChannelingLocked(false);
@@ -557,6 +583,10 @@ public class PlayerLightChannel : MonoBehaviour
         delayBetweenLivesTimer = 0f;
         lightSpentThisAttempt = 0f;
 
+        // Natural completion, full health and exhausted light all end the active
+        // channel, so the loop should stop without waiting for input release.
+        StopChannelAudio();
+
         if (playerController != null)
         {
             playerController.SetChannelingLocked(false);
@@ -566,6 +596,40 @@ public class PlayerLightChannel : MonoBehaviour
         {
             Debug.Log(reason);
         }
+    }
+
+    private void StartChannelAudio()
+    {
+        if (
+            channelSound == null ||
+            AudioManager.Instance == null
+        )
+        {
+            return;
+        }
+
+        // The AudioManager protects against restarting an identical active loop,
+        // allowing this method to stay safe if channel-start logic changes later.
+        AudioManager.Instance.StartLoopingSFX(
+            channelSound
+        );
+    }
+
+    private void StopChannelAudio()
+    {
+        if (
+            channelSound == null ||
+            AudioManager.Instance == null
+        )
+        {
+            return;
+        }
+
+        // Passing the channel clip means this script only stops its own loop.
+        // It cannot accidentally stop another looping sound owned by a different system.
+        AudioManager.Instance.StopLoopingSFX(
+            channelSound
+        );
     }
 
     private IEnumerator RefundAfterDelay()
@@ -683,5 +747,12 @@ public class PlayerLightChannel : MonoBehaviour
         // is waiting to be returned, otherwise regeneration and refund can stack.
         return pendingRefund > 0.001f ||
                refundCoroutine != null;
+    }
+
+    private void OnDisable()
+    {
+        // Disabling the component or Player should never leave its looping
+        // channel sound active after the gameplay system has stopped running.
+        StopChannelAudio();
     }
 }

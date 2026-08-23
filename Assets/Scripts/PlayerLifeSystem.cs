@@ -19,6 +19,15 @@ public class PlayerLifeSystem : MonoBehaviour
     private bool isInvulnerable = false;
     private bool isDead = false;
 
+    [Header("Audio")]
+    // Hurt audio plays only when valid damage is accepted and the player survives.
+    // Keeping it separate from death prevents the final hit from playing both sounds.
+    [SerializeField] private AudioClip hurtSound;
+
+    // Death audio plays once when the life system genuinely enters the dead state.
+    // Additional hazards cannot replay it because Die() already guards against duplicates.
+    [SerializeField] private AudioClip deathSound;
+
     [Header("Darkness Indicator Settings")]
     public Image DarknessIndicator;
     private Color tempColor;
@@ -66,7 +75,12 @@ public class PlayerLifeSystem : MonoBehaviour
 
         NotifyLivesChanged();
 
-        Debug.Log("LIFE CHECK 1: Start completed. Current lives = " + currentLives + " / " + maxLives);
+        Debug.Log(
+            "LIFE CHECK 1: Start completed. Current lives = " +
+            currentLives +
+            " / " +
+            maxLives
+        );
     }
 
     public void TakeDamage(int amount)
@@ -82,7 +96,10 @@ public class PlayerLifeSystem : MonoBehaviour
         // cannot remove several lives during the same contact.
         if (isDead || isInvulnerable)
         {
-            Debug.Log("LIFE CHECK 2 STOPPED: Damage ignored because player is dead or invulnerable.");
+            Debug.Log(
+                "LIFE CHECK 2 STOPPED: Damage ignored because player is dead or invulnerable."
+            );
+
             return;
         }
 
@@ -90,12 +107,17 @@ public class PlayerLifeSystem : MonoBehaviour
         // should not repeatedly cancel the player's healing attempt.
         if (playerLightChannel != null)
         {
-            Debug.Log("LIFE CHECK 3: Interrupting light channel by damage.");
+            Debug.Log(
+                "LIFE CHECK 3: Interrupting light channel by damage."
+            );
+
             playerLightChannel.InterruptByDamage();
         }
         else
         {
-            Debug.Log("LIFE CHECK 3: No PlayerLightChannel found. Skipping damage interrupt.");
+            Debug.Log(
+                "LIFE CHECK 3: No PlayerLightChannel found. Skipping damage interrupt."
+            );
         }
 
         currentLives -= amount;
@@ -116,22 +138,44 @@ public class PlayerLifeSystem : MonoBehaviour
 
         if (currentLives <= 0)
         {
-            Debug.Log("LIFE CHECK 5: Lives reached 0. Calling Die().");
+            Debug.Log(
+                "LIFE CHECK 5: Lives reached 0. Calling Die()."
+            );
+
             Die();
         }
         else
         {
+            // Hurt audio belongs only to non-lethal damage. Playing it here
+            // prevents the final hit from producing both hurt and death sounds.
+            if (
+                hurtSound != null &&
+                AudioManager.Instance != null
+            )
+            {
+                AudioManager.Instance.PlaySFX(
+                    hurtSound
+                );
+            }
+
             // The hurt animation plays only when the player survives the hit.
             // The final hit should transition into death behaviour instead.
             if (playerAnimationController == null)
             {
-                playerAnimationController = GetComponent<PlayerAnimationController>();
-                Debug.Log("LIFE CHECK 6: Tried to find PlayerAnimationController again for hurt animation.");
+                playerAnimationController =
+                    GetComponent<PlayerAnimationController>();
+
+                Debug.Log(
+                    "LIFE CHECK 6: Tried to find PlayerAnimationController again for hurt animation."
+                );
             }
 
             if (playerAnimationController != null)
             {
-                Debug.Log("LIFE CHECK 7: Playing hurt animation.");
+                Debug.Log(
+                    "LIFE CHECK 7: Playing hurt animation."
+                );
+
                 playerAnimationController.PlayHurtAnimation();
             }
             else
@@ -203,7 +247,10 @@ public class PlayerLifeSystem : MonoBehaviour
         // by additional hazards after the player has already died.
         if (isDead)
         {
-            Debug.LogWarning("LIFE CHECK DIE STOPPED: Die() was called, but player is already dead.");
+            Debug.LogWarning(
+                "LIFE CHECK DIE STOPPED: Die() was called, but player is already dead."
+            );
+
             return;
         }
 
@@ -211,49 +258,83 @@ public class PlayerLifeSystem : MonoBehaviour
         isInvulnerable = true;
         currentLives = 0;
 
-        Debug.Log("LIFE CHECK DIE 1: Player entered Die(). isDead is now true.");
+        Debug.Log(
+            "LIFE CHECK DIE 1: Player entered Die(). isDead is now true."
+        );
+
+        // Death audio is triggered only after the dead state is successfully set.
+        // The isDead guard above ensures repeated hazard contact cannot replay it.
+        if (
+            deathSound != null &&
+            AudioManager.Instance != null
+        )
+        {
+            AudioManager.Instance.PlaySFX(
+                deathSound
+            );
+        }
 
         // The death animation needs visual priority because darkness zones can cover
         // the player sprite and make the death animation difficult to see.
         if (playerAnimationController == null)
         {
-            playerAnimationController = GetComponent<PlayerAnimationController>();
-            Debug.Log("LIFE CHECK DIE 2: Tried to find PlayerAnimationController again.");
+            playerAnimationController =
+                GetComponent<PlayerAnimationController>();
+
+            Debug.Log(
+                "LIFE CHECK DIE 2: Tried to find PlayerAnimationController again."
+            );
         }
 
         if (playerAnimationController != null)
         {
-            Debug.Log("LIFE CHECK DIE 3: PlayerAnimationController found. Setting death visual priority.");
+            Debug.Log(
+                "LIFE CHECK DIE 3: PlayerAnimationController found. Setting death visual priority."
+            );
+
             playerAnimationController.SetDeathVisualPriority();
         }
         else
         {
-            Debug.LogWarning("LIFE CHECK DIE 3 FAILED: PlayerAnimationController is missing.");
+            Debug.LogWarning(
+                "LIFE CHECK DIE 3 FAILED: PlayerAnimationController is missing."
+            );
         }
 
         // Death permanently ends the active channel attempt. Respawning handles
         // the later health and light restoration separately.
         if (playerLightChannel != null)
         {
-            Debug.Log("LIFE CHECK DIE 4: Interrupting channel by death.");
+            Debug.Log(
+                "LIFE CHECK DIE 4: Interrupting channel by death."
+            );
+
             playerLightChannel.InterruptByDeath();
         }
         else
         {
-            Debug.Log("LIFE CHECK DIE 4: No PlayerLightChannel found. Skipping channel death interrupt.");
+            Debug.Log(
+                "LIFE CHECK DIE 4: No PlayerLightChannel found. Skipping channel death interrupt."
+            );
         }
 
         NotifyLivesChanged();
 
-        Debug.Log("LIFE CHECK DIE 5: Player died. Lives notification sent.");
+        Debug.Log(
+            "LIFE CHECK DIE 5: Player died. Lives notification sent."
+        );
 
-        PlayerRespawn playerRespawn = GetComponent<PlayerRespawn>();
+        PlayerRespawn playerRespawn =
+            GetComponent<PlayerRespawn>();
 
         // PlayerRespawn already manages the death delay, UI and teleport, so the
         // life system only needs to request that routine once.
         if (playerRespawn != null)
         {
-            Debug.Log("LIFE CHECK DIE 6: PlayerRespawn found. Calling RespawnPlayer().");
+            Debug.Log(
+                "LIFE CHECK DIE 6: PlayerRespawn found. Calling RespawnPlayer()."
+            );
+
             playerRespawn.RespawnPlayer();
         }
         else
@@ -270,7 +351,11 @@ public class PlayerLifeSystem : MonoBehaviour
         // prevents the player from losing several lives almost instantly.
         isInvulnerable = true;
 
-        Debug.Log("LIFE CHECK INVULNERABILITY: Started for " + invulnerabilityDuration + " seconds.");
+        Debug.Log(
+            "LIFE CHECK INVULNERABILITY: Started for " +
+            invulnerabilityDuration +
+            " seconds."
+        );
 
         yield return new WaitForSeconds(
             invulnerabilityDuration
@@ -278,7 +363,9 @@ public class PlayerLifeSystem : MonoBehaviour
 
         isInvulnerable = false;
 
-        Debug.Log("LIFE CHECK INVULNERABILITY: Ended.");
+        Debug.Log(
+            "LIFE CHECK INVULNERABILITY: Ended."
+        );
     }
 
     public int GetCurrentLives()
@@ -309,24 +396,35 @@ public class PlayerLifeSystem : MonoBehaviour
         isDead = false;
         isInvulnerable = false;
 
-        Debug.Log("LIFE CHECK RESTORE: RestoreFullLives called. isDead is now false.");
+        Debug.Log(
+            "LIFE CHECK RESTORE: RestoreFullLives called. isDead is now false."
+        );
 
         if (playerAnimationController == null)
         {
-            playerAnimationController = GetComponent<PlayerAnimationController>();
-            Debug.Log("LIFE CHECK RESTORE: Tried to find PlayerAnimationController again.");
+            playerAnimationController =
+                GetComponent<PlayerAnimationController>();
+
+            Debug.Log(
+                "LIFE CHECK RESTORE: Tried to find PlayerAnimationController again."
+            );
         }
 
         if (playerAnimationController != null)
         {
             // Death temporarily raises the CatMoth above darkness, so respawn must
             // restore the normal sorting values before gameplay continues.
-            Debug.Log("LIFE CHECK RESTORE: Resetting CatMoth visual priority.");
+            Debug.Log(
+                "LIFE CHECK RESTORE: Resetting CatMoth visual priority."
+            );
+
             playerAnimationController.ResetVisualPriority();
         }
         else
         {
-            Debug.LogWarning("LIFE CHECK RESTORE FAILED: PlayerAnimationController is missing.");
+            Debug.LogWarning(
+                "LIFE CHECK RESTORE FAILED: PlayerAnimationController is missing."
+            );
         }
 
         // The shared notification updates Eladio's HUD and any other health
@@ -351,7 +449,9 @@ public class PlayerLifeSystem : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning("LIFE CHECK INDICATOR FAILED: DarknessIndicator is not assigned.");
+            Debug.LogWarning(
+                "LIFE CHECK INDICATOR FAILED: DarknessIndicator is not assigned."
+            );
         }
     }
 
@@ -361,7 +461,10 @@ public class PlayerLifeSystem : MonoBehaviour
         // keeps the visual alpha calculation consistent in either direction.
         if (DarknessIndicator == null)
         {
-            Debug.LogWarning("LIFE CHECK INDICATOR UPDATE FAILED: DarknessIndicator is not assigned.");
+            Debug.LogWarning(
+                "LIFE CHECK INDICATOR UPDATE FAILED: DarknessIndicator is not assigned."
+            );
+
             return;
         }
 
@@ -371,7 +474,10 @@ public class PlayerLifeSystem : MonoBehaviour
 
         DarknessIndicator.color = tempColor;
 
-        Debug.Log("LIFE CHECK INDICATOR UPDATE: Darkness alpha updated to " + tempColor.a);
+        Debug.Log(
+            "LIFE CHECK INDICATOR UPDATE: Darkness alpha updated to " +
+            tempColor.a
+        );
     }
 
     private void NotifyLivesChanged()
@@ -392,7 +498,10 @@ public class PlayerLifeSystem : MonoBehaviour
         // damage, so it enters death behaviour directly.
         if (collision.gameObject.CompareTag("dead pit"))
         {
-            Debug.Log("LIFE CHECK PIT: Player collided with dead pit. Calling Die().");
+            Debug.Log(
+                "LIFE CHECK PIT: Player collided with dead pit. Calling Die()."
+            );
+
             Die();
         }
     }
@@ -411,7 +520,8 @@ public class PlayerLifeSystem : MonoBehaviour
 
             if (playerAnimationController == null)
             {
-                playerAnimationController = GetComponent<PlayerAnimationController>();
+                playerAnimationController =
+                    GetComponent<PlayerAnimationController>();
             }
 
             if (playerAnimationController != null)
