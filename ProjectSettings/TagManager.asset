@@ -15,6 +15,7 @@ TagManager:
   - MovingPlatformLightReceiver
   - cameraspace
   - LaserObstacle
+  - BurstPassThrough
   layers:
   - Default
   - TransparentFX
@@ -60,6 +61,9 @@ TagManager:
     locked: 0
   - name: Player
     uniqueID: 1562062577
+    locked: 0
+  - name: BurstPassThrough
+    uniqueID: 596340067
     locked: 0
   - name: ForeGroundAssets
     uniqueID: 1275393889

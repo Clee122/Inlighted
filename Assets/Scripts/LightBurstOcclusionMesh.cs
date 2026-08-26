@@ -10,26 +10,25 @@ public class LightBurstOcclusionMesh : MonoBehaviour
 
     [Header("Wall Detection")]
 
-    // The occlusion mesh only reacts to level geometry on this layer.
-    // Keeping this separate from the main Burst visual means walls can hide
-    // portions of the effect without deforming the circular Burst itself.
+    // The occlusion mesh still checks the normal Ground layer because both
+    // genuine blockers and Burst-pass-through platforms need player collision.
+    // The tag check later decides which Ground colliders actually block Burst.
     [SerializeField] private LayerMask wallLayer;
 
-    // A higher ray count gives the cover more precision around platform edges.
-    // We are using a reasonably high default because this mesh only exists
-    // while Light Burst is active.
+    // A higher ray count gives the cover more precision around walls, floors,
+    // ceilings and platform edges while the Burst is expanding.
     [SerializeField] private int rayCount = 128;
 
     // The cover begins slightly beyond the collision point so it does not
-    // accidentally hide the visible contact edge of the Burst.
+    // noticeably overlap the visible contact boundary of the Burst.
     [SerializeField] private float occlusionOverlap = 0.03f;
 
     [Header("Rendering")]
 
-    // The occlusion mesh must draw above the main Burst during this debug stage
-    // so the black material clearly shows which part of the Burst is being covered.
-    [SerializeField] private string sortingLayerName = "Default";
-    [SerializeField] private int sortingOrder = 11;
+    // The occlusion mesh must render above the circular Burst because its job
+    // is to redraw the captured environment over sections blocked by geometry.
+    [SerializeField] private string sortingLayerName = "Player";
+    [SerializeField] private int sortingOrder = 6;
 
     private Mesh occlusionMesh;
     private MeshFilter meshFilter;
@@ -62,8 +61,8 @@ public class LightBurstOcclusionMesh : MonoBehaviour
 
     private void OnDisable()
     {
-        // Clearing the generated geometry prevents the previous Burst shape
-        // from briefly appearing when this object is enabled again later.
+        // Clearing the generated mesh prevents geometry from a previous Burst
+        // briefly appearing when this object becomes active again.
         if (occlusionMesh != null)
         {
             occlusionMesh.Clear();
@@ -86,8 +85,8 @@ public class LightBurstOcclusionMesh : MonoBehaviour
 
         if (meshRenderer != null)
         {
-            // Explicit sorting ensures the debug cover renders above the
-            // circular Burst while we verify the occlusion geometry.
+            // Explicit sorting keeps the environment-cover mesh above the Burst
+            // while still allowing foreground artwork to render over both.
             meshRenderer.sortingLayerName =
                 sortingLayerName;
 
@@ -97,8 +96,8 @@ public class LightBurstOcclusionMesh : MonoBehaviour
 
         if (lightBurstController == null)
         {
-            // This object is expected to be a child of Player, so searching
-            // upwards avoids requiring a manually maintained reference.
+            // BurstOcclusionMesh normally sits underneath Player, so finding the
+            // controller through the parent avoids another manual reference.
             lightBurstController =
                 GetComponentInParent<LightBurstController>();
         }
@@ -135,7 +134,7 @@ public class LightBurstOcclusionMesh : MonoBehaviour
         }
 
         // Runtime-generated meshes can lose their MeshFilter assignment after
-        // enable/disable cycles, so reconnect it if necessary.
+        // enable/disable cycles, so reconnecting it keeps repeated uses reliable.
         if (
             meshFilter != null &&
             meshFilter.sharedMesh != occlusionMesh
@@ -186,9 +185,11 @@ public class LightBurstOcclusionMesh : MonoBehaviour
             transform.position;
 
         /*
-         * Each ray records whether it encounters solid geometry before reaching
-         * the outer Burst radius. The cover is generated only between adjacent
-         * rays that are both blocked, which avoids filling completely open gaps.
+         * Each radial sample looks for the first genuine Burst blocker.
+         *
+         * RaycastAll is important here because BurstPassThrough platforms remain
+         * on the Ground layer for normal player collision. A single Raycast would
+         * stop at those platforms before discovering a real wall behind them.
          */
         OcclusionSample[] samples =
             new OcclusionSample[
@@ -212,13 +213,51 @@ public class LightBurstOcclusionMesh : MonoBehaviour
                     Mathf.Sin(angle)
                 ).normalized;
 
-            RaycastHit2D hit =
-                Physics2D.Raycast(
+            RaycastHit2D[] hits =
+                Physics2D.RaycastAll(
                     worldOrigin,
                     direction,
                     currentRadius,
                     wallLayer
                 );
+
+            RaycastHit2D blockingHit =
+                new RaycastHit2D();
+
+            bool foundBlockingHit =
+                false;
+
+            foreach (RaycastHit2D hit in hits)
+            {
+                if (hit.collider == null)
+                {
+                    continue;
+                }
+
+                /*
+                 * These platforms should still behave as Ground for movement,
+                 * but visually the Burst is allowed to continue through them.
+                 *
+                 * Skipping them here prevents the harsh radial cut that appeared
+                 * when small platforms were treated like full walls.
+                 */
+                if (
+                    hit.collider.CompareTag(
+                        "BurstPassThrough"
+                    )
+                )
+                {
+                    continue;
+                }
+
+                blockingHit =
+                    hit;
+
+                foundBlockingHit =
+                    true;
+
+                break;
+            }
 
             OcclusionSample sample =
                 new OcclusionSample();
@@ -226,7 +265,7 @@ public class LightBurstOcclusionMesh : MonoBehaviour
             sample.direction =
                 direction;
 
-            if (hit.collider != null)
+            if (foundBlockingHit)
             {
                 sample.blocked =
                     true;
@@ -234,12 +273,17 @@ public class LightBurstOcclusionMesh : MonoBehaviour
                 sample.hitDistance =
                     Mathf.Min(
                         currentRadius,
-                        hit.distance +
+                        blockingHit.distance +
                         occlusionOverlap
                     );
             }
             else
             {
+                /*
+                 * If this direction contains only BurstPassThrough platforms or
+                 * completely open space, no occlusion is generated. The circular
+                 * Burst therefore continues naturally in that direction.
+                 */
                 sample.blocked =
                     false;
 
@@ -264,9 +308,9 @@ public class LightBurstOcclusionMesh : MonoBehaviour
                 samples[i + 1];
 
             /*
-             * A cover section is created only when both neighbouring rays hit
-             * geometry. This keeps open spaces and gaps uncovered instead of
-             * bridging across them with large triangles.
+             * Cover geometry is created only when both neighbouring samples find
+             * genuine blockers. This avoids bridging large open gaps with a single
+             * triangle and keeps platform pass-through regions visually open.
              */
             if (
                 !first.blocked ||
@@ -323,8 +367,8 @@ public class LightBurstOcclusionMesh : MonoBehaviour
                 )
             );
 
-            // Two triangles form the small quad covering the region beyond the
-            // obstacle between these neighbouring radial samples.
+            // Two triangles form the small quad that redraws the environment
+            // from the blocking surface out to the current Burst edge.
             triangles.Add(
                 baseIndex
             );
@@ -361,16 +405,16 @@ public class LightBurstOcclusionMesh : MonoBehaviour
             0
         );
 
-        // The cover changes continuously as the Burst expands, so its bounds
-        // must be refreshed for Unity's camera culling.
+        // The occlusion shape changes every frame while the Burst expands, so
+        // Unity needs refreshed bounds for correct camera culling.
         occlusionMesh.RecalculateBounds();
         occlusionMesh.RecalculateNormals();
     }
 
     private void OnValidate()
     {
-        // A reasonable minimum prevents extremely coarse geometry from creating
-        // large visible gaps around walls and platform edges.
+        // A safe minimum prevents very coarse angular sampling from creating
+        // large visible gaps around genuine wall and floor boundaries.
         rayCount =
             Mathf.Max(
                 16,
