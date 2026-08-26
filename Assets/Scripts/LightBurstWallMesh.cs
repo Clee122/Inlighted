@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(MeshFilter))]
@@ -8,46 +7,29 @@ public class LightBurstWallMesh : MonoBehaviour
     [Header("Burst Reference")]
     [SerializeField] private LightBurstController lightBurstController;
 
-    [Header("Wall Detection")]
-    [SerializeField] private LayerMask wallLayer;
-
-    // A tiny overlap prevents visible seams where the Burst meets level
-    // geometry without allowing the effect to noticeably pass through it.
-    [SerializeField] private float wallOverlap = 0.03f;
-
     [Header("Rendering")]
 
-    // The Burst uses a normal MeshRenderer rather than a SpriteRenderer, so its
-    // 2D sorting position is assigned explicitly to keep it above environment
-    // artwork that would otherwise draw in front of the generated mesh.
+    // The Burst uses a MeshRenderer rather than a SpriteRenderer, so its
+    // 2D sorting position is assigned explicitly to keep its position in the
+    // environment predictable while we build the separate occlusion system.
     [SerializeField] private string sortingLayerName = "Default";
     [SerializeField] private int sortingOrder = 10;
 
     [Header("Ring Shape")]
 
-    // The main ray count provides the general circular shape while adaptive
-    // refinement adds extra precision only around obstacle edges.
+    // The visual no longer needs adaptive wall sampling because geometry will
+    // not alter the main Burst shape. This value simply controls how smooth
+    // the circular generated mesh appears.
     [SerializeField] private int rayCount = 96;
 
-    // The bright white outer ring is kept separate from the softer inner glow
-    // so its thickness can be tuned without altering the glow distance.
+    // The bright white outer ring remains separate from the softer inner glow
+    // so its thickness can still be tuned without changing the Shader Graph.
     [SerializeField] private float ringThickness = 0.15f;
-
-    [Header("Adaptive Edge Refinement")]
-
-    // Extra rays are added around changes between blocked and open space so
-    // corners are represented more accurately without increasing every ray.
-    [Range(0, 6)]
-    [SerializeField] private int edgeRefinementDepth = 4;
-
-    // A large difference between neighbouring hit distances usually represents
-    // a sharp corner and therefore triggers additional adaptive samples.
-    [SerializeField] private float edgeDistanceThreshold = 0.2f;
 
     [Header("Inner Glow")]
 
-    // The mesh extends inward by this distance so the Shader Graph has enough
-    // geometry and UV range to create one continuous glow towards the player.
+    // The mesh extends inward by this distance so the existing Shader Graph
+    // still has enough UV range to create the same continuous inner glow.
     [SerializeField] private float innerGlowDistance = 3f;
 
     private Mesh burstMesh;
@@ -61,27 +43,12 @@ public class LightBurstWallMesh : MonoBehaviour
 
     private const int VerticesPerRay = 6;
 
-    /*
-     * Each radial sample remembers what it hit and how far the Burst could
-     * travel. This information is used to refine obstacle boundaries while
-     * keeping every floor, wall and ceiling as a genuine blocker.
-     */
-    private struct RaySample
-    {
-        public float angle;
-        public Vector2 direction;
-        public float distance;
-
-        public bool blocked;
-        public Collider2D collider;
-    }
-
     private void Awake()
     {
         FindReferences();
 
-        // Preparing the generated mesh before the first ability use prevents
-        // mesh creation from happening at the moment the Burst is activated.
+        // Preparing the generated mesh before the first Burst prevents mesh
+        // creation from happening at the same moment the ability activates.
         EnsureMeshExists();
     }
 
@@ -89,8 +56,8 @@ public class LightBurstWallMesh : MonoBehaviour
     {
         FindReferences();
 
-        // BurstWallMesh is disabled between ability uses, so its runtime mesh
-        // reference is checked whenever the visual becomes active again.
+        // BurstWallMesh is disabled between ability uses, so the runtime mesh
+        // is checked whenever the visual becomes active again.
         EnsureMeshExists();
     }
 
@@ -110,9 +77,8 @@ public class LightBurstWallMesh : MonoBehaviour
 
         if (meshRenderer != null)
         {
-            // The Burst needs an explicit 2D sorting position because its
-            // MeshRenderer does not expose the same convenient sorting controls
-            // as SpriteRenderers and TilemapRenderers in this Inspector setup.
+            // Explicit sorting keeps the generated mesh consistent with the
+            // project's 2D render order despite using a normal MeshRenderer.
             meshRenderer.sortingLayerName =
                 sortingLayerName;
 
@@ -123,7 +89,7 @@ public class LightBurstWallMesh : MonoBehaviour
         if (lightBurstController == null)
         {
             // BurstWallMesh normally sits underneath Player, so searching
-            // upwards avoids needing another manually maintained reference.
+            // upwards avoids requiring another manually maintained reference.
             lightBurstController =
                 GetComponentInParent<LightBurstController>();
         }
@@ -132,7 +98,7 @@ public class LightBurstWallMesh : MonoBehaviour
         {
             Debug.LogError(
                 "LightBurstWallMesh could not find LightBurstController. " +
-                "The wall-aware Burst visual cannot update."
+                "The Burst visual cannot follow the gameplay radius."
             );
         }
     }
@@ -160,7 +126,7 @@ public class LightBurstWallMesh : MonoBehaviour
         }
 
         // Runtime-generated meshes can lose their MeshFilter assignment after
-        // enable/disable cycles, so reconnect it if Unity drops the reference.
+        // enable/disable cycles, so reconnecting it keeps repeated Burst uses safe.
         if (
             meshFilter != null &&
             meshFilter.sharedMesh != burstMesh
@@ -183,8 +149,8 @@ public class LightBurstWallMesh : MonoBehaviour
             return;
         }
 
-        // The visual uses the gameplay Burst's current radius so its expansion
-        // remains synchronised with the ability's actual effective range.
+        // The visual remains synchronised with the gameplay ability by using
+        // the same live radius exposed by LightBurstController.
         UpdateBurstMesh(
             lightBurstController.GetCurrentBurstRadius()
         );
@@ -204,31 +170,49 @@ public class LightBurstWallMesh : MonoBehaviour
         Vector2 worldOrigin =
             transform.position;
 
-        List<RaySample> samples =
-            BuildAdaptiveRaySamples(
-                worldOrigin,
-                currentRadius
-            );
+        /*
+         * The main Burst deliberately ignores every wall, floor, ceiling and
+         * platform. Every radial sample reaches the same current radius so the
+         * mesh can never form the sharp blocked/open triangles seen previously.
+         *
+         * A separate occlusion mesh will later decide which parts should be
+         * visually hidden behind level geometry.
+         */
+        int sampleCount =
+            rayCount + 1;
 
         BuildMeshArrays(
-            samples.Count
+            sampleCount
         );
 
         for (
             int i = 0;
-            i < samples.Count;
+            i < sampleCount;
             i++
         )
         {
+            float angle =
+                ((float)i / rayCount) *
+                Mathf.PI *
+                2f;
+
+            Vector2 direction =
+                new Vector2(
+                    Mathf.Cos(angle),
+                    Mathf.Sin(angle)
+                ).normalized;
+
             BuildRayVertices(
                 i,
-                samples[i],
+                angle,
+                direction,
+                currentRadius,
                 worldOrigin
             );
         }
 
         BuildTriangles(
-            samples.Count
+            sampleCount
         );
 
         burstMesh.Clear();
@@ -245,244 +229,10 @@ public class LightBurstWallMesh : MonoBehaviour
         burstMesh.triangles =
             triangles;
 
-        // The mesh continuously changes shape as the Burst expands against
-        // geometry, so its bounds need refreshing for correct camera culling.
+        // The generated circle changes size during expansion, so its bounds
+        // must be refreshed for correct camera culling.
         burstMesh.RecalculateBounds();
         burstMesh.RecalculateNormals();
-    }
-
-    private List<RaySample> BuildAdaptiveRaySamples(
-        Vector2 origin,
-        float currentRadius
-    )
-    {
-        List<RaySample> finalSamples =
-            new List<RaySample>();
-
-        /*
-         * Starting at zero degrees and repeating that direction at 360 degrees
-         * closes the generated circular mesh without special end triangles.
-         */
-        RaySample firstSample =
-            CastBurstRay(
-                origin,
-                0f,
-                currentRadius
-            );
-
-        finalSamples.Add(
-            firstSample
-        );
-
-        RaySample previousSample =
-            firstSample;
-
-        for (
-            int i = 1;
-            i <= rayCount;
-            i++
-        )
-        {
-            float angle =
-                ((float)i / rayCount) *
-                Mathf.PI *
-                2f;
-
-            RaySample nextSample =
-                CastBurstRay(
-                    origin,
-                    angle,
-                    currentRadius
-                );
-
-            AddRefinedSamples(
-                previousSample,
-                nextSample,
-                origin,
-                currentRadius,
-                edgeRefinementDepth,
-                finalSamples
-            );
-
-            previousSample =
-                nextSample;
-        }
-
-        return finalSamples;
-    }
-
-    private void AddRefinedSamples(
-        RaySample start,
-        RaySample end,
-        Vector2 origin,
-        float currentRadius,
-        int remainingDepth,
-        List<RaySample> output
-    )
-    {
-        if (remainingDepth <= 0)
-        {
-            output.Add(
-                end
-            );
-
-            return;
-        }
-
-        float middleAngle =
-            (start.angle + end.angle) *
-            0.5f;
-
-        RaySample middle =
-            CastBurstRay(
-                origin,
-                middleAngle,
-                currentRadius
-            );
-
-        bool needsRefinement =
-            SamplesNeedRefinement(
-                start,
-                middle
-            ) ||
-            SamplesNeedRefinement(
-                middle,
-                end
-            );
-
-        if (!needsRefinement)
-        {
-            output.Add(
-                end
-            );
-
-            return;
-        }
-
-        // Only the angular region containing a likely geometry edge is split
-        // further, preserving good accuracy without excessive raycasts elsewhere.
-        AddRefinedSamples(
-            start,
-            middle,
-            origin,
-            currentRadius,
-            remainingDepth - 1,
-            output
-        );
-
-        AddRefinedSamples(
-            middle,
-            end,
-            origin,
-            currentRadius,
-            remainingDepth - 1,
-            output
-        );
-    }
-
-    private bool SamplesNeedRefinement(
-        RaySample first,
-        RaySample second
-    )
-    {
-        // A blocked/open transition represents the edge of geometry and benefits
-        // from more angular precision.
-        if (
-            first.blocked !=
-            second.blocked
-        )
-        {
-            return true;
-        }
-
-        // Different colliders can represent a boundary between separate pieces
-        // of level geometry and therefore deserve additional sampling.
-        if (
-            first.blocked &&
-            second.blocked &&
-            first.collider !=
-            second.collider
-        )
-        {
-            return true;
-        }
-
-        // A sudden distance change can reveal a corner even when both rays hit
-        // the same collider.
-        if (
-            Mathf.Abs(
-                first.distance -
-                second.distance
-            ) >
-            edgeDistanceThreshold
-        )
-        {
-            return true;
-        }
-
-        return false;
-    }
-
-    private RaySample CastBurstRay(
-        Vector2 origin,
-        float angle,
-        float currentRadius
-    )
-    {
-        Vector2 direction =
-            new Vector2(
-                Mathf.Cos(angle),
-                Mathf.Sin(angle)
-            ).normalized;
-
-        RaycastHit2D hit =
-            Physics2D.Raycast(
-                origin,
-                direction,
-                currentRadius,
-                wallLayer
-            );
-
-        RaySample sample =
-            new RaySample();
-
-        sample.angle =
-            angle;
-
-        sample.direction =
-            direction;
-
-        if (hit.collider != null)
-        {
-            sample.blocked =
-                true;
-
-            sample.collider =
-                hit.collider;
-
-            // Every Ground-layer collider is authoritative: the visible Burst
-            // stops at the first floor, platform, ceiling or wall it encounters.
-            sample.distance =
-                Mathf.Min(
-                    currentRadius,
-                    hit.distance +
-                    wallOverlap
-                );
-        }
-        else
-        {
-            sample.blocked =
-                false;
-
-            sample.collider =
-                null;
-
-            // Rays travelling through genuinely open space reach the full radius.
-            sample.distance =
-                currentRadius;
-        }
-
-        return sample;
     }
 
     private void BuildMeshArrays(
@@ -511,9 +261,8 @@ public class LightBurstWallMesh : MonoBehaviour
         int connectionCount =
             sampleCount - 1;
 
-        // Every neighbouring sample has five connected radial sections. The UVs
-        // across these sections allow the Shader Graph to create a continuous
-        // inward glow while keeping the outer ring sharply defined.
+        // Every neighbouring sample still contains five radial bands because
+        // the existing Shader Graph depends on their UV interpolation.
         triangles =
             new int[
                 connectionCount *
@@ -524,12 +273,16 @@ public class LightBurstWallMesh : MonoBehaviour
 
     private void BuildRayVertices(
         int rayIndex,
-        RaySample sample,
+        float angle,
+        Vector2 direction,
+        float currentRadius,
         Vector2 worldOrigin
     )
     {
+        // Every outer point now uses exactly the same current radius, which is
+        // what guarantees a circular Burst regardless of nearby geometry.
         float outerDistance =
-            sample.distance;
+            currentRadius;
 
         float ringInnerDistance =
             Mathf.Max(
@@ -538,8 +291,8 @@ public class LightBurstWallMesh : MonoBehaviour
                 ringThickness
             );
 
-        // The glow begins inward from the same collision boundary as the white
-        // ring so it cannot independently extend through blocked geometry.
+        // The same inward glow structure is retained so the existing material
+        // keeps the appearance already tuned in Shader Graph.
         float glowStartDistance =
             Mathf.Max(
                 0f,
@@ -547,8 +300,6 @@ public class LightBurstWallMesh : MonoBehaviour
                 innerGlowDistance
             );
 
-        // Intermediate positions remain in the mesh because their UV values
-        // provide enough geometry for the shader to interpolate a smooth glow.
         float faintDistance =
             Mathf.Lerp(
                 glowStartDistance,
@@ -572,32 +323,32 @@ public class LightBurstWallMesh : MonoBehaviour
 
         Vector2 transparentWorld =
             worldOrigin +
-            sample.direction *
+            direction *
             glowStartDistance;
 
         Vector2 faintWorld =
             worldOrigin +
-            sample.direction *
+            direction *
             faintDistance;
 
         Vector2 middleWorld =
             worldOrigin +
-            sample.direction *
+            direction *
             middleDistance;
 
         Vector2 nearWorld =
             worldOrigin +
-            sample.direction *
+            direction *
             nearDistance;
 
         Vector2 ringInnerWorld =
             worldOrigin +
-            sample.direction *
+            direction *
             ringInnerDistance;
 
         Vector2 ringOuterWorld =
             worldOrigin +
-            sample.direction *
+            direction *
             outerDistance;
 
         int baseIndex =
@@ -636,14 +387,13 @@ public class LightBurstWallMesh : MonoBehaviour
 
         float normalisedAngle =
             Mathf.Repeat(
-                sample.angle /
+                angle /
                 (Mathf.PI * 2f),
                 1f
             );
 
-        // UV Y now describes the radial position from the inner transparent
-        // boundary to the bright outer edge. The Shader Graph uses this smoothly
-        // interpolated value instead of relying on several separate alpha bands.
+        // UV Y keeps the exact same radial layout as before so the current
+        // Shader Graph can continue controlling the glow and outer fade.
         uvs[baseIndex] =
             new Vector2(
                 normalisedAngle,
@@ -680,9 +430,8 @@ public class LightBurstWallMesh : MonoBehaviour
                 1f
             );
 
-        // Vertex colours no longer control the glow strength. Keeping them fully
-        // white allows the Shader Graph's UV-based gradient to control transparency
-        // consistently across the entire generated Burst mesh.
+        // Vertex colours remain neutral because the Shader Graph controls
+        // transparency through the generated UV gradient.
         for (
             int i = 0;
             i < VerticesPerRay;
@@ -738,8 +487,8 @@ public class LightBurstWallMesh : MonoBehaviour
                     band +
                     1;
 
-                // This winding faces the project's 2D camera so the generated
-                // mesh remains visible in Game view.
+                // The original triangle winding is retained because it already
+                // faces the project's 2D camera correctly.
                 triangles[triangleIndex++] =
                     currentInner;
 
@@ -763,8 +512,8 @@ public class LightBurstWallMesh : MonoBehaviour
 
     private void OnValidate()
     {
-        // Safe minimums prevent accidental Inspector values from generating
-        // invalid or degenerate mesh geometry.
+        // Safe minimums prevent Inspector values from creating invalid or
+        // degenerate circular mesh geometry.
         rayCount =
             Mathf.Max(
                 8,
@@ -781,25 +530,6 @@ public class LightBurstWallMesh : MonoBehaviour
             Mathf.Max(
                 0.01f,
                 innerGlowDistance
-            );
-
-        wallOverlap =
-            Mathf.Max(
-                0f,
-                wallOverlap
-            );
-
-        edgeDistanceThreshold =
-            Mathf.Max(
-                0.01f,
-                edgeDistanceThreshold
-            );
-
-        edgeRefinementDepth =
-            Mathf.Clamp(
-                edgeRefinementDepth,
-                0,
-                6
             );
     }
 }

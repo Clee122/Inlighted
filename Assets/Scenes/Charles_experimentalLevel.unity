@@ -10184,7 +10184,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1324579465
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -13603,6 +13603,14 @@ PrefabInstance:
       propertyPath: disableAfterUnlock
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3546867364643518286, guid: 226a539e60bebf1488521c69759a466a, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.24741459
+      objectReference: {fileID: 0}
+    - target: {fileID: 3546867364643518286, guid: 226a539e60bebf1488521c69759a466a, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.455
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects:
@@ -14592,6 +14600,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8832967570914141411, guid: dabca89fada0e4f4591436cf7038bad9, type: 3}
+      propertyPath: m_SortingOrder
+      value: 10
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -15127,6 +15139,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8832967570914141411, guid: dabca89fada0e4f4591436cf7038bad9, type: 3}
+      propertyPath: m_SortingOrder
+      value: 10
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -15451,6 +15467,10 @@ PrefabInstance:
       propertyPath: m_Material
       value: 
       objectReference: {fileID: 6200000, guid: 66d3e23c5e7d81040a7544c4f3854c71, type: 2}
+    - target: {fileID: 2638679140809121727, guid: 75e2b3a892f273541bba109f31ccca2e, type: 3}
+      propertyPath: m_SortingOrder
+      value: 10
+      objectReference: {fileID: 0}
     - target: {fileID: 2881747997449244241, guid: 75e2b3a892f273541bba109f31ccca2e, type: 3}
       propertyPath: m_LocalPosition.x
       value: 3.3
