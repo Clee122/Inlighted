@@ -486,7 +486,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: -876546973899608171, guid: ca2ed216f98028c4dae6c5224a952b3c, type: 3}
+  - {fileID: 2100000, guid: 6d02258c9a3a6c147a3ae450c100be2e, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -528,7 +528,7 @@ MonoBehaviour:
     m_Bits: 128
   rayCount: 128
   occlusionOverlap: 0.03
-  sortingLayerName: Default
+  sortingLayerName: Player
   sortingOrder: 6
 --- !u!1 &5968012315484409390
 GameObject:
@@ -1478,7 +1478,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LightBurstWallMesh
   lightBurstController: {fileID: -5335877252066859057}
-  sortingLayerName: Default
+  sortingLayerName: Player
   sortingOrder: 5
   rayCount: 96
   ringThickness: 0.15
