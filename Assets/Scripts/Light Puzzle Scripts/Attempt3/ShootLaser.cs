@@ -4,12 +4,17 @@ using UnityEngine.InputSystem;
 public class ShootLaser : MonoBehaviour
 {
     [Header("Puzzle")]
-    // The LaserPointer stops accepting new activations after the introductory
-    // puzzle has permanently succeeded.
+    // The LaserPointer stops accepting new activations after this specific
+    // puzzle has been permanently solved.
     [SerializeField] private LightPuzzleController puzzleController;
 
     [Header("Laser")]
     public Material material;
+
+    // The laser LineRenderer is created at runtime, so its sorting order cannot
+    // be edited directly in the Inspector. Exposing the value here makes it
+    // easy to keep the beam visible over environment artwork.
+    [SerializeField] private int laserSortingOrder = 5;
 
     private LaserBeam beam;
 
@@ -22,16 +27,14 @@ public class ShootLaser : MonoBehaviour
     [SerializeField] private GameObject Player;
 
     // The player only needs to be near the LaserPointer to activate it.
-    // This avoids requiring another trigger collider just for this prototype.
     [SerializeField] private float interactionDistance = 1.5f;
 
     [Header("Timed Laser")]
-    // The laser remains active long enough for the player to observe the
-    // reflected route, but it no longer solves the puzzle continuously.
+    // The beam remains active long enough for the player to observe the route
+    // without allowing the environmental laser to stay permanently active.
     [SerializeField] private float activeDuration = 4f;
 
-    // A short cooldown prevents repeatedly pressing the interaction button
-    // from constantly restarting the laser timer.
+    // A short cooldown prevents repeatedly restarting the laser immediately.
     [SerializeField] private float cooldownDuration = 1f;
 
     private InputAction playerInteract;
@@ -97,8 +100,8 @@ public class ShootLaser : MonoBehaviour
 
     private void Start()
     {
-        // The puzzle begins with the laser switched off. Its receivers are
-        // explicitly returned to their resting state.
+        // The puzzle begins with the laser switched off and its receivers
+        // returned to their resting state.
         if (APReceiver != null)
         {
             APReceiver.DeActivate();
@@ -114,8 +117,7 @@ public class ShootLaser : MonoBehaviour
     {
         UpdateCooldown();
 
-        // A solved puzzle no longer needs another activation attempt. An
-        // already-running successful laser is still allowed to finish naturally.
+        // Once solved, this LaserPointer no longer needs to accept interaction.
         if (
             puzzleController == null ||
             !puzzleController.IsSolved()
@@ -165,17 +167,18 @@ public class ShootLaser : MonoBehaviour
 
     private void ActivateLaser()
     {
-        // LaserBeam is created only when the player first activates the
-        // LaserPointer, preventing it from appearing when the scene loads.
         if (beam == null)
         {
+            // The sorting order is passed into LaserBeam because the beam creates
+            // its own LineRenderer at runtime rather than using this GameObject.
             beam =
                 new LaserBeam(
                     transform.position,
                     transform.right,
                     material,
                     APReceiver,
-                    MPReceiver
+                    MPReceiver,
+                    laserSortingOrder
                 );
         }
 
@@ -209,8 +212,8 @@ public class ShootLaser : MonoBehaviour
             return;
         }
 
-        // Recasting every frame allows mirrors to change the reflected path
-        // immediately while the temporary laser remains active.
+        // Recasting every frame allows reflected paths to update immediately
+        // if a mirror changes while the temporary laser is active.
         beam.laser.positionCount = 0;
         beam.laserIndices.Clear();
 
@@ -240,8 +243,6 @@ public class ShootLaser : MonoBehaviour
             beam.laser != null
         )
         {
-            // Removing the LineRenderer points and disabling it prevents a
-            // stale laser path from remaining visible after the timer ends.
             beam.laser.positionCount = 0;
             beam.laser.enabled = false;
         }
@@ -253,8 +254,6 @@ public class ShootLaser : MonoBehaviour
 
         if (MPReceiver != null)
         {
-            // MovingPlatformReceiver now knows whether its puzzle has been
-            // solved, so this call can safely preserve a completed platform.
             MPReceiver.DeActivate();
         }
     }
@@ -277,8 +276,8 @@ public class ShootLaser : MonoBehaviour
 
     public bool IsLaserActive()
     {
-        // Other puzzle visuals or prompts can later query whether the
-        // environmental laser is currently producing a beam.
+        // Other puzzle systems can query the active state without duplicating
+        // the timing logic used by this LaserPointer.
         return isLaserActive;
     }
 }
