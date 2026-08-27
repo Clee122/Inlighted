@@ -6,37 +6,36 @@ public class MirrorRotate : MonoBehaviour
     private InputAction playerInteract;
 
     [Header("Puzzle")]
-    // The shared controller tells this mirror when the overall puzzle has been
-    // solved so its successful orientation can become permanent.
+    // The shared puzzle controller tells this mirror when the puzzle has been
+    // completed so its successful orientation remains locked permanently.
     [SerializeField] private LightPuzzleController puzzleController;
 
     [Header("Interaction")]
-    // The Player reference is used to check whether the player is close enough
-    // to interact and to access the existing Interact1 input action.
+    // The Player reference provides access to the existing Interact1 action and
+    // is also used to make sure only the player's collider can rotate the mirror.
     public GameObject Player;
 
-    // These values keep Jayden's original proximity interaction setup so the
-    // mirror can be tested without changing how the player approaches it.
-    public float radius = 0.8f;
-    public Vector2 direction = Vector2.right;
-    public float distance = 0.85f;
+    // The mirror only needs to know whether the player is close enough to use it.
+    // A circular interaction area works from every direction and avoids the
+    // inconsistent behaviour caused by the previous directional CircleCast.
+    [SerializeField] private float interactionRadius = 1f;
 
     [Header("Rotation")]
-    // Each successful interaction rotates the mirror once by this amount.
-    // The mirror then locks until it has fully reset to prevent brute-forcing.
+    // Each successful interaction gives the mirror one temporary rotation.
+    // It cannot be rotated again until the reset has completely finished.
     public float angleIncrement = 90f;
 
-    // Different mirrors can still begin at different orientations using the
-    // existing Inspector value from Jayden's original puzzle setup.
+    // Existing mirrors can still begin at different orientations without
+    // requiring separate scripts or prefabs.
     public float initialAngleChange = 0f;
 
     [Header("Timed Reset")]
-    // After being rotated, the mirror holds its temporary orientation for this
-    // amount of time before returning to its original puzzle position.
+    // An unsolved mirror keeps its changed orientation for this duration before
+    // automatically returning to the position it had when the scene began.
     [SerializeField] private float resetDelay = 8f;
 
-    // Returning smoothly makes it clear that the temporary state has expired
-    // rather than making the mirror appear to snap or glitch back into place.
+    // A smooth return communicates that the temporary puzzle state has expired
+    // instead of making the mirror appear to suddenly snap or glitch.
     [SerializeField] private float resetRotationSpeed = 180f;
 
     private Quaternion originalRotation;
@@ -47,8 +46,8 @@ public class MirrorRotate : MonoBehaviour
 
     private void Awake()
     {
-        // Apply Jayden's existing starting-angle adjustment before recording
-        // the orientation that this mirror should eventually return to.
+        // Preserve Jayden's existing initial-angle behaviour before recording
+        // the orientation this individual mirror should eventually reset to.
         transform.Rotate(
             0f,
             0f,
@@ -80,8 +79,8 @@ public class MirrorRotate : MonoBehaviour
             return;
         }
 
-        // Reuse the project's existing interaction input so mirrors and the
-        // LaserPointer both follow the same player control language.
+        // Mirrors continue using the same Interact1 action as the LaserPointer
+        // so all environmental puzzle objects share one interaction button.
         playerInteract =
             playerInput.actions["Interact1"];
 
@@ -92,6 +91,12 @@ public class MirrorRotate : MonoBehaviour
                 this
             );
         }
+
+        interactionRadius =
+            Mathf.Max(
+                0f,
+                interactionRadius
+            );
 
         resetDelay =
             Mathf.Max(
@@ -108,8 +113,8 @@ public class MirrorRotate : MonoBehaviour
 
     private void Update()
     {
-        // Once the puzzle succeeds, the mirror deliberately stops all reset
-        // and interaction behaviour so the successful orientation is preserved.
+        // Once the overall puzzle is solved, the mirror keeps its successful
+        // angle and no longer accepts interaction or performs its timed reset.
         if (
             puzzleController != null &&
             puzzleController.IsSolved()
@@ -131,24 +136,35 @@ public class MirrorRotate : MonoBehaviour
             isResetting
         )
         {
-            // Once the mirror has been rotated, it stays locked until the timed
-            // reset completely finishes. This prevents players from repeatedly
-            // rotating the same mirror and brute-forcing the puzzle solution.
+            // A mirror only receives one temporary rotation per reset cycle,
+            // preventing repeated interaction from brute-forcing the solution.
             return;
         }
 
-        RaycastHit2D hit =
-            Physics2D.CircleCast(
+        // OverlapCircle checks the complete area surrounding the mirror instead
+        // of searching in one direction. This makes interaction consistent
+        // whether the player approaches from the left, right, above, or below.
+        Collider2D[] nearbyColliders =
+            Physics2D.OverlapCircleAll(
                 transform.position,
-                radius,
-                direction,
-                distance
+                interactionRadius
             );
 
-        if (
-            hit.collider == null ||
-            !hit.collider.CompareTag("Player")
-        )
+        bool playerIsNearby = false;
+
+        foreach (Collider2D nearbyCollider in nearbyColliders)
+        {
+            if (
+                nearbyCollider != null &&
+                nearbyCollider.CompareTag("Player")
+            )
+            {
+                playerIsNearby = true;
+                break;
+            }
+        }
+
+        if (!playerIsNearby)
         {
             return;
         }
@@ -158,8 +174,6 @@ public class MirrorRotate : MonoBehaviour
             return;
         }
 
-        // The mirror only receives one temporary rotation per reset cycle.
-        // Additional interaction attempts are ignored until it returns home.
         transform.Rotate(
             0f,
             0f,
@@ -190,8 +204,8 @@ public class MirrorRotate : MonoBehaviour
             isResetting = true;
         }
 
-        // RotateTowards lets the mirror visibly return to its original angle
-        // instead of instantly snapping back when the timer expires.
+        // RotateTowards gives the expired mirror state a readable animated return
+        // instead of instantly replacing the player's temporary configuration.
         transform.rotation =
             Quaternion.RotateTowards(
                 transform.rotation,
@@ -209,11 +223,21 @@ public class MirrorRotate : MonoBehaviour
             transform.rotation =
                 originalRotation;
 
-            // The mirror only becomes interactable again after it has completely
-            // returned to its original orientation.
+            // Interaction only becomes available again after the mirror has
+            // completely returned to its original orientation.
             hasBeenRotated = false;
             isResetting = false;
             resetTimer = 0f;
         }
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        // Drawing the interaction radius in the Scene view makes it easy to
+        // position mirrors without guessing whether the player can reach them.
+        Gizmos.DrawWireSphere(
+            transform.position,
+            interactionRadius
+        );
     }
 }
