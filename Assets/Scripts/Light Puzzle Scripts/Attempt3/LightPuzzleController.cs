@@ -3,34 +3,19 @@ using UnityEngine;
 public class LightPuzzleController : MonoBehaviour
 {
     [Header("Puzzle State")]
-    // This value is serialised so we can watch the puzzle change between
-    // unsolved and solved during Play Mode while testing the level.
+    // This shared solved state belongs only to this specific puzzle instance.
+    // Other puzzles should use their own LightPuzzleController component.
     [SerializeField] private bool isSolved = false;
 
     [Header("Debug")]
-    // Logging can be disabled once the puzzle behaviour has been confirmed.
+    // This log makes it easier to confirm when the current puzzle is solved
+    // during testing without changing any of the gameplay behaviour.
     [SerializeField] private bool showDebugLogs = true;
-
-    private void Awake()
-    {
-        // Every scene instance begins unsolved when gameplay starts.
-        // This prevents the runtime completion state from carrying into a
-        // fresh playthrough of the level.
-        isSolved = false;
-
-        if (showDebugLogs)
-        {
-            Debug.Log(
-                gameObject.name +
-                " started UNSOLVED.",
-                this
-            );
-        }
-    }
 
     public void SolvePuzzle()
     {
-        // A puzzle only needs to complete once during the current playthrough.
+        // The introductory puzzle only needs to be solved once, so repeated
+        // receiver hits should not trigger the completion logic again.
         if (isSolved)
         {
             return;
@@ -42,7 +27,7 @@ public class LightPuzzleController : MonoBehaviour
         {
             Debug.Log(
                 gameObject.name +
-                " changed to SOLVED.",
+                " has been permanently solved.",
                 this
             );
         }
@@ -50,8 +35,8 @@ public class LightPuzzleController : MonoBehaviour
 
     public bool IsSolved()
     {
-        // Mirrors, LaserPointers and receivers all query this shared state so
-        // every component belonging to this puzzle agrees on its completion.
+        // Mirrors, the LaserPointer and receivers use this one shared state
+        // so they all agree on whether this particular puzzle is complete.
         return isSolved;
     }
 }

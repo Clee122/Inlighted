@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -9,8 +10,8 @@ public class LaserBeam
     public LineRenderer laser;
     public List<Vector3> laserIndices = new List<Vector3>();
 
-    // LaserBeam is a normal C# class rather than a MonoBehaviour, so receiver
-    // references and renderer settings must be supplied when it is created.
+    // LaserBeam is a normal C# class rather than a MonoBehaviour, so the
+    // receiver reference must be provided when the beam is created.
     private AppearingPlatformReceiver APReceiver;
     private MovingPlatformReceiver MPReceiver;
 
@@ -19,9 +20,10 @@ public class LaserBeam
         Vector3 dir,
         Material material,
         AppearingPlatformReceiver receiver,
-        MovingPlatformReceiver Mreceiver,
-        int sortingOrder)
+        MovingPlatformReceiver Mreceiver)
     {
+        // Store the receiver so the laser can tell it when the beam is or is
+        // not hitting the correct light receiver.
         this.APReceiver = receiver;
         this.MPReceiver = Mreceiver;
 
@@ -39,11 +41,6 @@ public class LaserBeam
         this.laser.startColor = Color.cyan;
         this.laser.endColor = Color.cyan;
 
-        // The LineRenderer is created as a separate runtime object and therefore
-        // does not inherit the LaserPointer's Order in Layer. The value supplied
-        // by ShootLaser keeps the beam visible over environment artwork.
-        this.laser.sortingOrder = sortingOrder;
-
         CastRay(pos, dir, laser);
     }
 
@@ -54,8 +51,8 @@ public class LaserBeam
         Ray ray = new Ray(pos, dir);
         RaycastHit hit;
 
-        // The mask value 1 preserves Jayden's original behaviour of checking
-        // objects on the Default layer.
+        // The layer mask value 1 means the ray currently checks objects on the
+        // Default layer only, preserving the original raycast behaviour.
         if (Physics.Raycast(ray, out hit, 30, 1))
         {
             CheckHit(hit, dir, laser);
@@ -65,6 +62,8 @@ public class LaserBeam
             laserIndices.Add(ray.GetPoint(30));
             UpdateLaser();
 
+            // The platform should disappear when the beam is not hitting
+            // anything within its maximum distance.
             if (APReceiver != null)
             {
                 APReceiver.DeActivate();
@@ -107,12 +106,10 @@ public class LaserBeam
         {
             laserIndices.Add(hitInfo.point);
             UpdateLaser();
+            MPReceiver.DeActivate();
 
-            if (MPReceiver != null)
-            {
-                MPReceiver.DeActivate();
-            }
-
+            // The receiver is responsible for showing the platform when it is
+            // reached by the reflected laser.
             if (APReceiver != null)
             {
                 APReceiver.Activate();
@@ -130,12 +127,10 @@ public class LaserBeam
         {
             laserIndices.Add(hitInfo.point);
             UpdateLaser();
+            APReceiver.DeActivate();
 
-            if (APReceiver != null)
-            {
-                APReceiver.DeActivate();
-            }
-
+            // The receiver is responsible for moving the platform when it is
+            // reached by the reflected laser.
             if (MPReceiver != null)
             {
                 MPReceiver.Activate();
@@ -152,20 +147,17 @@ public class LaserBeam
             laserIndices.Add(hitInfo.point);
             UpdateLaser();
 
+            // Any non-mirror object other than the intended receiver stops the
+            // beam and hides/moves the platform.
             if (APReceiver != null)
             {
                 APReceiver.DeActivate();
             }
-
-            if (MPReceiver != null)
+            else if (MPReceiver !=null)
             {
                 MPReceiver.DeActivate();
             }
-
-            if (
-                APReceiver == null &&
-                MPReceiver == null
-            )
+            else
             {
                 Debug.LogError(
                     "LaserBeam does not have an AppearingPlatformReceiver or MovingPlatformReceiver reference."

@@ -81,7 +81,7 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 5
+  m_SortingOrder: 0
   m_MaskInteraction: 0
   m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
   m_Color: {r: 0.9020099, g: 0.3176471, b: 1, a: 1}
@@ -126,8 +126,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 36621e27eb9251546a380efbdbb86e2d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MovingPlatformReceiver
-  puzzleController: {fileID: 0}
-  completesPuzzleOnActivate: 1
   MovingPlatform: {fileID: 8548705880261040716, guid: 117d6df56507fef4c8397260e8906d1d, type: 3}
   MP_Origin: {x: 13, y: -2.5, z: 0}
   MP_EndGoal: {x: 13, y: 2.5, z: 0}

@@ -3,30 +3,29 @@ using UnityEngine;
 public class MovingPlatformReceiver : MonoBehaviour
 {
     [Header("Puzzle")]
-    // This receiver can permanently complete the puzzle when illuminated.
-    // Each puzzle should reference its own LightPuzzleController instance.
+    // This receiver can complete a larger Light puzzle when illuminated.
+    // Keeping the reference optional also allows the receiver to be reused
+    // later for temporary platform puzzles that should not permanently solve.
     [SerializeField] private LightPuzzleController puzzleController;
 
-    [SerializeField] private bool completesPuzzleOnActivate = true;
+    [SerializeField]
+    private bool completesPuzzleOnActivate = true;
 
     [Header("Moving Platform")]
     public GameObject MovingPlatform;
 
-    // The origin is recorded automatically from the platform's starting local
-    // position. This prevents copied or moved puzzles from using outdated
-    // coordinates and trying to reposition themselves as soon as Play begins.
-    [SerializeField] private Vector3 MP_Origin;
-
-    // The end goal remains editable because this is the destination the level
-    // designer intentionally chooses for this particular platform.
+    public Vector3 MP_Origin;
     public Vector3 MP_EndGoal;
-
-    public float Speed = 2f;
+    public float Speed;
 
     private Vector3 MP_Target;
 
-    private void Start()
+    // Start is called once before the first execution of Update after the
+    // MonoBehaviour is created.
+    void Start()
     {
+        // Report a clear setup error rather than allowing an unclear
+        // null-reference error when the laser reaches the receiver.
         if (MovingPlatform == null)
         {
             Debug.LogError(
@@ -37,33 +36,28 @@ public class MovingPlatformReceiver : MonoBehaviour
             return;
         }
 
-        // Wherever the platform has been placed inside the puzzle becomes its
-        // resting position. This makes the puzzle safe to reposition as a group.
-        MP_Origin =
-            MovingPlatform.transform.localPosition;
-
-        // Beginning with the target equal to the exact current position ensures
-        // the platform remains completely stationary until the receiver activates.
-        MP_Target =
-            MP_Origin;
+        // Starting at the origin target ensures the platform remains in its
+        // intended resting state until the receiver is illuminated.
+        MP_Target = MP_Origin;
     }
 
-    private void Update()
+    // Update is called once per frame.
+    void Update()
     {
         if (MovingPlatform == null)
         {
             return;
         }
 
+        // The platform continuously approaches its current target so Activate
+        // and DeActivate only need to decide which location is appropriate.
         float step =
             Speed *
             Time.deltaTime;
 
-        // Local movement keeps the platform positions relative to the LightPuzzle
-        // parent so the entire puzzle can be moved around the level safely.
-        MovingPlatform.transform.localPosition =
+        MovingPlatform.transform.position =
             Vector3.MoveTowards(
-                MovingPlatform.transform.localPosition,
+                MovingPlatform.transform.position,
                 MP_Target,
                 step
             );
@@ -71,14 +65,14 @@ public class MovingPlatformReceiver : MonoBehaviour
 
     public void Activate()
     {
+        // Only move the platform when its Inspector reference is valid.
         if (MovingPlatform != null)
         {
-            // The receiver changes the destination only when the laser actually
-            // reaches it. Until this happens, the target remains at the origin.
-            MP_Target =
-                MP_EndGoal;
+            MP_Target = MP_EndGoal;
         }
 
+        // The introductory puzzle becomes permanently solved the first time
+        // its intended receiver is successfully illuminated.
         if (
             completesPuzzleOnActivate &&
             puzzleController != null
@@ -90,25 +84,22 @@ public class MovingPlatformReceiver : MonoBehaviour
 
     public void DeActivate()
     {
-        // A permanently completed puzzle keeps the platform at its end position
-        // after the temporary laser switches off.
+        // A permanently solved puzzle should never send its platform back to
+        // the origin when the temporary laser eventually switches off.
         if (
             puzzleController != null &&
             puzzleController.IsSolved()
         )
         {
-            MP_Target =
-                MP_EndGoal;
-
+            MP_Target = MP_EndGoal;
             return;
         }
 
+        // Temporary or unsolved puzzles still return towards their origin when
+        // the receiver is no longer illuminated.
         if (MovingPlatform != null)
         {
-            // An unsolved puzzle returns to the exact local position that was
-            // recorded when gameplay began.
-            MP_Target =
-                MP_Origin;
+            MP_Target = MP_Origin;
         }
     }
 }
