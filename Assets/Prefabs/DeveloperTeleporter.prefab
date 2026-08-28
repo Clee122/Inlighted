@@ -159,6 +159,7 @@ Transform:
   - {fileID: 3530882922787064763}
   - {fileID: 7714629160569627138}
   - {fileID: 919349066016982026}
+  - {fileID: 3834812339123430215}
   - {fileID: 6401498822384705891}
   - {fileID: 5865797924920543957}
   m_Father: {fileID: 0}
@@ -178,6 +179,37 @@ MonoBehaviour:
   player: {fileID: 0}
   teleportPoints: []
   enableDeveloperTeleport: 1
+--- !u!1 &7619362045201161231
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3834812339123430215}
+  m_Layer: 0
+  m_Name: BeamUnlock
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3834812339123430215
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7619362045201161231}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7756678340558610482}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &8387118828675115001
 GameObject:
   m_ObjectHideFlags: 0
