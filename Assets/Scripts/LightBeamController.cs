@@ -9,6 +9,10 @@ public class LightBeamController : MonoBehaviour
     [SerializeField] private LayerMask darknessLayer;
     [SerializeField] private LayerMask wallLayer;
 
+    // Bloom Receivers use their own layer so the Beam can specifically search
+    // for temporary flower-platform controls without examining unrelated objects.
+    [SerializeField] private LayerMask bloomReceiverLayer;
+
     [Header("Light Resource Cost")]
     [SerializeField] private float lightCost = 15f;
 
@@ -590,6 +594,11 @@ public class LightBeamController : MonoBehaviour
                 DispelDarknessInBeam();
                 CheckLightGateInBeam();
 
+                // Bloom Receivers use the same expanding collision region as
+                // Darkness and gates so they only react once the visible Beam
+                // has actually travelled far enough to reach them.
+                CheckBloomReceiverInBeam();
+
                 gameplayCheckTimer =
                     Mathf.Max(
                         0.001f,
@@ -817,8 +826,8 @@ public class LightBeamController : MonoBehaviour
         float currentLength
     )
     {
-        // Darkness and gate checks use the same growing length as the visible
-        // Beam so gameplay remains lined up with the effect.
+        // Darkness, gate and Bloom Receiver checks use the same growing length
+        // as the visual Beam so gameplay remains lined up with the effect.
         lastBeamCenter =
             lockedBeamOrigin +
             lockedBeamDirection *
@@ -850,14 +859,18 @@ public class LightBeamController : MonoBehaviour
         // Use the same wall layer as the Beam raycast so particles stop on the
         // same surfaces that stop the ability.
         collision.enabled = true;
+
         collision.type =
             ParticleSystemCollisionType.World;
 
         collision.mode =
             ParticleSystemCollisionMode.Collision2D;
 
+        // Beam particles should stop at the same walls and Bloom Receivers
+        // that stop the gameplay Beam so the visual effect does not pass through.
         collision.collidesWith =
-            wallLayer;
+            wallLayer |
+            bloomReceiverLayer;
 
         // Remove particles when they hit a wall instead of allowing them to
         // bounce or continue through it.
@@ -911,21 +924,28 @@ public class LightBeamController : MonoBehaviour
     }
 
     private float GetBeamRangeBeforeWall(
-        Vector2 originPosition,
-        Vector2 direction
-    )
+     Vector2 originPosition,
+     Vector2 direction
+ )
     {
-        RaycastHit2D wallHit =
+        // Walls and Bloom Receivers both act as endpoints for the Beam.
+        // This prevents a shot that activates one receiver from visually
+        // continuing through it and activating another receiver behind it.
+        LayerMask beamStoppingLayers =
+            wallLayer |
+            bloomReceiverLayer;
+
+        RaycastHit2D blockingHit =
             Physics2D.Raycast(
                 originPosition,
                 direction,
                 beamRange,
-                wallLayer
+                beamStoppingLayers
             );
 
-        if (wallHit.collider != null)
+        if (blockingHit.collider != null)
         {
-            return wallHit.distance;
+            return blockingHit.distance;
         }
 
         return beamRange;
@@ -956,6 +976,34 @@ public class LightBeamController : MonoBehaviour
             "Light beam dispelled darkness zones: " +
             hits.Length
         );
+    }
+
+    private void CheckBloomReceiverInBeam()
+    {
+        Collider2D[] hits =
+            Physics2D.OverlapBoxAll(
+                lastBeamCenter,
+                lastBeamSize,
+                lastBeamAngle,
+                bloomReceiverLayer
+            );
+
+        foreach (Collider2D hit in hits)
+        {
+            // The receiver script may be placed on the same object as its
+            // collider or on a parent containing separate visual/collision children.
+            BloomReceiver bloomReceiver =
+                hit.GetComponentInParent<BloomReceiver>();
+
+            if (bloomReceiver == null)
+            {
+                continue;
+            }
+
+            // The receiver determines which exact flowers belong to it.
+            // Flowers that are already active ignore the repeated Beam checks.
+            bloomReceiver.ActivateReceiver();
+        }
     }
 
     private IEnumerator CooldownRoutine()

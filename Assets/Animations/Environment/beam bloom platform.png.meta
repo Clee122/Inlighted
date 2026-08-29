@@ -1,0 +1,611 @@
+fileFormatVersion: 2
+guid: fe7ff653881580b42975301f4bf71079
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 3458627221669346093
+    second: beam bloom platform_0
+  - first:
+      213: -9221388277217756716
+    second: beam bloom platform_1
+  - first:
+      213: -7892878756962927667
+    second: beam bloom platform_2
+  - first:
+      213: 1041487594485728069
+    second: beam bloom platform_3
+  - first:
+      213: -1612502949275423961
+    second: beam bloom platform_4
+  - first:
+      213: -4778070278099759334
+    second: beam bloom platform_5
+  - first:
+      213: -1685533399922968333
+    second: beam bloom platform_6
+  - first:
+      213: -3502258787525820792
+    second: beam bloom platform_7
+  - first:
+      213: -1005206219411646899
+    second: beam bloom platform_8
+  - first:
+      213: -1571489580986417789
+    second: beam bloom platform_9
+  - first:
+      213: 3846349594229990396
+    second: beam bloom platform_10
+  - first:
+      213: 2885484749122579457
+    second: beam bloom platform_11
+  - first:
+      213: 4986963803539911696
+    second: beam bloom platform_12
+  - first:
+      213: -4957131272425912053
+    second: beam bloom platform_13
+  - first:
+      213: 6426982612522155668
+    second: beam bloom platform_14
+  - first:
+      213: 5836976332191245970
+    second: beam bloom platform_15
+  - first:
+      213: -4346024627633889922
+    second: beam bloom platform_16
+  - first:
+      213: 7263098177717522563
+    second: beam bloom platform_17
+  - first:
+      213: 5040594708777487393
+    second: beam bloom platform_18
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 800
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: beam bloom platform_0
+      rect:
+        serializedVersion: 2
+        x: 261
+        y: 3240
+        width: 559
+        height: 696
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d2bf81e22238fff20800000000000000
+      internalID: 3458627221669346093
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: beam bloom platform_1
+      rect:
+        serializedVersion: 2
+        x: 1338
+        y: 3243
+        width: 591
+        height: 682
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4d9fb78083c070080800000000000000
+      internalID: -9221388277217756716
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: beam bloom platform_2
+      rect:
+        serializedVersion: 2
+        x: 2427
+        y: 3246
+        width: 608
+        height: 661
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: dcb7ffbb69cd67290800000000000000
+      internalID: -7892878756962927667
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: beam bloom platform_3
+      rect:
+        serializedVersion: 2
+        x: 3549
+        y: 3248
+        width: 549
+        height: 717
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5434c4bf27b147e00800000000000000
+      internalID: 1041487594485728069
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: beam bloom platform_4
+      rect:
+        serializedVersion: 2
+        x: 4276
+        y: 3680
+        width: 124
+        height: 75
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 72b2b2d6c1d3f99e0800000000000000
+      internalID: -1612502949275423961
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: beam bloom platform_5
+      rect:
+        serializedVersion: 2
+        x: 303
+        y: 2207
+        width: 469
+        height: 753
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a1f030ab562e0bdb0800000000000000
+      internalID: -4778070278099759334
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: beam bloom platform_6
+      rect:
+        serializedVersion: 2
+        x: 1410
+        y: 2203
+        width: 448
+        height: 766
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3f8f8889d48cb98e0800000000000000
+      internalID: -1685533399922968333
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: beam bloom platform_7
+      rect:
+        serializedVersion: 2
+        x: 2495
+        y: 2204
+        width: 505
+        height: 753
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 88e7802403a756fc0800000000000000
+      internalID: -3502258787525820792
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: beam bloom platform_8
+      rect:
+        serializedVersion: 2
+        x: 3566
+        y: 2200
+        width: 541
+        height: 715
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d4694fde44acc02f0800000000000000
+      internalID: -1005206219411646899
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: beam bloom platform_9
+      rect:
+        serializedVersion: 2
+        x: 224
+        y: 1164
+        width: 600
+        height: 635
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 38db31d5d82f03ae0800000000000000
+      internalID: -1571489580986417789
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: beam bloom platform_10
+      rect:
+        serializedVersion: 2
+        x: 1285
+        y: 1149
+        width: 729
+        height: 632
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cf3eb0eb39af06530800000000000000
+      internalID: 3846349594229990396
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: beam bloom platform_11
+      rect:
+        serializedVersion: 2
+        x: 2337
+        y: 1129
+        width: 823
+        height: 653
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 10c2244671d4b0820800000000000000
+      internalID: 2885484749122579457
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: beam bloom platform_12
+      rect:
+        serializedVersion: 2
+        x: 3317
+        y: 1108
+        width: 1062
+        height: 623
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0143ab14821453540800000000000000
+      internalID: 4986963803539911696
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: beam bloom platform_13
+      rect:
+        serializedVersion: 2
+        x: 1590
+        y: 675
+        width: 117
+        height: 41
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b09c21a2f5bb43bb0800000000000000
+      internalID: -4957131272425912053
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: beam bloom platform_14
+      rect:
+        serializedVersion: 2
+        x: 3839
+        y: 700
+        width: 19
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 49ebefc62aa313950800000000000000
+      internalID: 6426982612522155668
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: beam bloom platform_15
+      rect:
+        serializedVersion: 2
+        x: 8
+        y: 12
+        width: 1078
+        height: 640
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2962f9a6c0b110150800000000000000
+      internalID: 5836976332191245970
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: beam bloom platform_16
+      rect:
+        serializedVersion: 2
+        x: 1101
+        y: 21
+        width: 1096
+        height: 615
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e7d58cc90a1dfa3c0800000000000000
+      internalID: -4346024627633889922
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: beam bloom platform_17
+      rect:
+        serializedVersion: 2
+        x: 2202
+        y: 21
+        width: 1095
+        height: 615
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 380d3a3af45bbc460800000000000000
+      internalID: 7263098177717522563
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: beam bloom platform_18
+      rect:
+        serializedVersion: 2
+        x: 3303
+        y: 21
+        width: 1091
+        height: 615
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 12c45617e2ac3f540800000000000000
+      internalID: 5040594708777487393
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      beam bloom platform_0: 3458627221669346093
+      beam bloom platform_1: -9221388277217756716
+      beam bloom platform_10: 3846349594229990396
+      beam bloom platform_11: 2885484749122579457
+      beam bloom platform_12: 4986963803539911696
+      beam bloom platform_13: -4957131272425912053
+      beam bloom platform_14: 6426982612522155668
+      beam bloom platform_15: 5836976332191245970
+      beam bloom platform_16: -4346024627633889922
+      beam bloom platform_17: 7263098177717522563
+      beam bloom platform_18: 5040594708777487393
+      beam bloom platform_2: -7892878756962927667
+      beam bloom platform_3: 1041487594485728069
+      beam bloom platform_4: -1612502949275423961
+      beam bloom platform_5: -4778070278099759334
+      beam bloom platform_6: -1685533399922968333
+      beam bloom platform_7: -3502258787525820792
+      beam bloom platform_8: -1005206219411646899
+      beam bloom platform_9: -1571489580986417789
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
