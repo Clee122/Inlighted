@@ -15,11 +15,12 @@ public class cameramanage : MonoBehaviour
     public float normalOrtho = 4;
     public float maxOrtho = 17.0f;
     public CinemachineVirtualCamera vcam;
+    private bool movingBack = false;
+
 
     void Awake()
     {
         player = GameObject.FindGameObjectWithTag("Player").transform;
-
         target = player;
         vcam = GetComponent<CinemachineVirtualCamera>();
         
@@ -40,16 +41,29 @@ public class cameramanage : MonoBehaviour
 
     public void MoveCam()
     {
-        Vector3 newPos = new Vector3(target.position.x, target.position.y +2, -10);
+    if (target == null || player == null)
+        return;
 
-        if (target == player)
+    Vector3 newPos = new Vector3(target.position.x, target.position.y + 2, -10);
+
+    if (movingBack)
+    {
+        transform.position = Vector3.MoveTowards(transform.position, newPos, speed * Time.deltaTime);
+
+        if (Vector3.Distance(transform.position, newPos) < 0.05f)
         {
             transform.position = newPos;
+            movingBack = false;
         }
-        else
-        {
-            transform.position = Vector3.MoveTowards(transform.position, newPos, speed * Time.deltaTime);
-        }
+    }
+    else if (target == player)
+    {
+        transform.position = newPos;
+    }
+    else
+    {
+        transform.position = Vector3.MoveTowards(transform.position, newPos, speed * Time.deltaTime);
+    }
     }
         public void ZoomCam()
     {
@@ -60,15 +74,20 @@ public class cameramanage : MonoBehaviour
     {
         target = cameraspace;
         targetOrtho = maxOrtho;
+        movingBack = false;
     }
 
     public void Movecamback()
     {
         target = player;
         targetOrtho = normalOrtho;
-
+        movingBack = true;
+    }
+    public void Movecambackdie()
+    {
+        target = player;
+        targetOrtho = normalOrtho;
         transform.position = new Vector3(player.position.x, player.position.y + 2, -10);
-
         vcam.PreviousStateIsValid = false;
         vcam.m_Lens.OrthographicSize = normalOrtho;
     }

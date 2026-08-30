@@ -139,7 +139,7 @@ public class PlayerRespawn : MonoBehaviour
             Physics2D.SyncTransforms();
             if (cameraManager != null)
             {
-                cameraManager.Movecamback();
+                cameraManager.Movecambackdie();
             }
 
 
