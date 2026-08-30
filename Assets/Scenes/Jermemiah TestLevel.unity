@@ -454,7 +454,7 @@ PrefabInstance:
     - target: {fileID: -5335877252066859057, guid: 1a2b6faaca96b144c9f1e527bae249d1, type: 3}
       propertyPath: revealMask
       value: 
-      objectReference: {fileID: 1194316855}
+      objectReference: {fileID: 427056778}
     - target: {fileID: -5335877252066859057, guid: 1a2b6faaca96b144c9f1e527bae249d1, type: 3}
       propertyPath: burstDuration
       value: 3
@@ -697,15 +697,17 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects:
-    - targetCorrespondingSourceObject: {fileID: 8007050867395820475, guid: 1a2b6faaca96b144c9f1e527bae249d1, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1194316856}
+    m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 1a2b6faaca96b144c9f1e527bae249d1, type: 3}
 --- !u!4 &427056777 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 8007050867395820475, guid: 1a2b6faaca96b144c9f1e527bae249d1, type: 3}
+  m_PrefabInstance: {fileID: 427056776}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &427056778 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 16026239851315679, guid: 1a2b6faaca96b144c9f1e527bae249d1, type: 3}
   m_PrefabInstance: {fileID: 427056776}
   m_PrefabAsset: {fileID: 0}
 --- !u!1 &473857974 stripped
@@ -2316,97 +2318,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 1852412878395821119, guid: 226a539e60bebf1488521c69759a466a, type: 3}
   m_PrefabInstance: {fileID: 1564638378}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &1194316855
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1194316856}
-  - component: {fileID: 1194316857}
-  m_Layer: 6
-  m_Name: Reveale mask
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1194316856
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1194316855}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.022, y: 0.031, z: 0}
-  m_LocalScale: {x: 5.954672, y: 11.91921, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 427056777}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!331 &1194316857
-SpriteMask:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1194316855}
-  m_Enabled: 1
-  m_CastShadows: 1
-  m_ReceiveShadows: 1
-  m_DynamicOccludee: 1
-  m_StaticShadowCaster: 0
-  m_MotionVectors: 1
-  m_LightProbeUsage: 1
-  m_ReflectionProbeUsage: 1
-  m_RayTracingMode: 0
-  m_RayTraceProcedural: 0
-  m_RayTracingAccelStructBuildFlagsOverride: 0
-  m_RayTracingAccelStructBuildFlags: 1
-  m_SmallMeshCulling: 1
-  m_ForceMeshLod: -1
-  m_MeshLodSelectionBias: 0
-  m_RenderingLayerMask: 1
-  m_RendererPriority: 0
-  m_Materials:
-  - {fileID: 2100000, guid: 15d0c3709176029428a0da2f8cecf0b5, type: 2}
-  m_StaticBatchInfo:
-    firstSubMesh: 0
-    subMeshCount: 0
-  m_StaticBatchRoot: {fileID: 0}
-  m_ProbeAnchor: {fileID: 0}
-  m_LightProbeVolumeOverride: {fileID: 0}
-  m_ScaleInLightmap: 1
-  m_ReceiveGI: 1
-  m_PreserveUVs: 0
-  m_IgnoreNormalsForChartDetection: 0
-  m_ImportantGI: 0
-  m_StitchLightmapSeams: 1
-  m_SelectedEditorRenderState: 3
-  m_MinimumChartSize: 4
-  m_AutoUVMaxDistance: 0.5
-  m_AutoUVMaxAngle: 89
-  m_LightmapParameters: {fileID: 0}
-  m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 0
-  m_MaskInteraction: 0
-  m_Sprite: {fileID: -2413806693520163455, guid: 06623d9dba434474b9132079238038de, type: 3}
-  m_MaskAlphaCutoff: 0.2
-  m_FrontSortingLayerID: 0
-  m_BackSortingLayerID: 0
-  m_FrontSortingLayer: 0
-  m_BackSortingLayer: 0
-  m_FrontSortingOrder: 8
-  m_BackSortingOrder: 0
-  m_IsCustomRangeActive: 1
-  m_SpriteSortPoint: 0
-  m_MaskSource: 0
 --- !u!224 &1229143516 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 7005746526687612735, guid: 58839fcf5f40ff24e97de205bd895dbd, type: 3}
