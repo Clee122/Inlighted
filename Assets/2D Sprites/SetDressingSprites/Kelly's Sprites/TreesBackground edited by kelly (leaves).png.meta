@@ -123,7 +123,7 @@ TextureImporter:
         width: 1656
         height: 1103
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -141,11 +141,11 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 1750
-        y: 1121
-        width: 1715
-        height: 1164
+        y: 1059
+        width: 1756
+        height: 1226
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -158,99 +158,11 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
-    - serializedVersion: 2
-      name: TreesBackground edited by kelly (leaves)_2
-      rect:
-        serializedVersion: 2
-        x: 3453
-        y: 1373
-        width: 30
-        height: 29
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 4fa8df73502151920800000000000000
-      internalID: 2960292143689468660
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: TreesBackground edited by kelly (leaves)_3
-      rect:
-        serializedVersion: 2
-        x: 2292
-        y: 1116
-        width: 34
-        height: 42
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 3c5ebbe41555d6200800000000000000
-      internalID: 174889768238966211
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: TreesBackground edited by kelly (leaves)_4
-      rect:
-        serializedVersion: 2
-        x: 2317
-        y: 1097
-        width: 29
-        height: 35
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: b071a36ef8418be00800000000000000
-      internalID: 1060620320521197323
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: TreesBackground edited by kelly (leaves)_5
-      rect:
-        serializedVersion: 2
-        x: 2406
-        y: 1104
-        width: 36
-        height: 39
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 710368714f5cbfbf0800000000000000
-      internalID: -289420098877902825
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
     outline: []
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: 8a89e5cabc7793248a81b50d05e6c1fa
     internalID: 0
     vertices: []
     indices: 
