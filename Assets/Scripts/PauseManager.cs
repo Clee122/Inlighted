@@ -6,6 +6,8 @@ public class PauseManager : MonoBehaviour
 {
     public GameObject PauseMenu;
 
+    private bool isLocked = false; //turns true once the game end trigger fires
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -15,6 +17,8 @@ public class PauseManager : MonoBehaviour
 
     public void Pause()
     {
+        if (isLocked) return; //stops the pause menu working if you press it when the game ends
+
         //pause game by setting timescale to 0
         Time.timeScale = 0;
         //display pause menu
@@ -23,9 +27,17 @@ public class PauseManager : MonoBehaviour
 
     public void UnPause()
     {
+        if (isLocked) return;
+
         //unpause game by setting timescale to 1
         Time.timeScale = 1;
         //hide pause menu
         PauseMenu.SetActive(false);
+    }
+
+    public void LockPause()
+    {
+        isLocked = true;
+        PauseMenu.SetActive(false); //if the pause menu happens to be open closes it
     }
 }
