@@ -5,6 +5,7 @@ using UnityEngine.InputSystem;
 public class ShootLaser : MonoBehaviour
 {
     [Header("Puzzle")]
+
     // The LaserPointer remains active while the player solves this specific
     // puzzle, then shuts down after a configurable delay once success is registered.
     [SerializeField] private LightPuzzleController puzzleController;
@@ -23,6 +24,7 @@ public class ShootLaser : MonoBehaviour
     public MovingPlatformReceiver MPReceiver;
 
     [Header("Interaction")]
+
     // The LaserPointer uses the same Player and Interact1 input as the mirrors
     // so the puzzle keeps one consistent interaction button.
     [SerializeField] private GameObject Player;
@@ -30,7 +32,14 @@ public class ShootLaser : MonoBehaviour
     // The player only needs to be near the LaserPointer to activate it.
     [SerializeField] private float interactionDistance = 1.5f;
 
+    [Header("Interaction Visual Feedback")]
+
+    // The same outline component used by mirrors makes all environmental
+    // puzzle interactions use one consistent visual language.
+    [SerializeField] private PuzzleInteractableOutline interactionOutline;
+
     [Header("Solved Laser Shutoff")]
+
     // The laser remains visible briefly after the puzzle is solved so the player
     // can clearly see the successful beam path and the resulting platform movement.
     // Different puzzle layouts can use different delays in the Inspector.
@@ -56,6 +65,14 @@ public class ShootLaser : MonoBehaviour
                 0f,
                 solvedShutoffDelay
             );
+
+        if (interactionOutline == null)
+        {
+            // Automatically finding the outline keeps prefab setup consistent
+            // with MirrorRotate while still allowing a manual reference.
+            interactionOutline =
+                GetComponent<PuzzleInteractableOutline>();
+        }
 
         if (Player == null)
         {
@@ -105,6 +122,10 @@ public class ShootLaser : MonoBehaviour
         {
             MPReceiver.DeActivate();
         }
+
+        SetInteractionOutline(
+            false
+        );
     }
 
     private void Update()
@@ -116,6 +137,10 @@ public class ShootLaser : MonoBehaviour
             puzzleController.IsSolved()
         )
         {
+            SetInteractionOutline(
+                false
+            );
+
             if (
                 isLaserActive &&
                 !isWaitingToShutOff
@@ -132,16 +157,55 @@ public class ShootLaser : MonoBehaviour
             return;
         }
 
+        /*
+         * The LaserPointer is only interactable before it has been activated.
+         * Once its persistent laser is running, removing the outline prevents
+         * the player from expecting that pressing C will perform another action.
+         */
         if (!isLaserActive)
         {
-            HandleInteraction();
+            bool playerIsNearby =
+                IsPlayerWithinInteractionRange();
+
+            SetInteractionOutline(
+                playerIsNearby
+            );
+
+            HandleInteraction(
+                playerIsNearby
+            );
+
             return;
         }
+
+        SetInteractionOutline(
+            false
+        );
 
         UpdateActiveLaser();
     }
 
-    private void HandleInteraction()
+    private bool IsPlayerWithinInteractionRange()
+    {
+        if (Player == null)
+        {
+            return false;
+        }
+
+        float distanceToPlayer =
+            Vector2.Distance(
+                transform.position,
+                Player.transform.position
+            );
+
+        return
+            distanceToPlayer <=
+            interactionDistance;
+    }
+
+    private void HandleInteraction(
+        bool playerIsNearby
+    )
     {
         if (
             Player == null ||
@@ -152,13 +216,7 @@ public class ShootLaser : MonoBehaviour
             return;
         }
 
-        float distanceToPlayer =
-            Vector2.Distance(
-                transform.position,
-                Player.transform.position
-            );
-
-        if (distanceToPlayer > interactionDistance)
+        if (!playerIsNearby)
         {
             return;
         }
@@ -205,6 +263,12 @@ public class ShootLaser : MonoBehaviour
         // experiment with mirror angles without needing to race against a timer.
         isLaserActive = true;
         isWaitingToShutOff = false;
+
+        // Once the source has been activated there is no further interaction
+        // available here, so its proximity outline should disappear immediately.
+        SetInteractionOutline(
+            false
+        );
 
         beam.laser.enabled = true;
 
@@ -307,6 +371,20 @@ public class ShootLaser : MonoBehaviour
         return isLaserActive;
     }
 
+    private void SetInteractionOutline(
+        bool shouldShow
+    )
+    {
+        if (interactionOutline == null)
+        {
+            return;
+        }
+
+        interactionOutline.SetVisible(
+            shouldShow
+        );
+    }
+
     private void OnDisable()
     {
         // Stop any delayed shutdown if this puzzle object itself is disabled,
@@ -319,5 +397,21 @@ public class ShootLaser : MonoBehaviour
 
             solvedShutoffCoroutine = null;
         }
+
+        // Removing the proximity feedback ensures an inactive puzzle object
+        // cannot leave its generated outline visible in the level.
+        SetInteractionOutline(
+            false
+        );
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        // Showing the LaserPointer's interaction range in the Scene view makes
+        // its proximity behaviour as easy to tune as the mirrors.
+        Gizmos.DrawWireSphere(
+            transform.position,
+            interactionDistance
+        );
     }
 }

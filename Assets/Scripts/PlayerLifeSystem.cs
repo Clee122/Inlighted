@@ -46,10 +46,12 @@ public class PlayerLifeSystem : MonoBehaviour
     {
         // The animation controller is cached so the life system can request hurt
         // feedback without directly controlling Animator states itself.
-        playerAnimationController = GetComponent<PlayerAnimationController>();
+        playerAnimationController =
+            GetComponent<PlayerAnimationController>();
 
         // Damage and death must be able to interrupt channel healing immediately.
-        playerLightChannel = GetComponent<PlayerLightChannel>();
+        playerLightChannel =
+            GetComponent<PlayerLightChannel>();
 
         Debug.Log("LIFE CHECK 0: PlayerLifeSystem Awake completed.");
     }
@@ -257,6 +259,29 @@ public class PlayerLifeSystem : MonoBehaviour
         isDead = true;
         isInvulnerable = true;
         currentLives = 0;
+
+        /*
+         * Light is cleared immediately when death begins so its HUD no longer
+         * remains visibly filled during the dedicated death presentation.
+         * PlayerRespawn restores the full resource later when gameplay resumes.
+         */
+        PlayerLightResource playerLightResource =
+            GetComponent<PlayerLightResource>();
+
+        if (playerLightResource != null)
+        {
+            playerLightResource.ResetLightForDeath();
+
+            Debug.Log(
+                "LIFE CHECK DIE: Light resource reset for death."
+            );
+        }
+        else
+        {
+            Debug.LogWarning(
+                "LIFE CHECK DIE: PlayerLightResource was not found, so Light could not be reset."
+            );
+        }
 
         Debug.Log(
             "LIFE CHECK DIE 1: Player entered Die(). isDead is now true."

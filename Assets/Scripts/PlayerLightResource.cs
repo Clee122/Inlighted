@@ -33,6 +33,7 @@ public class PlayerLightResource : MonoBehaviour
     [SerializeField] private LightBurstController lightBurstController;
     [SerializeField] private LightBeamController lightBeamController;
     [SerializeField] private PlayerLightChannel playerLightChannel;
+    [SerializeField] private PlayerLifeSystem playerLifeSystem;
 
     [Header("Debug")]
     [SerializeField] private bool showDebugLogs = true;
@@ -50,9 +51,19 @@ public class PlayerLightResource : MonoBehaviour
     {
         // These systems are expected to be attached to the Player, so automatically
         // assigning them reduces setup mistakes when the component is first added.
-        lightBurstController = GetComponent<LightBurstController>();
-        lightBeamController = GetComponent<LightBeamController>();
-        playerLightChannel = GetComponent<PlayerLightChannel>();
+        lightBurstController =
+            GetComponent<LightBurstController>();
+
+        lightBeamController =
+            GetComponent<LightBeamController>();
+
+        playerLightChannel =
+            GetComponent<PlayerLightChannel>();
+
+        // The life system is needed so passive Light regeneration can remain paused
+        // during the death sequence instead of immediately refilling the emptied HUD.
+        playerLifeSystem =
+            GetComponent<PlayerLifeSystem>();
     }
 
     private void Awake()
@@ -61,31 +72,44 @@ public class PlayerLightResource : MonoBehaviour
         // are lost while the Player prefab is edited or merged.
         if (lightBurstController == null)
         {
-            lightBurstController = GetComponent<LightBurstController>();
+            lightBurstController =
+                GetComponent<LightBurstController>();
         }
 
         if (lightBeamController == null)
         {
-            lightBeamController = GetComponent<LightBeamController>();
+            lightBeamController =
+                GetComponent<LightBeamController>();
         }
 
         if (playerLightChannel == null)
         {
-            playerLightChannel = GetComponent<PlayerLightChannel>();
+            playerLightChannel =
+                GetComponent<PlayerLightChannel>();
+        }
+
+        // Death temporarily prevents passive regeneration so resetting Light to zero
+        // also keeps the HUD empty until the player actually respawns.
+        if (playerLifeSystem == null)
+        {
+            playerLifeSystem =
+                GetComponent<PlayerLifeSystem>();
         }
 
         // Clamp configurable values so accidental negative or invalid Inspector
         // values cannot break the resource calculations.
-        maximumLight = Mathf.Max(
-            1f,
-            maximumLight
-        );
+        maximumLight =
+            Mathf.Max(
+                1f,
+                maximumLight
+            );
 
-        startingLight = Mathf.Clamp(
-            startingLight,
-            0f,
-            maximumLight
-        );
+        startingLight =
+            Mathf.Clamp(
+                startingLight,
+                0f,
+                maximumLight
+            );
 
         passiveRegenerationLimitPercentage =
             Mathf.Clamp01(
@@ -98,7 +122,8 @@ public class PlayerLightResource : MonoBehaviour
                 passiveRegenerationRate
             );
 
-        currentLight = startingLight;
+        currentLight =
+            startingLight;
 
         nextDebugLightValue =
             GetNextDebugThreshold(
@@ -161,11 +186,18 @@ public class PlayerLightResource : MonoBehaviour
             playerLightChannel != null &&
             playerLightChannel.IsRefundPending();
 
+        // Death must pause passive regeneration so the resource stays empty for
+        // the entire death presentation instead of beginning to refill immediately.
+        bool isPlayerDead =
+            playerLifeSystem != null &&
+            playerLifeSystem.IsDead();
+
         // Unlike the old movement system, passive regeneration does not depend
         // on player input. This prevents players from needing to run back and
         // forth simply to recover enough Light to continue through the level.
         bool shouldRegenerate =
             isBelowRegenerationLimit &&
+            !isPlayerDead &&
             !isLightAbilityActive &&
             !isChanneling &&
             !isChannelRefundPending &&
@@ -177,7 +209,12 @@ public class PlayerLightResource : MonoBehaviour
             {
                 string stopReason;
 
-                if (isChanneling)
+                if (isPlayerDead)
+                {
+                    stopReason =
+                        "Passive regeneration paused because the player is dead.";
+                }
+                else if (isChanneling)
                 {
                     stopReason =
                         "Passive regeneration paused because the player is channeling.";
@@ -218,8 +255,11 @@ public class PlayerLightResource : MonoBehaviour
 
         if (!wasRegenerating)
         {
-            wasRegenerating = true;
-            regenerationLimitWasReached = false;
+            wasRegenerating =
+                true;
+
+            regenerationLimitWasReached =
+                false;
 
             nextDebugLightValue =
                 GetNextDebugThreshold(
@@ -246,10 +286,11 @@ public class PlayerLightResource : MonoBehaviour
 
         // The passive system can never push the resource beyond its configured
         // limit. Light above this point must be earned through other mechanics.
-        currentLight = Mathf.Min(
-            currentLight,
-            regenerationLimit
-        );
+        currentLight =
+            Mathf.Min(
+                currentLight,
+                regenerationLimit
+            );
 
         if (
             !Mathf.Approximately(
@@ -267,7 +308,8 @@ public class PlayerLightResource : MonoBehaviour
             !regenerationLimitWasReached
         )
         {
-            regenerationLimitWasReached = true;
+            regenerationLimitWasReached =
+                true;
 
             if (showDebugLogs)
             {
@@ -286,7 +328,9 @@ public class PlayerLightResource : MonoBehaviour
         }
     }
 
-    public bool CanSpendLight(float amount)
+    public bool CanSpendLight(
+        float amount
+    )
     {
         // Zero or negative costs should not block an ability, while positive costs
         // require the player to have enough stored light.
@@ -295,7 +339,8 @@ public class PlayerLightResource : MonoBehaviour
             return true;
         }
 
-        return currentLight >= amount;
+        return
+            currentLight >= amount;
     }
 
     public bool TrySpendLight(
@@ -338,11 +383,12 @@ public class PlayerLightResource : MonoBehaviour
         currentLight -=
             amount;
 
-        currentLight = Mathf.Clamp(
-            currentLight,
-            0f,
-            maximumLight
-        );
+        currentLight =
+            Mathf.Clamp(
+                currentLight,
+                0f,
+                maximumLight
+            );
 
         regenerationLimitWasReached =
             false;
@@ -389,11 +435,12 @@ public class PlayerLightResource : MonoBehaviour
         currentLight -=
             amount;
 
-        currentLight = Mathf.Clamp(
-            currentLight,
-            0f,
-            maximumLight
-        );
+        currentLight =
+            Mathf.Clamp(
+                currentLight,
+                0f,
+                maximumLight
+            );
 
         float amountRemoved =
             previousLight -
@@ -467,11 +514,12 @@ public class PlayerLightResource : MonoBehaviour
         currentLight +=
             amount;
 
-        currentLight = Mathf.Clamp(
-            currentLight,
-            0f,
-            maximumLight
-        );
+        currentLight =
+            Mathf.Clamp(
+                currentLight,
+                0f,
+                maximumLight
+            );
 
         if (
             Mathf.Approximately(
@@ -500,6 +548,38 @@ public class PlayerLightResource : MonoBehaviour
                 " restored light. Current light: " +
                 currentLight.ToString("0.0") +
                 " / " +
+                maximumLight.ToString("0.0")
+            );
+        }
+    }
+
+    public void ResetLightForDeath()
+    {
+        // Death clears the visible Light resource so the death presentation only
+        // shows the darkness screen, CatMoth death animation, and death message.
+        // Passive regeneration stays blocked by the player's dead state until respawn.
+        currentLight =
+            0f;
+
+        wasRegenerating =
+            false;
+
+        regenerationLimitWasReached =
+            false;
+
+        nextDebugLightValue =
+            GetNextDebugThreshold(
+                currentLight
+            );
+
+        // The HUD listens to this event, so notifying immediately updates its
+        // displayed resource value without requiring a direct HUD reference here.
+        NotifyLightChanged();
+
+        if (showDebugLogs)
+        {
+            Debug.Log(
+                "Death reset Light resource to 0 / " +
                 maximumLight.ToString("0.0")
             );
         }

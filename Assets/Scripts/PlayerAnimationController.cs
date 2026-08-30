@@ -10,6 +10,7 @@ public class PlayerAnimationController : MonoBehaviour
     [SerializeField] private Transform beamOrigin;
 
     [Header("Death Visual Priority")]
+    [SerializeField] private string deathSortingLayerName = "DeathPlayer";
     [SerializeField] private int deathOrderInLayer = 100;
 
     [Header("Movement Check")]
@@ -62,8 +63,9 @@ public class PlayerAnimationController : MonoBehaviour
 
         if (catMothSpriteRenderer != null)
         {
-            // The original sorting values are saved so death can briefly appear above darkness,
-            // then safely return to normal gameplay sorting after respawn.
+            // The original sorting values are saved so death can temporarily move
+            // CatMoth above the camera-space darkness overlay, then safely restore
+            // the normal gameplay rendering after respawn.
             originalOrderInLayer = catMothSpriteRenderer.sortingOrder;
             originalSortingLayerID = catMothSpriteRenderer.sortingLayerID;
         }
@@ -208,7 +210,10 @@ public class PlayerAnimationController : MonoBehaviour
     {
         if (catMothSpriteRenderer == null)
         {
-            Debug.LogWarning("ANIM CHECK FAILED: Cannot reset facing because CatMoth SpriteRenderer is missing.");
+            Debug.LogWarning(
+                "ANIM CHECK FAILED: Cannot reset facing because CatMoth SpriteRenderer is missing."
+            );
+
             return;
         }
 
@@ -227,38 +232,63 @@ public class PlayerAnimationController : MonoBehaviour
                 );
         }
 
-        Debug.Log("ANIM CHECK: CatMoth facing direction reset to default/right.");
+        Debug.Log(
+            "ANIM CHECK: CatMoth facing direction reset to default/right."
+        );
     }
 
     public void SetDeathVisualPriority()
     {
         if (catMothSpriteRenderer == null)
         {
-            Debug.LogWarning("ANIM CHECK FAILED: Cannot set death visual priority because CatMoth SpriteRenderer is missing.");
+            Debug.LogWarning(
+                "ANIM CHECK FAILED: Cannot set death visual priority because CatMoth SpriteRenderer is missing."
+            );
+
             return;
         }
 
-        // Death should briefly appear above darkness so the player can actually see
-        // the death animation before the respawn UI and teleport happen.
-        catMothSpriteRenderer.sortingOrder = deathOrderInLayer;
+        // Death temporarily moves CatMoth onto a dedicated sorting layer so
+        // the death animation can appear above the Screen Space - Camera
+        // Darkness Indicator while the Overlay HUD remains above both.
+        catMothSpriteRenderer.sortingLayerName =
+            deathSortingLayerName;
 
-        Debug.Log("ANIM CHECK: Death visual priority set. Order in Layer = " + deathOrderInLayer);
+        catMothSpriteRenderer.sortingOrder =
+            deathOrderInLayer;
+
+        Debug.Log(
+            "ANIM CHECK: Death visual priority set. Sorting Layer = " +
+            deathSortingLayerName +
+            " | Order in Layer = " +
+            deathOrderInLayer
+        );
     }
 
     public void ResetVisualPriority()
     {
         if (catMothSpriteRenderer == null)
         {
-            Debug.LogWarning("ANIM CHECK FAILED: Cannot reset visual priority because CatMoth SpriteRenderer is missing.");
+            Debug.LogWarning(
+                "ANIM CHECK FAILED: Cannot reset visual priority because CatMoth SpriteRenderer is missing."
+            );
+
             return;
         }
 
-        // Respawn restores the CatMoth's normal sorting so it does not permanently
-        // stay above darkness, platforms, or other level visuals after death.
-        catMothSpriteRenderer.sortingLayerID = originalSortingLayerID;
-        catMothSpriteRenderer.sortingOrder = originalOrderInLayer;
+        // Respawn restores CatMoth to the exact sorting layer and order it used
+        // before death so the temporary death rendering cannot affect normal
+        // interactions with darkness, platforms, or foreground environment art.
+        catMothSpriteRenderer.sortingLayerID =
+            originalSortingLayerID;
 
-        Debug.Log("ANIM CHECK: CatMoth visual priority reset to original order: " + originalOrderInLayer);
+        catMothSpriteRenderer.sortingOrder =
+            originalOrderInLayer;
+
+        Debug.Log(
+            "ANIM CHECK: CatMoth visual priority reset to original sorting layer and order: " +
+            originalOrderInLayer
+        );
     }
 
     private bool CheckGrounded()
@@ -273,18 +303,24 @@ public class PlayerAnimationController : MonoBehaviour
         // Only colliders on the configured Ground Layer should affect animation
         // grounding. This prevents walls, triggers, puzzle objects, and other
         // unrelated colliders from incorrectly keeping CatMoth in a grounded state.
-        Collider2D[] hits = Physics2D.OverlapCircleAll(
-            groundCheckPoint.position,
-            groundCheckRadius,
-            groundLayer
-        );
+        Collider2D[] hits =
+            Physics2D.OverlapCircleAll(
+                groundCheckPoint.position,
+                groundCheckRadius,
+                groundLayer
+            );
 
         foreach (Collider2D hit in hits)
         {
             // The ground check should never treat the Player or one of its children
             // as valid ground if the layer setup changes later.
-            if (hit.transform == transform || hit.transform.IsChildOf(transform))
+            if (
+                hit.transform == transform ||
+                hit.transform.IsChildOf(transform)
+            )
+            {
                 continue;
+            }
 
             return true;
         }
@@ -301,11 +337,15 @@ public class PlayerAnimationController : MonoBehaviour
             catMothAnimator.ResetTrigger("hurt");
             catMothAnimator.SetTrigger("hurt");
 
-            Debug.Log("ANIM CHECK: Hurt animation trigger sent.");
+            Debug.Log(
+                "ANIM CHECK: Hurt animation trigger sent."
+            );
         }
         else
         {
-            Debug.LogWarning("ANIM CHECK FAILED: Cannot play hurt animation because CatMoth Animator is missing.");
+            Debug.LogWarning(
+                "ANIM CHECK FAILED: Cannot play hurt animation because CatMoth Animator is missing."
+            );
         }
     }
 
@@ -316,7 +356,12 @@ public class PlayerAnimationController : MonoBehaviour
 
         // This shows the exact area used for ground detection in the Scene view.
         // It makes it easier to tune the GroundCheck position and radius.
-        Gizmos.color = Color.green;
-        Gizmos.DrawWireSphere(groundCheckPoint.position, groundCheckRadius);
+        Gizmos.color =
+            Color.green;
+
+        Gizmos.DrawWireSphere(
+            groundCheckPoint.position,
+            groundCheckRadius
+        );
     }
 }

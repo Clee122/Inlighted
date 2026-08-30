@@ -156,7 +156,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 237}
+  m_AnchoredPosition: {x: 0, y: 225}
   m_SizeDelta: {x: 121.67, y: 28.55}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &65981629
@@ -172,6 +172,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LoadScene
   sceneName: Act_1
+  hoverSound: {fileID: 0}
+  clickSound: {fileID: 0}
+  clickSoundDelay: 0.1
 --- !u!114 &65981630
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -869,7 +872,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -0.000099182, y: -196}
+  m_AnchoredPosition: {x: -0.000099182, y: -171}
   m_SizeDelta: {x: 121.67, y: 28.55}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &621520948
@@ -885,6 +888,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LoadScene
   sceneName: Credits
+  hoverSound: {fileID: 0}
+  clickSound: {fileID: 0}
+  clickSoundDelay: 0.1
 --- !u!114 &621520949
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1032,6 +1038,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LoadScene
   sceneName: Settings
+  hoverSound: {fileID: 0}
+  clickSound: {fileID: 0}
+  clickSoundDelay: 0.1
 --- !u!114 &643876584
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1163,7 +1172,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0.89498, y: -356}
+  m_AnchoredPosition: {x: 0.89498, y: -307}
   m_SizeDelta: {x: 121.67, y: 28.55}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &647358945
@@ -1179,6 +1188,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LoadScene
   sceneName: 
+  hoverSound: {fileID: 0}
+  clickSound: {fileID: 0}
+  clickSoundDelay: 0.1
 --- !u!114 &647358946
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1583,7 +1595,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 390}
+  m_AnchoredPosition: {x: 0, y: 339}
   m_SizeDelta: {x: 250, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1018024444
@@ -2046,7 +2058,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -0.000038147, y: -49}
+  m_AnchoredPosition: {x: -0.000038147, y: -31}
   m_SizeDelta: {x: 121.67, y: 28.55}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1873097982
@@ -2062,6 +2074,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LoadScene
   sceneName: GamePlayGym
+  hoverSound: {fileID: 0}
+  clickSound: {fileID: 0}
+  clickSoundDelay: 0.1
 --- !u!114 &1873097983
 MonoBehaviour:
   m_ObjectHideFlags: 0
