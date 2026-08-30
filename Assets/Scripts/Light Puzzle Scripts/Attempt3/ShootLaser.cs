@@ -1,85 +1,323 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class ShootLaser : MonoBehaviour
 {
+    [Header("Puzzle")]
+    // The LaserPointer remains active while the player solves this specific
+    // puzzle, then shuts down after a configurable delay once success is registered.
+    [SerializeField] private LightPuzzleController puzzleController;
+
+    [Header("Laser")]
     public Material material;
-    LaserBeam beam;
+
+    // The laser LineRenderer is created at runtime, so its sorting order cannot
+    // be edited directly in the Inspector. Exposing the value here makes it
+    // easy to keep the beam visible over environment artwork.
+    [SerializeField] private int laserSortingOrder = 5;
+
+    private LaserBeam beam;
 
     public AppearingPlatformReceiver APReceiver;
     public MovingPlatformReceiver MPReceiver;
 
-    /*
-    // Update is called once per frame
-    void Update()
+    [Header("Interaction")]
+    // The LaserPointer uses the same Player and Interact1 input as the mirrors
+    // so the puzzle keeps one consistent interaction button.
+    [SerializeField] private GameObject Player;
+
+    // The player only needs to be near the LaserPointer to activate it.
+    [SerializeField] private float interactionDistance = 1.5f;
+
+    [Header("Solved Laser Shutoff")]
+    // The laser remains visible briefly after the puzzle is solved so the player
+    // can clearly see the successful beam path and the resulting platform movement.
+    // Different puzzle layouts can use different delays in the Inspector.
+    [SerializeField] private float solvedShutoffDelay = 3f;
+
+    private InputAction playerInteract;
+
+    private bool isLaserActive;
+    private bool isWaitingToShutOff;
+
+    private Coroutine solvedShutoffCoroutine;
+
+    private void Awake()
     {
-        Destroy(GameObject.Find("Laser Beam"));
-        beam = new LaserBeam(
-            gameObject.transform.position,
-            gameObject.transform.right,
-            material,
-            APReceiver
-        );
+        interactionDistance =
+            Mathf.Max(
+                0f,
+                interactionDistance
+            );
+
+        solvedShutoffDelay =
+            Mathf.Max(
+                0f,
+                solvedShutoffDelay
+            );
+
+        if (Player == null)
+        {
+            Debug.LogError(
+                "ShootLaser requires the Player reference to be assigned.",
+                this
+            );
+
+            return;
+        }
+
+        PlayerInput playerInput =
+            Player.GetComponent<PlayerInput>();
+
+        if (playerInput == null)
+        {
+            Debug.LogError(
+                "ShootLaser could not find PlayerInput on the assigned Player.",
+                this
+            );
+
+            return;
+        }
+
+        playerInteract =
+            playerInput.actions["Interact1"];
+
+        if (playerInteract == null)
+        {
+            Debug.LogError(
+                "ShootLaser could not find the Interact1 input action.",
+                this
+            );
+        }
     }
-    */
 
     private void Start()
     {
-        // Pass the assigned receiver into LaserBeam because LaserBeam is not a
-        // MonoBehaviour and cannot obtain the reference through Awake.
-        beam = new LaserBeam(
-            transform.position,
-            transform.right,
-            material,
-            APReceiver,
-            MPReceiver
-        );
-
-        //beam.tag = "BeamBlue";
-
-        // Begin with the platform hidden until the beam reaches the receiver.
+        // The puzzle begins with the environmental laser switched off and its
+        // controlled receiver objects in their unsolved resting states.
         if (APReceiver != null)
         {
             APReceiver.DeActivate();
         }
-        else
-        {
-            Debug.LogError(
-                "ShootLaser requires an AppearingPlatformReceiver to be assigned.",
-                this
-            );
-        }
 
-        // Begin with the platform at original location until the beam reaches the receiver.
         if (MPReceiver != null)
         {
             MPReceiver.DeActivate();
         }
-        else
-        {
-            Debug.LogError(
-                "ShootLaser requires a MovingPlatformReceiver to be assigned.",
-                this
-            );
-        }
-
     }
 
     private void Update()
     {
-        // Avoid another null-reference error if the beam could not be created.
-        if (beam == null || beam.laser == null)
+        // Once solved, the laser keeps recasting during its shutdown delay so
+        // the successful light path remains visible while the platform moves.
+        if (
+            puzzleController != null &&
+            puzzleController.IsSolved()
+        )
+        {
+            if (
+                isLaserActive &&
+                !isWaitingToShutOff
+            )
+            {
+                StartSolvedShutoff();
+            }
+
+            if (isLaserActive)
+            {
+                UpdateActiveLaser();
+            }
+
+            return;
+        }
+
+        if (!isLaserActive)
+        {
+            HandleInteraction();
+            return;
+        }
+
+        UpdateActiveLaser();
+    }
+
+    private void HandleInteraction()
+    {
+        if (
+            Player == null ||
+            playerInteract == null ||
+            isLaserActive
+        )
         {
             return;
         }
 
+        float distanceToPlayer =
+            Vector2.Distance(
+                transform.position,
+                Player.transform.position
+            );
+
+        if (distanceToPlayer > interactionDistance)
+        {
+            return;
+        }
+
+        if (!playerInteract.WasPressedThisFrame())
+        {
+            return;
+        }
+
+        ActivateLaser();
+    }
+
+    private void ActivateLaser()
+    {
+        if (beam == null)
+        {
+            // The sorting order is passed into LaserBeam because the beam creates
+            // its own LineRenderer at runtime rather than using this GameObject.
+            beam =
+                new LaserBeam(
+                    transform.position,
+                    transform.right,
+                    material,
+                    APReceiver,
+                    MPReceiver,
+                    laserSortingOrder
+                );
+        }
+
+        if (
+            beam == null ||
+            beam.laser == null
+        )
+        {
+            Debug.LogError(
+                "ShootLaser could not create its LaserBeam.",
+                this
+            );
+
+            return;
+        }
+
+        // Activating the source starts a persistent laser so the player can
+        // experiment with mirror angles without needing to race against a timer.
+        isLaserActive = true;
+        isWaitingToShutOff = false;
+
+        beam.laser.enabled = true;
+
+        Debug.Log(
+            gameObject.name +
+            " activated. The laser will remain on until the puzzle is solved."
+        );
+    }
+
+    private void UpdateActiveLaser()
+    {
+        if (
+            beam == null ||
+            beam.laser == null
+        )
+        {
+            isLaserActive = false;
+            return;
+        }
+
+        // Recasting every frame gives immediate feedback when mirrors rotate,
+        // and also keeps the completed beam path visible during the solved delay.
         beam.laser.positionCount = 0;
         beam.laserIndices.Clear();
+
         beam.CastRay(
             transform.position,
             transform.right,
             beam.laser
         );
+    }
+
+    private void StartSolvedShutoff()
+    {
+        isWaitingToShutOff = true;
+
+        if (solvedShutoffCoroutine != null)
+        {
+            StopCoroutine(
+                solvedShutoffCoroutine
+            );
+        }
+
+        solvedShutoffCoroutine =
+            StartCoroutine(
+                SolvedShutoffRoutine()
+            );
+
+        Debug.Log(
+            gameObject.name +
+            " puzzle solved. Laser will switch off after " +
+            solvedShutoffDelay.ToString("0.00") +
+            " seconds."
+        );
+    }
+
+    private IEnumerator SolvedShutoffRoutine()
+    {
+        // Keeping the laser active during this delay lets the player visually
+        // connect the successful receiver hit with the moving platform response.
+        if (solvedShutoffDelay > 0f)
+        {
+            yield return new WaitForSeconds(
+                solvedShutoffDelay
+            );
+        }
+
+        DeactivateLaserAfterPuzzleSolved();
+
+        solvedShutoffCoroutine = null;
+    }
+
+    private void DeactivateLaserAfterPuzzleSolved()
+    {
+        isLaserActive = false;
+        isWaitingToShutOff = false;
+
+        if (
+            beam != null &&
+            beam.laser != null
+        )
+        {
+            beam.laser.positionCount = 0;
+            beam.laser.enabled = false;
+        }
+
+        // Do not deactivate the receiver here because the completed puzzle
+        // must keep its door/platform in the solved state after the beam disappears.
+
+        Debug.Log(
+            gameObject.name +
+            " switched off after the solved puzzle delay."
+        );
+    }
+
+    public bool IsLaserActive()
+    {
+        // Other puzzle systems can query whether the environmental laser is
+        // currently active without needing access to its runtime LineRenderer.
+        return isLaserActive;
+    }
+
+    private void OnDisable()
+    {
+        // Stop any delayed shutdown if this puzzle object itself is disabled,
+        // preventing a coroutine from continuing against an inactive object.
+        if (solvedShutoffCoroutine != null)
+        {
+            StopCoroutine(
+                solvedShutoffCoroutine
+            );
+
+            solvedShutoffCoroutine = null;
+        }
     }
 }

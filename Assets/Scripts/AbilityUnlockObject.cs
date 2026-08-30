@@ -17,6 +17,12 @@ public class AbilityUnlockObject : MonoBehaviour
     [Header("Prompt")]
     [SerializeField] private GameObject promptObject;
 
+    [Header("Visuals")]
+    // These separate child objects let the shrine swap between locked and unlocked states
+    // without disabling the parent object that contains the trigger and unlock logic.
+    [SerializeField] private GameObject lockedVisual;
+    [SerializeField] private GameObject unlockedVisual;
+
     [Header("After Unlock")]
     [SerializeField] private bool disableAfterUnlock = false;
     [SerializeField] private Color unlockedColor = Color.yellow;
@@ -30,6 +36,13 @@ public class AbilityUnlockObject : MonoBehaviour
         // I wanted the unlock object to remain in the level rather than disappear, because
         // these objects are meant to feel important instead of behaving like a normal pickup.
         spriteRenderer = GetComponent<SpriteRenderer>();
+
+        // If the parent still has the old greybox SpriteRenderer on it, disabling it keeps
+        // the trigger object functional while stopping the placeholder visual from showing.
+        if (spriteRenderer != null)
+        {
+            spriteRenderer.enabled = false;
+        }
     }
 
     private void Start()
@@ -40,6 +53,10 @@ public class AbilityUnlockObject : MonoBehaviour
         {
             promptObject.SetActive(false);
         }
+
+        // Ability shrines begin in the locked state and only switch once the unlock has
+        // actually happened. Unlike checkpoints, they do not switch back later.
+        SetVisualState(hasBeenUnlocked);
     }
 
     private void OnTriggerEnter2D(Collider2D other)
@@ -112,6 +129,10 @@ public class AbilityUnlockObject : MonoBehaviour
             promptObject.SetActive(false);
         }
 
+        // Swapping to the unlocked visual gives the shrine a persistent "already claimed"
+        // state, which is more suitable than checkpoint-style state swapping.
+        SetVisualState(true);
+
         // I am changing the colour instead of removing the object so the scene still shows
         // that this was an important unlock point. It also gives the player feedback that
         // the interaction worked.
@@ -127,6 +148,21 @@ public class AbilityUnlockObject : MonoBehaviour
         if (disableAfterUnlock)
         {
             gameObject.SetActive(false);
+        }
+    }
+
+    private void SetVisualState(bool isUnlocked)
+    {
+        // Keeping the two visual states as separate child objects makes it easier to expand
+        // the unlocked version later with glow, lights, particles, or animation.
+        if (lockedVisual != null)
+        {
+            lockedVisual.SetActive(!isUnlocked);
+        }
+
+        if (unlockedVisual != null)
+        {
+            unlockedVisual.SetActive(isUnlocked);
         }
     }
 }

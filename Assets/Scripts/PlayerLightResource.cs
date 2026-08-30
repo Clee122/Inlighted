@@ -6,8 +6,8 @@ public class PlayerLightResource : MonoBehaviour
     [Header("Light Resource")]
     [SerializeField] private float maximumLight = 100f;
 
-    // The player begins with no stored light so movement introduces how the
-    // renewable portion of the resource works during the opening gameplay.
+    // The player begins with no stored light so the opening can demonstrate
+    // that a limited amount of Light naturally returns without requiring movement.
     [SerializeField] private float startingLight = 0f;
 
     [Header("Current Light - Runtime Display")]
@@ -16,14 +16,20 @@ public class PlayerLightResource : MonoBehaviour
     // Awake resets this value to startingLight whenever gameplay begins.
     [SerializeField] private float currentLight = 0f;
 
-    [Header("Movement Regeneration")]
-    [SerializeField, Range(0f, 1f)]
-    private float movementRegenerationLimitPercentage = 0.5f;
+    [Header("Passive Regeneration")]
 
-    [SerializeField] private float movementRegenerationRate = 10f;
+    // Passive regeneration only restores a portion of the total Light resource.
+    // The remaining Light must come from checkpoints, environmental Light sources,
+    // refunds, or other intentional restoration mechanics.
+    [SerializeField, Range(0f, 1f)]
+    private float passiveRegenerationLimitPercentage = 0.5f;
+
+    // This value controls how much Light returns every second while the player
+    // is below the passive regeneration limit. Keeping it serialised allows the
+    // regeneration speed to be tuned through playtesting without changing code.
+    [SerializeField] private float passiveRegenerationRate = 5f;
 
     [Header("References")]
-    [SerializeField] private PlayerController2D playerController;
     [SerializeField] private LightBurstController lightBurstController;
     [SerializeField] private LightBeamController lightBeamController;
     [SerializeField] private PlayerLightChannel playerLightChannel;
@@ -44,7 +50,6 @@ public class PlayerLightResource : MonoBehaviour
     {
         // These systems are expected to be attached to the Player, so automatically
         // assigning them reduces setup mistakes when the component is first added.
-        playerController = GetComponent<PlayerController2D>();
         lightBurstController = GetComponent<LightBurstController>();
         lightBeamController = GetComponent<LightBeamController>();
         playerLightChannel = GetComponent<PlayerLightChannel>();
@@ -54,11 +59,6 @@ public class PlayerLightResource : MonoBehaviour
     {
         // These fallbacks keep the resource system working if Inspector references
         // are lost while the Player prefab is edited or merged.
-        if (playerController == null)
-        {
-            playerController = GetComponent<PlayerController2D>();
-        }
-
         if (lightBurstController == null)
         {
             lightBurstController = GetComponent<LightBurstController>();
@@ -74,19 +74,36 @@ public class PlayerLightResource : MonoBehaviour
             playerLightChannel = GetComponent<PlayerLightChannel>();
         }
 
-        maximumLight = Mathf.Max(1f, maximumLight);
+        // Clamp configurable values so accidental negative or invalid Inspector
+        // values cannot break the resource calculations.
+        maximumLight = Mathf.Max(
+            1f,
+            maximumLight
+        );
+
         startingLight = Mathf.Clamp(
             startingLight,
             0f,
             maximumLight
         );
 
-        movementRegenerationRate =
-            Mathf.Max(0f, movementRegenerationRate);
+        passiveRegenerationLimitPercentage =
+            Mathf.Clamp01(
+                passiveRegenerationLimitPercentage
+            );
+
+        passiveRegenerationRate =
+            Mathf.Max(
+                0f,
+                passiveRegenerationRate
+            );
 
         currentLight = startingLight;
+
         nextDebugLightValue =
-            GetNextDebugThreshold(currentLight);
+            GetNextDebugThreshold(
+                currentLight
+            );
 
         NotifyLightChanged();
 
@@ -96,51 +113,36 @@ public class PlayerLightResource : MonoBehaviour
                 "Light resource initialised. Current light: " +
                 currentLight.ToString("0.0") +
                 " / " +
-                maximumLight.ToString("0.0")
-            );
-        }
-
-        if (playerController == null)
-        {
-            Debug.LogError(
-                "PlayerLightResource could not find PlayerController2D. " +
-                "Movement regeneration will not work."
+                maximumLight.ToString("0.0") +
+                " | Passive regeneration limit: " +
+                (
+                    passiveRegenerationLimitPercentage *
+                    100f
+                ).ToString("0") +
+                "% | Passive regeneration rate: " +
+                passiveRegenerationRate.ToString("0.0") +
+                " light per second."
             );
         }
     }
 
     private void Update()
     {
-        HandleMovementRegeneration();
+        HandlePassiveRegeneration();
     }
 
-    private void HandleMovementRegeneration()
+    private void HandlePassiveRegeneration()
     {
-        if (playerController == null)
-        {
-            if (wasRegenerating)
-            {
-                StopRegenerationDebug(
-                    "Light regeneration stopped because PlayerController2D is missing."
-                );
-            }
-
-            return;
-        }
-
         float regenerationLimit =
             maximumLight *
-            movementRegenerationLimitPercentage;
+            passiveRegenerationLimitPercentage;
 
         bool isBelowRegenerationLimit =
-            currentLight < regenerationLimit;
+            currentLight <
+            regenerationLimit;
 
-        bool isPlayerControlledMovement =
-            playerController.IsActivelyGeneratingLight();
-
-        // Regeneration pauses while an ability is actively producing light.
-        // This prevents movement during Burst or Beam from immediately refunding
-        // some of the energy spent to activate that ability.
+        // Passive regeneration pauses while Burst or Beam is actively producing
+        // Light so using an ability does not immediately begin refunding its cost.
         bool isLightAbilityActive =
             (
                 lightBurstController != null &&
@@ -159,13 +161,15 @@ public class PlayerLightResource : MonoBehaviour
             playerLightChannel != null &&
             playerLightChannel.IsRefundPending();
 
+        // Unlike the old movement system, passive regeneration does not depend
+        // on player input. This prevents players from needing to run back and
+        // forth simply to recover enough Light to continue through the level.
         bool shouldRegenerate =
             isBelowRegenerationLimit &&
-            isPlayerControlledMovement &&
-            playerController.enabled &&
             !isLightAbilityActive &&
             !isChanneling &&
-            !isChannelRefundPending;
+            !isChannelRefundPending &&
+            passiveRegenerationRate > 0f;
 
         if (!shouldRegenerate)
         {
@@ -176,30 +180,37 @@ public class PlayerLightResource : MonoBehaviour
                 if (isChanneling)
                 {
                     stopReason =
-                        "Movement regeneration paused because the player is channeling.";
+                        "Passive regeneration paused because the player is channeling.";
                 }
                 else if (isChannelRefundPending)
                 {
                     stopReason =
-                        "Movement regeneration paused while cancelled channel light is being refunded.";
+                        "Passive regeneration paused while cancelled channel light is being refunded.";
                 }
                 else if (isLightAbilityActive)
                 {
                     stopReason =
-                        "Movement regeneration paused because a light ability is active.";
+                        "Passive regeneration paused because a light ability is active.";
                 }
                 else if (currentLight >= regenerationLimit)
                 {
                     stopReason =
-                        "Movement regeneration reached its limit.";
+                        "Passive regeneration reached its limit.";
+                }
+                else if (passiveRegenerationRate <= 0f)
+                {
+                    stopReason =
+                        "Passive regeneration stopped because its rate is set to zero.";
                 }
                 else
                 {
                     stopReason =
-                        "Player-controlled movement stopped.";
+                        "Passive regeneration stopped.";
                 }
 
-                StopRegenerationDebug(stopReason);
+                StopRegenerationDebug(
+                    stopReason
+                );
             }
 
             return;
@@ -211,32 +222,41 @@ public class PlayerLightResource : MonoBehaviour
             regenerationLimitWasReached = false;
 
             nextDebugLightValue =
-                GetNextDebugThreshold(currentLight);
+                GetNextDebugThreshold(
+                    currentLight
+                );
 
             if (showDebugLogs)
             {
                 Debug.Log(
-                    "Light movement regeneration started at: " +
-                    currentLight.ToString("0.0")
+                    "Passive Light regeneration started at: " +
+                    currentLight.ToString("0.0") +
+                    " / " +
+                    maximumLight.ToString("0.0")
                 );
             }
         }
 
-        float previousLight = currentLight;
+        float previousLight =
+            currentLight;
 
         currentLight +=
-            movementRegenerationRate *
+            passiveRegenerationRate *
             Time.deltaTime;
 
+        // The passive system can never push the resource beyond its configured
+        // limit. Light above this point must be earned through other mechanics.
         currentLight = Mathf.Min(
             currentLight,
             regenerationLimit
         );
 
-        if (!Mathf.Approximately(
-            previousLight,
-            currentLight
-        ))
+        if (
+            !Mathf.Approximately(
+                previousLight,
+                currentLight
+            )
+        )
         {
             NotifyLightChanged();
             PrintRegenerationProgress();
@@ -252,9 +272,9 @@ public class PlayerLightResource : MonoBehaviour
             if (showDebugLogs)
             {
                 Debug.Log(
-                    "Movement regeneration reached the " +
+                    "Passive regeneration reached the " +
                     (
-                        movementRegenerationLimitPercentage *
+                        passiveRegenerationLimitPercentage *
                         100f
                     ).ToString("0") +
                     "% limit: " +
@@ -283,7 +303,7 @@ public class PlayerLightResource : MonoBehaviour
         string sourceName
     )
     {
-        // All abilities spend light through this method so value checks, clamping
+        // All abilities spend Light through this method so value checks, clamping
         // and debugging remain consistent across the project.
         if (amount <= 0f)
         {
@@ -315,7 +335,8 @@ public class PlayerLightResource : MonoBehaviour
             return false;
         }
 
-        currentLight -= amount;
+        currentLight -=
+            amount;
 
         currentLight = Mathf.Clamp(
             currentLight,
@@ -323,10 +344,13 @@ public class PlayerLightResource : MonoBehaviour
             maximumLight
         );
 
-        regenerationLimitWasReached = false;
+        regenerationLimitWasReached =
+            false;
 
         nextDebugLightValue =
-            GetNextDebugThreshold(currentLight);
+            GetNextDebugThreshold(
+                currentLight
+            );
 
         NotifyLightChanged();
 
@@ -353,15 +377,17 @@ public class PlayerLightResource : MonoBehaviour
     )
     {
         // Continuous mechanics such as channeling must be able to remove whatever
-        // light remains without requiring the complete requested amount upfront.
+        // Light remains without requiring the complete requested amount upfront.
         if (amount <= 0f)
         {
             return 0f;
         }
 
-        float previousLight = currentLight;
+        float previousLight =
+            currentLight;
 
-        currentLight -= amount;
+        currentLight -=
+            amount;
 
         currentLight = Mathf.Clamp(
             currentLight,
@@ -370,23 +396,30 @@ public class PlayerLightResource : MonoBehaviour
         );
 
         float amountRemoved =
-            previousLight - currentLight;
+            previousLight -
+            currentLight;
 
         if (amountRemoved <= 0f)
         {
             return 0f;
         }
 
-        regenerationLimitWasReached = false;
+        regenerationLimitWasReached =
+            false;
 
         nextDebugLightValue =
-            GetNextDebugThreshold(currentLight);
+            GetNextDebugThreshold(
+                currentLight
+            );
 
         NotifyLightChanged();
 
         // Channeling calls this every frame, so it can disable individual drain logs
         // while still allowing one summary log when the channel ends.
-        if (showDebugLogs && printDebugLog)
+        if (
+            showDebugLogs &&
+            printDebugLog
+        )
         {
             Debug.Log(
                 sourceName +
@@ -421,16 +454,18 @@ public class PlayerLightResource : MonoBehaviour
         string sourceName
     )
     {
-        // Restoration is kept in one place so checkpoints, refunds, pickups and future
-        // environmental light sources cannot exceed the configured maximum.
+        // Restoration is kept in one place so checkpoints, refunds, environmental
+        // Light sources and future mechanics cannot exceed the configured maximum.
         if (amount <= 0f)
         {
             return;
         }
 
-        float previousLight = currentLight;
+        float previousLight =
+            currentLight;
 
-        currentLight += amount;
+        currentLight +=
+            amount;
 
         currentLight = Mathf.Clamp(
             currentLight,
@@ -438,18 +473,23 @@ public class PlayerLightResource : MonoBehaviour
             maximumLight
         );
 
-        if (Mathf.Approximately(
-            previousLight,
-            currentLight
-        ))
+        if (
+            Mathf.Approximately(
+                previousLight,
+                currentLight
+            )
+        )
         {
             return;
         }
 
-        regenerationLimitWasReached = false;
+        regenerationLimitWasReached =
+            false;
 
         nextDebugLightValue =
-            GetNextDebugThreshold(currentLight);
+            GetNextDebugThreshold(
+                currentLight
+            );
 
         NotifyLightChanged();
 
@@ -465,17 +505,25 @@ public class PlayerLightResource : MonoBehaviour
         }
     }
 
-    public void RestoreFullLight(string sourceName)
+    public void RestoreFullLight(
+        string sourceName
+    )
     {
-        // Checkpoints and respawning restore the player to full light so they can
+        // Checkpoints and respawning restore the player to full Light so they can
         // retry the next section without carrying a failed attempt's resource loss.
-        currentLight = maximumLight;
+        currentLight =
+            maximumLight;
 
-        wasRegenerating = false;
-        regenerationLimitWasReached = true;
+        wasRegenerating =
+            false;
+
+        regenerationLimitWasReached =
+            true;
 
         nextDebugLightValue =
-            GetNextDebugThreshold(currentLight);
+            GetNextDebugThreshold(
+                currentLight
+            );
 
         NotifyLightChanged();
 
@@ -508,20 +556,33 @@ public class PlayerLightResource : MonoBehaviour
             return 0f;
         }
 
-        return currentLight / maximumLight;
+        return
+            currentLight /
+            maximumLight;
+    }
+
+    public float GetPassiveRegenerationLimit()
+    {
+        // Other systems can query the current renewable Light threshold without
+        // needing to duplicate the percentage calculation.
+        return
+            maximumLight *
+            passiveRegenerationLimitPercentage;
     }
 
     public float GetMovementRegenerationLimit()
     {
-        return maximumLight *
-               movementRegenerationLimitPercentage;
+        // This older method name is kept temporarily so any existing script that
+        // still calls it will continue working after regeneration becomes passive.
+        // It now returns the passive regeneration limit instead.
+        return GetPassiveRegenerationLimit();
     }
 
     [ContextMenu("Test Spend 60 Light")]
     private void TestSpendLight()
     {
-        // This Inspector command lowers the resource so movement regeneration
-        // can be tested without repeatedly using an ability.
+        // This Inspector command lowers the resource so passive regeneration can
+        // be tested without repeatedly using an ability.
         TrySpendLight(
             60f,
             "Inspector test"
@@ -547,7 +608,7 @@ public class PlayerLightResource : MonoBehaviour
     private void PrintRegenerationProgress()
     {
         // Logging only at intervals keeps the Console readable while still showing
-        // that continuous regeneration is updating correctly.
+        // that continuous passive regeneration is updating correctly.
         if (
             !showDebugLogs ||
             debugLightInterval <= 0f
@@ -556,13 +617,16 @@ public class PlayerLightResource : MonoBehaviour
             return;
         }
 
-        if (currentLight < nextDebugLightValue)
+        if (
+            currentLight <
+            nextDebugLightValue
+        )
         {
             return;
         }
 
         Debug.Log(
-            "Light regenerated to: " +
+            "Light passively regenerated to: " +
             currentLight.ToString("0.0") +
             " / " +
             maximumLight.ToString("0.0")
@@ -576,7 +640,8 @@ public class PlayerLightResource : MonoBehaviour
         string reason
     )
     {
-        wasRegenerating = false;
+        wasRegenerating =
+            false;
 
         if (showDebugLogs)
         {
