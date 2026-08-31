@@ -358534,6 +358534,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1646749639}
     - target: {fileID: 2336489064161112445, guid: 0ce227c27fb8e14459338eb72fee09dd, type: 3}
+      propertyPath: enableDeveloperTeleport
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2336489064161112445, guid: 0ce227c27fb8e14459338eb72fee09dd, type: 3}
       propertyPath: teleportPoints.Array.size
       value: 9
       objectReference: {fileID: 0}
