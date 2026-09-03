@@ -241,6 +241,7 @@ public class LightBeamController : MonoBehaviour
         {
             ConfirmFireBeam();
         }
+        //can put right trigger here for controller
 
         if (
             UnityEngine.InputSystem.Mouse.current
