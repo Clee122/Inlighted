@@ -72042,6 +72042,8 @@ GameObject:
   - component: {fileID: 1763611424}
   - component: {fileID: 1763611426}
   - component: {fileID: 1763611427}
+  - component: {fileID: 1763611428}
+  - component: {fileID: 1763611429}
   m_Layer: 8
   m_Name: 'LargeDarknessVisual '
   m_TagString: Untagged
@@ -72090,7 +72092,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 651816de506a7da468bf1344bc68ccb6, type: 2}
+  - {fileID: 2100000, guid: c4c220679daac154e85d66778454312b, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -72130,13 +72132,50 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1763611423}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3ac6ceb21293aab46b2350c43b276b92, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DarknessBurstCutoutUVTest
   lightBurstController: {fileID: 1983144747}
   darknessRenderer: {fileID: 1763611426}
+--- !u!114 &1763611428
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1763611423}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a466b2445fd636344991aafb647f196e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DarknessBeamCutoutUVTest
+  lightBeamController: {fileID: 1171642188}
+  beamVisualTransform: {fileID: 397885669}
+  darknessRenderer: {fileID: 1763611426}
+  beamWorldLength: 6
+  beamMaximumPushDistance: 1.5
+  beamPushDuration: 0.3
+--- !u!114 &1763611429
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1763611423}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a43911d3a0485c44fad695257922cba0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DarknessCombinedCutoutUVTest
+  lightBurstController: {fileID: 1983144747}
+  lightBeamController: {fileID: 1171642188}
+  beamVisualTransform: {fileID: 397885669}
+  darknessRenderer: {fileID: 1763611426}
+  beamWorldLength: 6
+  beamMaximumPushDistance: 1.5
+  beamPushDuration: 0.3
 --- !u!58 &1765561159
 CircleCollider2D:
   m_ObjectHideFlags: 0
