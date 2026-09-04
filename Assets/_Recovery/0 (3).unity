@@ -72041,7 +72041,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1763611424}
   - component: {fileID: 1763611426}
-  - component: {fileID: 1763611427}
+  - component: {fileID: 1763611425}
   m_Layer: 8
   m_Name: 'LargeDarknessVisual '
   m_TagString: Untagged
@@ -72064,6 +72064,20 @@ Transform:
   m_Children: []
   m_Father: {fileID: 548539782}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1763611425
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1763611423}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 33a7f43d9ba97dc4a978eaf0d7f99cae, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DarknessBurstCutoutVisualTest
+  lightBurstController: {fileID: 1983144747}
+  darknessRenderer: {fileID: 1763611426}
 --- !u!212 &1763611426
 SpriteRenderer:
   serializedVersion: 2
@@ -72090,7 +72104,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 651816de506a7da468bf1344bc68ccb6, type: 2}
+  - {fileID: 2100000, guid: 2cc17bcc70a196a43ac44891e2f49200, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -72123,20 +72137,6 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
---- !u!114 &1763611427
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1763611423}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3ac6ceb21293aab46b2350c43b276b92, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DarknessBurstCutoutUVTest
-  lightBurstController: {fileID: 1983144747}
-  darknessRenderer: {fileID: 1763611426}
 --- !u!58 &1765561159
 CircleCollider2D:
   m_ObjectHideFlags: 0
