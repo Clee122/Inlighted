@@ -9,6 +9,10 @@ public class PlayerAnimationController : MonoBehaviour
     [Header("Light Beam Origin")]
     [SerializeField] private Transform beamOrigin;
 
+    [Header("Hurt Visual Priority")]
+    [SerializeField] private string hurtSortingLayerName = "DeathPlayer";
+    [SerializeField] private int hurtOrderInLayer = 50;
+
     [Header("Death Visual Priority")]
     [SerializeField] private string deathSortingLayerName = "DeathPlayer";
     [SerializeField] private int deathOrderInLayer = 100;
@@ -36,90 +40,139 @@ public class PlayerAnimationController : MonoBehaviour
 
     private void Awake()
     {
-        // The life system stays on the parent Player object because this script should only
-        // read the player's state and convert it into animation parameters.
-        playerLifeSystem = GetComponent<PlayerLifeSystem>();
+        // The life system stays on the parent Player because animation events
+        // need to tell it when hurt protection can safely finish.
+        playerLifeSystem =
+            GetComponent<PlayerLifeSystem>();
 
         // The Rigidbody2D is expected to be on the parent Player object.
-        // This fallback keeps the script working if the reference is lost after replacing the character visual.
+        // This fallback keeps the script working if its Inspector reference is lost.
         if (playerRigidbody == null)
         {
-            playerRigidbody = GetComponent<Rigidbody2D>();
+            playerRigidbody =
+                GetComponent<Rigidbody2D>();
         }
 
-        // The Animator is expected to be on the CatMoth Visual child object, not on the parent Player.
-        // Finding it automatically helps after replacing the old cat placeholder with the new CatMoth asset.
+        // The Animator is expected to be on the CatMoth Visual child object.
         if (catMothAnimator == null)
         {
-            catMothAnimator = GetComponentInChildren<Animator>();
+            catMothAnimator =
+                GetComponentInChildren<Animator>();
         }
 
-        // The SpriteRenderer is also expected to be on the CatMoth Visual child object.
-        // This lets the script flip only the visual sprite without changing the parent Player transform or collider.
+        // The SpriteRenderer is also expected to be on the CatMoth Visual child.
         if (catMothSpriteRenderer == null)
         {
-            catMothSpriteRenderer = GetComponentInChildren<SpriteRenderer>();
+            catMothSpriteRenderer =
+                GetComponentInChildren<SpriteRenderer>();
         }
 
         if (catMothSpriteRenderer != null)
         {
-            // The original sorting values are saved so death can temporarily move
-            // CatMoth above the camera-space darkness overlay, then safely restore
-            // the normal gameplay rendering after respawn.
-            originalOrderInLayer = catMothSpriteRenderer.sortingOrder;
-            originalSortingLayerID = catMothSpriteRenderer.sortingLayerID;
+            // Normal sorting values are stored once so temporary Hurt and Death
+            // priority can always return CatMoth to the original gameplay layer.
+            originalOrderInLayer =
+                catMothSpriteRenderer.sortingOrder;
+
+            originalSortingLayerID =
+                catMothSpriteRenderer.sortingLayerID;
         }
 
         if (beamOrigin != null)
         {
-            // Keep the starting position so the Beam can switch sides without
-            // losing its original height or distance from the player.
+            // The original position allows the Beam origin to swap sides without
+            // losing its intended height or distance from CatMoth.
             beamOriginDefaultLocalPosition =
                 beamOrigin.localPosition;
         }
 
-        Debug.Log("ANIM CHECK 0: PlayerAnimationController Awake completed.");
+        Debug.Log(
+            "ANIM CHECK 0: PlayerAnimationController Awake completed."
+        );
     }
 
     private void Update()
     {
-        if (catMothAnimator == null || playerRigidbody == null)
+        if (
+            catMothAnimator == null ||
+            playerRigidbody == null
+        )
         {
             if (showDebugLogs)
             {
-                Debug.LogWarning("ANIM CHECK FAILED: Missing Animator or Rigidbody2D reference.");
+                Debug.LogWarning(
+                    "ANIM CHECK FAILED: Missing Animator or Rigidbody2D reference."
+                );
             }
 
             return;
         }
 
-        float horizontalVelocity = playerRigidbody.linearVelocity.x;
+        float horizontalVelocity =
+            playerRigidbody.linearVelocity.x;
 
-        // A small threshold prevents tiny leftover Rigidbody movement from being treated as running.
-        bool isRunning = Mathf.Abs(horizontalVelocity) > runningThreshold;
+        float verticalVelocity =
+            playerRigidbody.linearVelocity.y;
 
-        // Grounded animation state should come from actual ground contact rather than
-        // vertical velocity because moving uphill can give the Rigidbody positive Y
-        // velocity even though CatMoth is still firmly touching the ground.
-        bool isGrounded = CheckGrounded();
+        // A small threshold prevents tiny leftover Rigidbody movement from
+        // being interpreted as active running.
+        bool isRunning =
+            Mathf.Abs(horizontalVelocity) >
+            runningThreshold;
 
-        bool isDead = playerLifeSystem != null && playerLifeSystem.IsDead();
+        // Grounded animation state comes from actual ground contact instead of
+        // vertical velocity because slopes can legitimately create Y movement.
+        bool isGrounded =
+            CheckGrounded();
 
-        // These names must match the Animator parameters exactly.
-        catMothAnimator.SetBool("isRunning", isRunning);
-        catMothAnimator.SetBool("isGrounded", isGrounded);
-        catMothAnimator.SetBool("isDead", isDead);
+        // Falling begins only once CatMoth is both airborne and descending.
+        // This allows Jump/RunJump to represent ascent while Fall represents descent.
+        bool isFalling =
+            !isGrounded &&
+            verticalVelocity < 0f;
+
+        bool isDead =
+            playerLifeSystem != null &&
+            playerLifeSystem.IsDead();
+
+        // These names must exactly match the Animator parameters.
+        catMothAnimator.SetBool(
+            "isRunning",
+            isRunning
+        );
+
+        catMothAnimator.SetBool(
+            "isGrounded",
+            isGrounded
+        );
+
+        catMothAnimator.SetBool(
+            "isFalling",
+            isFalling
+        );
+
+        catMothAnimator.SetBool(
+            "isDead",
+            isDead
+        );
 
         if (showDebugLogs)
         {
             Debug.Log(
-                "ANIM CHECK: Animator target = " + catMothAnimator.gameObject.name +
-                " | X Velocity = " + horizontalVelocity +
-                " | Y Velocity = " + playerRigidbody.linearVelocity.y +
-                " | isRunning = " + isRunning +
-                " | isGrounded = " + isGrounded +
-                " | isDead sent = " + isDead +
-                " | Animator isDead value = " + catMothAnimator.GetBool("isDead")
+                "ANIM CHECK: Animator target = " +
+                catMothAnimator.gameObject.name +
+                " | X Velocity = " +
+                horizontalVelocity +
+                " | Y Velocity = " +
+                verticalVelocity +
+                " | isRunning = " +
+                isRunning +
+                " | isGrounded = " +
+                isGrounded +
+                " | isFalling = " +
+                isFalling +
+                " | isDead = " +
+                isDead
             );
         }
     }
@@ -132,18 +185,27 @@ public class PlayerAnimationController : MonoBehaviour
 
     private void FlipCatMothVisual()
     {
-        if (catMothSpriteRenderer == null || playerRigidbody == null)
+        if (
+            catMothSpriteRenderer == null ||
+            playerRigidbody == null
+        )
+        {
             return;
+        }
 
-        float horizontalVelocity = playerRigidbody.linearVelocity.x;
+        float horizontalVelocity =
+            playerRigidbody.linearVelocity.x;
 
-        // The CatMoth asset faces right by default, so moving right should not flip the sprite.
-        // This reverses the old placeholder cat logic because that asset originally faced the opposite way.
+        // CatMoth faces right by default, so only leftward movement requires
+        // flipping the visual sprite.
         if (horizontalVelocity > runningThreshold)
         {
             catMothSpriteRenderer.flipX = false;
         }
-        else if (horizontalVelocity < -runningThreshold)
+        else if (
+            horizontalVelocity <
+            -runningThreshold
+        )
         {
             catMothSpriteRenderer.flipX = true;
         }
@@ -162,12 +224,16 @@ public class PlayerAnimationController : MonoBehaviour
         Vector3 targetPosition =
             beamOriginDefaultLocalPosition;
 
-        // The Beam Origin moves to the opposite side when the sprite flips so
-        // the Beam continues to start near CatMoth's face.
+        // The Beam origin follows CatMoth's facing direction so the ability
+        // continues spawning beside the character's face after turning.
         targetPosition.x =
             catMothSpriteRenderer.flipX
-                ? -Mathf.Abs(beamOriginDefaultLocalPosition.x)
-                : Mathf.Abs(beamOriginDefaultLocalPosition.x);
+                ? -Mathf.Abs(
+                    beamOriginDefaultLocalPosition.x
+                )
+                : Mathf.Abs(
+                    beamOriginDefaultLocalPosition.x
+                );
 
         beamOrigin.localPosition =
             targetPosition;
@@ -175,8 +241,7 @@ public class PlayerAnimationController : MonoBehaviour
 
     public int GetFacingDirection()
     {
-        // Dash uses visual facing when no horizontal movement input is currently
-        // held so a standing dash continues in CatMoth's expected direction.
+        // Dash can use visual facing when there is no current movement input.
         if (catMothSpriteRenderer == null)
         {
             return 1;
@@ -200,8 +265,8 @@ public class PlayerAnimationController : MonoBehaviour
             return;
         }
 
-        // Dash can begin before Rigidbody velocity changes, so directly updating
-        // the sprite prevents CatMoth visually dashing backwards for the first frame.
+        // Dash can begin before Rigidbody velocity changes, so updating the
+        // sprite immediately prevents a backwards-looking first dash frame.
         catMothSpriteRenderer.flipX =
             horizontalDirection < 0f;
     }
@@ -217,16 +282,16 @@ public class PlayerAnimationController : MonoBehaviour
             return;
         }
 
-        // Respawn resets the CatMoth to face the default/right direction
-        // so it does not keep facing the direction it died in.
+        // Respawn always restores CatMoth's default right-facing direction.
         catMothSpriteRenderer.flipX = false;
 
         if (beamOrigin != null)
         {
-            // Reset the Beam Origin to the same side as the default facing direction.
             beamOrigin.localPosition =
                 new Vector3(
-                    Mathf.Abs(beamOriginDefaultLocalPosition.x),
+                    Mathf.Abs(
+                        beamOriginDefaultLocalPosition.x
+                    ),
                     beamOriginDefaultLocalPosition.y,
                     beamOriginDefaultLocalPosition.z
                 );
@@ -235,6 +300,107 @@ public class PlayerAnimationController : MonoBehaviour
         Debug.Log(
             "ANIM CHECK: CatMoth facing direction reset to default/right."
         );
+    }
+
+    public void PlayHurtAnimation()
+    {
+        if (catMothAnimator == null)
+        {
+            Debug.LogWarning(
+                "ANIM CHECK FAILED: Cannot play hurt animation because CatMoth Animator is missing."
+            );
+
+            return;
+        }
+
+        // Hurt raises CatMoth above darkness before the animation starts so
+        // damage feedback remains readable even when the hit occurs inside darkness.
+        SetHurtVisualPriority();
+
+        // Resetting first makes repeated valid hits reliably restart the one-shot
+        // Hurt animation rather than leaving a stale trigger behind.
+        catMothAnimator.ResetTrigger("hurt");
+        catMothAnimator.SetTrigger("hurt");
+
+        Debug.Log(
+            "ANIM CHECK: Hurt animation trigger sent."
+        );
+    }
+
+    public void PlayLightBurstAnimation()
+    {
+        if (catMothAnimator == null)
+        {
+            Debug.LogWarning(
+                "ANIM CHECK FAILED: Cannot play Light Burst animation because CatMoth Animator is missing."
+            );
+
+            return;
+        }
+
+        // Light Burst is a one-shot ability reaction, so a Trigger starts the
+        // animation once without changing or locking the player's movement state.
+        catMothAnimator.ResetTrigger("lightBurst");
+        catMothAnimator.SetTrigger("lightBurst");
+
+        Debug.Log(
+            "ANIM CHECK: Light Burst animation trigger sent."
+        );
+    }
+
+    public void SetHurtVisualPriority()
+    {
+        if (catMothSpriteRenderer == null)
+        {
+            Debug.LogWarning(
+                "ANIM CHECK FAILED: Cannot set hurt visual priority because CatMoth SpriteRenderer is missing."
+            );
+
+            return;
+        }
+
+        // Hurt temporarily renders above darkness and nearby gameplay effects
+        // so losing health always has clear visual feedback.
+        catMothSpriteRenderer.sortingLayerName =
+            hurtSortingLayerName;
+
+        catMothSpriteRenderer.sortingOrder =
+            hurtOrderInLayer;
+    }
+
+    public void FinishHurtAnimation()
+    {
+        // This method is intended for an Animation Event placed on the final
+        // frame of both HurtIdle and HurtRun so visual priority and damage
+        // protection end together with the visible hurt reaction.
+        if (
+            playerLifeSystem != null &&
+            !playerLifeSystem.IsDead()
+        )
+        {
+            ResetHurtVisualPriority();
+            playerLifeSystem.EndHurtInvulnerability();
+        }
+
+        Debug.Log(
+            "ANIM CHECK: Hurt animation finished."
+        );
+    }
+
+    public void ResetHurtVisualPriority()
+    {
+        if (catMothSpriteRenderer == null)
+        {
+            return;
+        }
+
+        // Hurt priority is temporary; normal gameplay sorting returns as soon
+        // as the reaction animation has completed.
+        catMothSpriteRenderer.sortingLayerID =
+            originalSortingLayerID;
+
+        catMothSpriteRenderer.sortingOrder =
+            originalOrderInLayer;
     }
 
     public void SetDeathVisualPriority()
@@ -248,9 +414,8 @@ public class PlayerAnimationController : MonoBehaviour
             return;
         }
 
-        // Death temporarily moves CatMoth onto a dedicated sorting layer so
-        // the death animation can appear above the Screen Space - Camera
-        // Darkness Indicator while the Overlay HUD remains above both.
+        // Death takes greater priority than Hurt because it needs to remain
+        // visible throughout the dedicated death presentation.
         catMothSpriteRenderer.sortingLayerName =
             deathSortingLayerName;
 
@@ -276,9 +441,8 @@ public class PlayerAnimationController : MonoBehaviour
             return;
         }
 
-        // Respawn restores CatMoth to the exact sorting layer and order it used
-        // before death so the temporary death rendering cannot affect normal
-        // interactions with darkness, platforms, or foreground environment art.
+        // Respawning restores the exact sorting values CatMoth used before any
+        // temporary Hurt or Death priority was applied.
         catMothSpriteRenderer.sortingLayerID =
             originalSortingLayerID;
 
@@ -286,8 +450,7 @@ public class PlayerAnimationController : MonoBehaviour
             originalOrderInLayer;
 
         Debug.Log(
-            "ANIM CHECK: CatMoth visual priority reset to original sorting layer and order: " +
-            originalOrderInLayer
+            "ANIM CHECK: CatMoth visual priority reset."
         );
     }
 
@@ -295,14 +458,12 @@ public class PlayerAnimationController : MonoBehaviour
     {
         if (groundCheckPoint == null)
         {
-            // Returning true prevents the player from being stuck in jump animation
-            // if the GroundCheck reference is missing during setup.
+            // Returning true prevents a missing setup reference from permanently
+            // trapping CatMoth in an airborne animation.
             return true;
         }
 
-        // Only colliders on the configured Ground Layer should affect animation
-        // grounding. This prevents walls, triggers, puzzle objects, and other
-        // unrelated colliders from incorrectly keeping CatMoth in a grounded state.
+        // Only actual Ground-layer colliders should affect animation grounding.
         Collider2D[] hits =
             Physics2D.OverlapCircleAll(
                 groundCheckPoint.position,
@@ -312,8 +473,7 @@ public class PlayerAnimationController : MonoBehaviour
 
         foreach (Collider2D hit in hits)
         {
-            // The ground check should never treat the Player or one of its children
-            // as valid ground if the layer setup changes later.
+            // The Player and its children should never count as their own ground.
             if (
                 hit.transform == transform ||
                 hit.transform.IsChildOf(transform)
@@ -328,34 +488,15 @@ public class PlayerAnimationController : MonoBehaviour
         return false;
     }
 
-    public void PlayHurtAnimation()
-    {
-        if (catMothAnimator != null)
-        {
-            // Resetting the trigger first makes repeated damage hits more reliable,
-            // especially if the player takes damage again soon after the previous hurt animation.
-            catMothAnimator.ResetTrigger("hurt");
-            catMothAnimator.SetTrigger("hurt");
-
-            Debug.Log(
-                "ANIM CHECK: Hurt animation trigger sent."
-            );
-        }
-        else
-        {
-            Debug.LogWarning(
-                "ANIM CHECK FAILED: Cannot play hurt animation because CatMoth Animator is missing."
-            );
-        }
-    }
-
     private void OnDrawGizmosSelected()
     {
         if (groundCheckPoint == null)
+        {
             return;
+        }
 
-        // This shows the exact area used for ground detection in the Scene view.
-        // It makes it easier to tune the GroundCheck position and radius.
+        // The gizmo shows exactly where animation grounding is being sampled,
+        // which helps diagnose unusual Jump/Fall transitions around slopes.
         Gizmos.color =
             Color.green;
 
