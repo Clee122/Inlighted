@@ -236,6 +236,9 @@ public class LightBeamController : MonoBehaviour
         if (
             UnityEngine.InputSystem.Mouse.current
                 .leftButton
+                .wasPressedThisFrame || 
+            UnityEngine.InputSystem.Gamepad.current
+                .rightTrigger
                 .wasPressedThisFrame
         )
         {
@@ -246,6 +249,9 @@ public class LightBeamController : MonoBehaviour
         if (
             UnityEngine.InputSystem.Mouse.current
                 .rightButton
+                .wasPressedThisFrame ||
+            UnityEngine.InputSystem.Gamepad.current
+                .leftShoulder
                 .wasPressedThisFrame
         )
         {
