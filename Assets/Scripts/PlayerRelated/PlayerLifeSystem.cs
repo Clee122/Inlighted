@@ -19,6 +19,10 @@ public class PlayerLifeSystem : MonoBehaviour
     private bool isInvulnerable = false;
     private bool isDead = false;
 
+    // The fallback coroutine prevents the player from becoming permanently
+    // invulnerable if a Hurt animation ever loses its ending Animation Event.
+    private Coroutine hurtInvulnerabilityCoroutine;
+
     [Header("Audio")]
     // Hurt audio plays only when valid damage is accepted and the player survives.
     // Keeping it separate from death prevents the final hit from playing both sounds.
@@ -94,8 +98,8 @@ public class PlayerLifeSystem : MonoBehaviour
             " | currentLives before damage = " + currentLives
         );
 
-        // Damage is ignored while dead or briefly invulnerable so one hazard
-        // cannot remove several lives during the same contact.
+        // Damage is ignored while dead or during the active Hurt reaction so one
+        // hazard cannot remove several lives before the player can read the feedback.
         if (isDead || isInvulnerable)
         {
             Debug.Log(
@@ -160,6 +164,10 @@ public class PlayerLifeSystem : MonoBehaviour
                 );
             }
 
+            // Hurt protection starts before the animation trigger is sent so
+            // overlapping hazards cannot remove another life on the same frame.
+            BeginHurtInvulnerability();
+
             // The hurt animation plays only when the player survives the hit.
             // The final hit should transition into death behaviour instead.
             if (playerAnimationController == null)
@@ -186,13 +194,88 @@ public class PlayerLifeSystem : MonoBehaviour
                     "LIFE CHECK 7 FAILED: PlayerAnimationController was not found, so the hurt animation could not play."
                 );
             }
-
-            StartCoroutine(
-                InvulnerabilityCoroutine()
-            );
         }
 
         UpdateDarknessIndicator();
+    }
+
+    private void BeginHurtInvulnerability()
+    {
+        // Invulnerability remains active for the Hurt reaction so repeated
+        // darkness contacts cannot remove another life during the animation.
+        isInvulnerable = true;
+
+        if (hurtInvulnerabilityCoroutine != null)
+        {
+            StopCoroutine(
+                hurtInvulnerabilityCoroutine
+            );
+        }
+
+        // This is a safety fallback only. Normally the final Hurt animation
+        // frame calls EndHurtInvulnerability through an Animation Event.
+        hurtInvulnerabilityCoroutine =
+            StartCoroutine(
+                HurtInvulnerabilityFallback()
+            );
+
+        Debug.Log(
+            "LIFE CHECK INVULNERABILITY: Hurt protection started."
+        );
+    }
+
+    private IEnumerator HurtInvulnerabilityFallback()
+    {
+        yield return new WaitForSeconds(
+            invulnerabilityDuration
+        );
+
+        hurtInvulnerabilityCoroutine = null;
+
+        // Death deliberately keeps the player invulnerable until respawn, so
+        // the fallback must never cancel protection after the player has died.
+        if (!isDead)
+        {
+            isInvulnerable = false;
+
+            if (playerAnimationController != null)
+            {
+                // If an Animation Event is missing, the fallback also restores
+                // CatMoth's normal sorting so Hurt priority cannot become permanent.
+                playerAnimationController.ResetHurtVisualPriority();
+            }
+        }
+
+        Debug.Log(
+            "LIFE CHECK INVULNERABILITY: Fallback protection ended."
+        );
+    }
+
+    public void EndHurtInvulnerability()
+    {
+        // The Hurt animation normally calls this on its final frame so damage
+        // protection ends at the same moment as the visible reaction.
+        if (hurtInvulnerabilityCoroutine != null)
+        {
+            StopCoroutine(
+                hurtInvulnerabilityCoroutine
+            );
+
+            hurtInvulnerabilityCoroutine = null;
+        }
+
+        // Death has its own protection and a late Hurt Animation Event must not
+        // accidentally make the player vulnerable after they have died.
+        if (isDead)
+        {
+            return;
+        }
+
+        isInvulnerable = false;
+
+        Debug.Log(
+            "LIFE CHECK INVULNERABILITY: Hurt animation ended protection."
+        );
     }
 
     public bool RestoreOneLife(string sourceName)
@@ -259,6 +342,17 @@ public class PlayerLifeSystem : MonoBehaviour
         isDead = true;
         isInvulnerable = true;
         currentLives = 0;
+
+        // Any Hurt fallback still running is no longer needed once Death takes
+        // ownership of invulnerability and visual priority.
+        if (hurtInvulnerabilityCoroutine != null)
+        {
+            StopCoroutine(
+                hurtInvulnerabilityCoroutine
+            );
+
+            hurtInvulnerabilityCoroutine = null;
+        }
 
         /*
          * Light is cleared immediately when death begins so its HUD no longer
@@ -370,29 +464,6 @@ public class PlayerLifeSystem : MonoBehaviour
         }
     }
 
-    private IEnumerator InvulnerabilityCoroutine()
-    {
-        // Temporary invulnerability keeps repeated darkness damage readable and
-        // prevents the player from losing several lives almost instantly.
-        isInvulnerable = true;
-
-        Debug.Log(
-            "LIFE CHECK INVULNERABILITY: Started for " +
-            invulnerabilityDuration +
-            " seconds."
-        );
-
-        yield return new WaitForSeconds(
-            invulnerabilityDuration
-        );
-
-        isInvulnerable = false;
-
-        Debug.Log(
-            "LIFE CHECK INVULNERABILITY: Ended."
-        );
-    }
-
     public int GetCurrentLives()
     {
         return currentLives;
@@ -421,6 +492,17 @@ public class PlayerLifeSystem : MonoBehaviour
         isDead = false;
         isInvulnerable = false;
 
+        // Any old Hurt fallback must be cleared during respawn so it cannot
+        // unexpectedly change sorting or invulnerability in the new life.
+        if (hurtInvulnerabilityCoroutine != null)
+        {
+            StopCoroutine(
+                hurtInvulnerabilityCoroutine
+            );
+
+            hurtInvulnerabilityCoroutine = null;
+        }
+
         Debug.Log(
             "LIFE CHECK RESTORE: RestoreFullLives called. isDead is now false."
         );
@@ -437,8 +519,8 @@ public class PlayerLifeSystem : MonoBehaviour
 
         if (playerAnimationController != null)
         {
-            // Death temporarily raises the CatMoth above darkness, so respawn must
-            // restore the normal sorting values before gameplay continues.
+            // Hurt and Death can both temporarily raise CatMoth above gameplay,
+            // so respawn restores the original visual priority unconditionally.
             Debug.Log(
                 "LIFE CHECK RESTORE: Resetting CatMoth visual priority."
             );
@@ -543,6 +625,17 @@ public class PlayerLifeSystem : MonoBehaviour
             isDead = false;
             isInvulnerable = false;
 
+            // Checkpoints should also cancel any Hurt fallback that was still
+            // active so restored gameplay begins from a completely clean state.
+            if (hurtInvulnerabilityCoroutine != null)
+            {
+                StopCoroutine(
+                    hurtInvulnerabilityCoroutine
+                );
+
+                hurtInvulnerabilityCoroutine = null;
+            }
+
             if (playerAnimationController == null)
             {
                 playerAnimationController =
@@ -551,8 +644,8 @@ public class PlayerLifeSystem : MonoBehaviour
 
             if (playerAnimationController != null)
             {
-                // Checkpoints can also clear death-related visual priority if the player
-                // touches one after a respawn or while systems are being reset.
+                // Checkpoints can clear any temporary Hurt or Death sorting
+                // priority before normal gameplay continues.
                 playerAnimationController.ResetVisualPriority();
             }
 
