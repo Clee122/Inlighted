@@ -40,6 +40,12 @@ public class PlayerController2D : MonoBehaviour
     [Header("Audio")]
     [SerializeField] private AudioClip walkingSound;
     [SerializeField] private AudioClip jumpSound;
+    [SerializeField] private AudioClip landingSound;
+
+    // Landing audio requires a short period of genuine airtime before it can play.
+    // This filters out brief ground-check interruptions caused by spawning,
+    // slopes, collider seams, or other tiny contact changes.
+    [SerializeField] private float minimumAirTimeForLandingSound = 0.1f;
 
     // Walking audio checks actual Rigidbody movement rather than input alone.
     // This prevents footsteps from continuing when the player holds against
@@ -61,6 +67,10 @@ public class PlayerController2D : MonoBehaviour
     // The previous grounded state is stored so landing can be detected reliably.
     // Landing ends the player-controlled jump state and prevents it carrying into later falls.
     private bool wasGroundedLastFrame;
+
+    // Airtime is tracked separately from the grounded state so landing audio
+    // only plays after CatMoth has actually been airborne for a meaningful duration.
+    private float currentAirTime;
 
     private float moveInput;
     private float defaultGravityScale;
@@ -191,11 +201,35 @@ public class PlayerController2D : MonoBehaviour
                 groundLayer
             );
 
+        if (!isGrounded)
+        {
+            // Airtime accumulates only while CatMoth is genuinely detected as airborne.
+            // Very short losses of contact on slopes or collider seams will normally
+            // remain below the landing-audio threshold and therefore stay silent.
+            currentAirTime +=
+                Time.deltaTime;
+        }
+
         if (
             isGrounded &&
             !wasGroundedLastFrame
         )
         {
+            // Landing audio only plays after enough actual airtime has passed.
+            // This prevents the initial spawn and tiny slope/contact interruptions
+            // from being treated as meaningful landings.
+            if (
+                currentAirTime >=
+                minimumAirTimeForLandingSound &&
+                landingSound != null &&
+                AudioManager.Instance != null
+            )
+            {
+                AudioManager.Instance.PlaySFX(
+                    landingSound
+                );
+            }
+
             if (
                 isInPlayerControlledJump &&
                 showMovementDebugLogs
@@ -208,6 +242,16 @@ public class PlayerController2D : MonoBehaviour
             }
 
             isInPlayerControlledJump = false;
+
+            // Resetting airtime after a grounded transition prepares the counter
+            // for the next real jump or fall.
+            currentAirTime = 0f;
+        }
+        else if (isGrounded)
+        {
+            // Remaining grounded clears any tiny accumulated airtime so brief
+            // slope or collider contact losses cannot carry into a later landing.
+            currentAirTime = 0f;
         }
     }
 
@@ -1008,6 +1052,10 @@ public class PlayerController2D : MonoBehaviour
         jumpQueued = false;
         isChannelingLocked = false;
         isInPlayerControlledJump = false;
+
+        // Respawning should not carry old airtime into the new life because the
+        // player may begin already touching the ground at the respawn point.
+        currentAirTime = 0f;
 
         if (playerDash != null)
         {

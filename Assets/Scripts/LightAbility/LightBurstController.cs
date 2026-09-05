@@ -42,6 +42,18 @@ public class LightBurstController : MonoBehaviour
     // Burst VFX so it can be enabled only while the ability is active.
     [SerializeField] private GameObject burstWallVisual;
 
+    [Header("Burst Expiry Warning")]
+
+    // The Burst begins blinking shortly before its normal duration ends.
+    // Only the renderers are hidden so gameplay remains fully active during
+    // the warning and the Burst can still end through its existing timer.
+    [SerializeField] private float flickerWarningDuration = 0.5f;
+
+    // This controls how quickly the Burst alternates between visible and hidden.
+    // Keeping it separate from the Burst duration makes the warning easy to tune
+    // or remove later if the Burst ability is redesigned.
+    [SerializeField] private float flickerInterval = 0.1f;
+
     [Header("Reveal Mask")]
     [SerializeField] private GameObject revealMask;
 
@@ -75,6 +87,12 @@ public class LightBurstController : MonoBehaviour
     // reference temporarily blocks beginning a new Burst during the dash itself.
     private PlayerDash playerDash;
 
+    // Renderers are cached so the expiry warning can hide only the visible
+    // parts of the Burst. The GameObjects stay active, which avoids restarting
+    // particle systems or interfering with gameplay while the warning blinks.
+    private Renderer[] burstVisualRenderers;
+    private Renderer[] burstWallVisualRenderers;
+
     private void Awake()
     {
         // The unlock system controls whether the player has earned access to
@@ -104,6 +122,25 @@ public class LightBurstController : MonoBehaviour
                 gameObject.name +
                 ". Light Burst will not activate until the component is added."
             );
+        }
+
+        // The expiry warning controls renderer visibility rather than repeatedly
+        // enabling and disabling the Burst objects. This allows particle systems
+        // and other visual behaviour to continue running normally while hidden.
+        if (burstVisual != null)
+        {
+            burstVisualRenderers =
+                burstVisual.GetComponentsInChildren<Renderer>(
+                    true
+                );
+        }
+
+        if (burstWallVisual != null)
+        {
+            burstWallVisualRenderers =
+                burstWallVisual.GetComponentsInChildren<Renderer>(
+                    true
+                );
         }
 
         // Burst visuals begin disabled because they should appear only during
@@ -296,6 +333,12 @@ public class LightBurstController : MonoBehaviour
         currentBurstRadius =
             startingBurstRadius;
 
+        // Renderer visibility is restored before every new Burst so a previous
+        // activation cannot leave the next Burst hidden after ending mid-flicker.
+        SetBurstRenderersVisible(
+            true
+        );
+
         if (burstVisual != null)
         {
             burstVisual.SetActive(true);
@@ -318,6 +361,11 @@ public class LightBurstController : MonoBehaviour
 
         float timer = 0f;
         float dispelCheckInterval = 0.05f;
+
+        // Flicker timing remains local to this Burst activation so the warning
+        // can be removed later without changing the ability's core state.
+        float flickerTimer = 0f;
+        bool visualsVisible = true;
 
         while (timer < burstDuration)
         {
@@ -357,6 +405,37 @@ public class LightBurstController : MonoBehaviour
                 currentBurstRadius.ToString("0.00")
             );
 
+            float remainingBurstTime =
+                burstDuration -
+                timer;
+
+            // Only the visible Burst begins flickering near expiry. Darkness
+            // dispelling, platform activation, the reveal mask and Burst state
+            // continue normally until the original duration has fully elapsed.
+            if (
+                remainingBurstTime <=
+                flickerWarningDuration
+            )
+            {
+                flickerTimer +=
+                    dispelCheckInterval;
+
+                if (
+                    flickerTimer >=
+                    flickerInterval
+                )
+                {
+                    visualsVisible =
+                        !visualsVisible;
+
+                    SetBurstRenderersVisible(
+                        visualsVisible
+                    );
+
+                    flickerTimer = 0f;
+                }
+            }
+
             timer +=
                 dispelCheckInterval;
 
@@ -372,6 +451,12 @@ public class LightBurstController : MonoBehaviour
 
         DispelDarknessInRadius();
         CheckLightPlatformInBurst();
+
+        // Renderer visibility is restored before the Burst objects are disabled
+        // so the next activation always begins fully visible.
+        SetBurstRenderersVisible(
+            true
+        );
 
         isBurstActive = false;
 
@@ -399,6 +484,44 @@ public class LightBurstController : MonoBehaviour
         Debug.Log(
             "Light burst ended."
         );
+    }
+
+    private void SetBurstRenderersVisible(
+        bool shouldBeVisible
+    )
+    {
+        // Renderer.enabled affects only whether the Burst can be seen. Keeping
+        // the GameObjects active allows their particle simulation and gameplay
+        // behaviour to continue uninterrupted throughout the warning.
+        if (burstVisualRenderers != null)
+        {
+            foreach (
+                Renderer burstRenderer
+                in burstVisualRenderers
+            )
+            {
+                if (burstRenderer != null)
+                {
+                    burstRenderer.enabled =
+                        shouldBeVisible;
+                }
+            }
+        }
+
+        if (burstWallVisualRenderers != null)
+        {
+            foreach (
+                Renderer burstRenderer
+                in burstWallVisualRenderers
+            )
+            {
+                if (burstRenderer != null)
+                {
+                    burstRenderer.enabled =
+                        shouldBeVisible;
+                }
+            }
+        }
     }
 
     private void DispelDarknessInRadius()
