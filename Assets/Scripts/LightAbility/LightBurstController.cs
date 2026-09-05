@@ -83,6 +83,10 @@ public class LightBurstController : MonoBehaviour
     private PlayerLightResource playerLightResource;
     private PlayerLightChannel playerLightChannel;
 
+    // Burst asks the shared animation controller to play CatMoth's ability
+    // reaction only after the ability has genuinely activated.
+    private PlayerAnimationController playerAnimationController;
+
     // Existing Burst effects are allowed to continue through a dash, but this
     // reference temporarily blocks beginning a new Burst during the dash itself.
     private PlayerDash playerDash;
@@ -109,6 +113,11 @@ public class LightBurstController : MonoBehaviour
         // visuals because healing and ability use must remain mutually exclusive.
         playerLightChannel =
             GetComponent<PlayerLightChannel>();
+
+        // The animation controller remains responsible for Animator triggers so
+        // the ability script does not need to know how CatMoth's state machine is built.
+        playerAnimationController =
+            GetComponent<PlayerAnimationController>();
 
         // New Burst activation during dash remains disabled for this prototype.
         // This does not affect a Burst that was already active before dashing.
@@ -278,6 +287,20 @@ public class LightBurstController : MonoBehaviour
             );
 
             return;
+        }
+
+        // The CatMoth animation starts only after every activation check has
+        // succeeded and light has actually been spent. Movement remains untouched
+        // so CatMoth can continue running while performing the Burst animation.
+        if (playerAnimationController != null)
+        {
+            playerAnimationController.PlayLightBurstAnimation();
+        }
+        else
+        {
+            Debug.LogWarning(
+                "Light Burst activated, but PlayerAnimationController was not found so the CatMoth Burst animation could not play."
+            );
         }
 
         // Burst audio is triggered only after every gameplay requirement has
