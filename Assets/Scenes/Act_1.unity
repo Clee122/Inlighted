@@ -2684,8 +2684,12 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 3569497472574823481, guid: b6d3c7952d6c6b64bb42d0067807f022, type: 3}
+      propertyPath: ChosenTip
+      value: 
+      objectReference: {fileID: 7135357925049215167, guid: 11eef4b1f00b93b428f045176eb9a931, type: 3}
+    - target: {fileID: 3569497472574823481, guid: b6d3c7952d6c6b64bb42d0067807f022, type: 3}
       propertyPath: locationOffset.x
-      value: -1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3569497472574823481, guid: b6d3c7952d6c6b64bb42d0067807f022, type: 3}
       propertyPath: locationOffset.y
@@ -302371,6 +302375,14 @@ PrefabInstance:
       propertyPath: ChosenTip
       value: 
       objectReference: {fileID: 4205833042343606239, guid: 9dea9e17b6fe546d083767965380902f, type: 3}
+    - target: {fileID: 9182676696036064182, guid: 3901f15ea0d6b184ab7f7b17be28ece1, type: 3}
+      propertyPath: locationOffset.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 9182676696036064182, guid: 3901f15ea0d6b184ab7f7b17be28ece1, type: 3}
+      propertyPath: locationOffset.y
+      value: 3
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -364348,7 +364360,7 @@ PrefabInstance:
       objectReference: {fileID: 1646749639}
     - target: {fileID: 2336489064161112445, guid: 0ce227c27fb8e14459338eb72fee09dd, type: 3}
       propertyPath: enableDeveloperTeleport
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2336489064161112445, guid: 0ce227c27fb8e14459338eb72fee09dd, type: 3}
       propertyPath: teleportPoints.Array.size
