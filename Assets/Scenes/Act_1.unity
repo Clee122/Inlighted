@@ -364330,6 +364330,79 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 8585825438444348274, guid: 1e2c25fe400cc284bbbf92de97362c14, type: 3}
   m_PrefabInstance: {fileID: 2145114502}
   m_PrefabAsset: {fileID: 0}
+--- !u!1001 &2562152906554605330
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 2137977148545127069, guid: de6744dd40ef8944bb0cc0175c42f8ef, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 147.02
+      objectReference: {fileID: 0}
+    - target: {fileID: 2137977148545127069, guid: de6744dd40ef8944bb0cc0175c42f8ef, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 18.21
+      objectReference: {fileID: 0}
+    - target: {fileID: 4092552228676311875, guid: de6744dd40ef8944bb0cc0175c42f8ef, type: 3}
+      propertyPath: m_Size.y
+      value: 55.188427
+      objectReference: {fileID: 0}
+    - target: {fileID: 4092552228676311875, guid: de6744dd40ef8944bb0cc0175c42f8ef, type: 3}
+      propertyPath: m_Offset.y
+      value: -18.001982
+      objectReference: {fileID: 0}
+    - target: {fileID: 6324671343649773974, guid: de6744dd40ef8944bb0cc0175c42f8ef, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 370.47
+      objectReference: {fileID: 0}
+    - target: {fileID: 6324671343649773974, guid: de6744dd40ef8944bb0cc0175c42f8ef, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -7.84
+      objectReference: {fileID: 0}
+    - target: {fileID: 6324671343649773974, guid: de6744dd40ef8944bb0cc0175c42f8ef, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6324671343649773974, guid: de6744dd40ef8944bb0cc0175c42f8ef, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6324671343649773974, guid: de6744dd40ef8944bb0cc0175c42f8ef, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6324671343649773974, guid: de6744dd40ef8944bb0cc0175c42f8ef, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6324671343649773974, guid: de6744dd40ef8944bb0cc0175c42f8ef, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6324671343649773974, guid: de6744dd40ef8944bb0cc0175c42f8ef, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6324671343649773974, guid: de6744dd40ef8944bb0cc0175c42f8ef, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6324671343649773974, guid: de6744dd40ef8944bb0cc0175c42f8ef, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7694113111092992526, guid: de6744dd40ef8944bb0cc0175c42f8ef, type: 3}
+      propertyPath: m_Name
+      value: ChasePrototype
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: de6744dd40ef8944bb0cc0175c42f8ef, type: 3}
 --- !u!1001 &2997852526857214253
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -364436,11 +364509,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5865797924920543957, guid: 0ce227c27fb8e14459338eb72fee09dd, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 580.59
+      value: 403.83
       objectReference: {fileID: 0}
     - target: {fileID: 5865797924920543957, guid: 0ce227c27fb8e14459338eb72fee09dd, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 15.92
+      value: 29.17
       objectReference: {fileID: 0}
     - target: {fileID: 6401498822384705891, guid: 0ce227c27fb8e14459338eb72fee09dd, type: 3}
       propertyPath: m_LocalPosition.x
@@ -365038,3 +365111,4 @@ SceneRoots:
   - {fileID: 1678822206}
   - {fileID: 2083740553}
   - {fileID: 513187030}
+  - {fileID: 2562152906554605330}
