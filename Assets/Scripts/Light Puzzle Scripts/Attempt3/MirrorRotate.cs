@@ -6,11 +6,13 @@ public class MirrorRotate : MonoBehaviour
     private InputAction playerInteract;
 
     [Header("Puzzle")]
+
     // Once the shared puzzle is solved, this mirror keeps its successful
     // orientation and stops accepting further interactions.
     [SerializeField] private LightPuzzleController puzzleController;
 
     [Header("Interaction")]
+
     // The Player reference provides access to the existing Interact1 action and
     // is also used to ensure the player is close enough to rotate the mirror.
     public GameObject Player;
@@ -19,12 +21,20 @@ public class MirrorRotate : MonoBehaviour
     // consistently regardless of which direction they approach it from.
     [SerializeField] private float interactionRadius = 1f;
 
+    [Header("Interaction Visual Feedback")]
+
+    // The shared outline component communicates that the mirror can currently
+    // be interacted with without changing the mirror's actual sprite colour.
+    [SerializeField] private PuzzleInteractableOutline interactionOutline;
+
     [Header("Interaction Timing")]
+
     // A short lockout after each successful rotation prevents accidental rapid
     // double inputs without limiting how many times the player can use the mirror.
     [SerializeField] private float interactionCooldown = 1.5f;
 
     [Header("Rotation")]
+
     // Every interaction rotates the mirror by one predictable step. There is no
     // timer or automatic reset, allowing players to experiment with the laser
     // path for as long as necessary.
@@ -45,6 +55,14 @@ public class MirrorRotate : MonoBehaviour
             0f,
             initialAngleChange
         );
+
+        if (interactionOutline == null)
+        {
+            // Automatically finding the outline on this puzzle piece reduces
+            // Inspector setup while still allowing a manual reference.
+            interactionOutline =
+                GetComponent<PuzzleInteractableOutline>();
+        }
 
         if (Player == null)
         {
@@ -98,14 +116,31 @@ public class MirrorRotate : MonoBehaviour
     private void Update()
     {
         // Solving the overall puzzle freezes the successful mirror configuration.
-        // This prevents the completed light path from being accidentally changed.
+        // It also removes interaction feedback because this mirror can no longer
+        // be manipulated after the puzzle has been completed.
         if (
             puzzleController != null &&
             puzzleController.IsSolved()
         )
         {
+            SetInteractionOutline(
+                false
+            );
+
             return;
         }
+
+        bool playerIsNearby =
+            IsPlayerWithinInteractionRange();
+
+        /*
+         * The outline represents interaction range rather than cooldown state.
+         * Keeping it visible during the short input lockout prevents the mirror
+         * from visually flickering after every successful rotation.
+         */
+        SetInteractionOutline(
+            playerIsNearby
+        );
 
         // The cooldown only blocks another rotation briefly after a successful
         // interaction instead of restricting how many times the mirror can rotate.
@@ -120,18 +155,16 @@ public class MirrorRotate : MonoBehaviour
             }
         }
 
-        HandleInteraction();
+        HandleInteraction(
+            playerIsNearby
+        );
     }
 
-    private void HandleInteraction()
+    private bool IsPlayerWithinInteractionRange()
     {
-        if (
-            Player == null ||
-            playerInteract == null ||
-            interactionCooldownTimer > 0f
-        )
+        if (Player == null)
         {
-            return;
+            return false;
         }
 
         // OverlapCircle checks the complete area surrounding the mirror instead
@@ -142,8 +175,6 @@ public class MirrorRotate : MonoBehaviour
                 interactionRadius
             );
 
-        bool playerIsNearby = false;
-
         foreach (Collider2D nearbyCollider in nearbyColliders)
         {
             if (
@@ -151,9 +182,24 @@ public class MirrorRotate : MonoBehaviour
                 nearbyCollider.CompareTag("Player")
             )
             {
-                playerIsNearby = true;
-                break;
+                return true;
             }
+        }
+
+        return false;
+    }
+
+    private void HandleInteraction(
+        bool playerIsNearby
+    )
+    {
+        if (
+            Player == null ||
+            playerInteract == null ||
+            interactionCooldownTimer > 0f
+        )
+        {
+            return;
         }
 
         if (!playerIsNearby)
@@ -185,6 +231,29 @@ public class MirrorRotate : MonoBehaviour
             " rotated by " +
             angleIncrement.ToString("0.0") +
             " degrees."
+        );
+    }
+
+    private void SetInteractionOutline(
+        bool shouldShow
+    )
+    {
+        if (interactionOutline == null)
+        {
+            return;
+        }
+
+        interactionOutline.SetVisible(
+            shouldShow
+        );
+    }
+
+    private void OnDisable()
+    {
+        // Explicitly removing the feedback prevents an outline remaining visible
+        // if this puzzle object is disabled while the player is standing nearby.
+        SetInteractionOutline(
+            false
         );
     }
 

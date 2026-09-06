@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 827240800976777313}
   - component: {fileID: 375302773824281081}
   - component: {fileID: 4124388559237253108}
+  - component: {fileID: 1337893546978931891}
   m_Layer: 0
   m_Name: LaserPointer
   m_TagString: Untagged
@@ -106,9 +107,26 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ShootLaser
   puzzleController: {fileID: 0}
   material: {fileID: 2100000, guid: d621da402ed75764bbb2576848bde070, type: 2}
+  laserSortingOrder: 5
   APReceiver: {fileID: 0}
   MPReceiver: {fileID: 0}
   Player: {fileID: 0}
   interactionDistance: 1.5
-  activeDuration: 4
-  cooldownDuration: 1
+  interactionOutline: {fileID: 0}
+  solvedShutoffDelay: 3
+--- !u!114 &1337893546978931891
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8158877820484968693}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e7d691f5cdfa43419882293a5094c37, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PuzzleInteractableOutline
+  targetRenderer: {fileID: 375302773824281081}
+  outlineColour: {r: 1, g: 0.9019608, b: 0.42745098, a: 1}
+  outlineThickness: 0.06
+  sortingOrderOffset: -1

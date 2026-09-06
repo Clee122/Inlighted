@@ -153,4 +153,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BloomReceiver
   bloomPlatforms:
   - {fileID: 0}
+  receiverRenderer: {fileID: 3275801338501874129}
+  activeColour: {r: 1, g: 0.6, b: 1, a: 1}
   showDebugLogs: 1

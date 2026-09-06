@@ -12,7 +12,7 @@ public class LightBurstOcclusionMesh : MonoBehaviour
 
     // The occlusion mesh still checks the normal Ground layer because both
     // genuine blockers and Burst-pass-through platforms need player collision.
-    // The tag check later decides which Ground colliders actually block Burst.
+    // The tag/component checks later decide which Ground colliders actually block Burst.
     [SerializeField] private LayerMask wallLayer;
 
     // A higher ray count gives the cover more precision around walls, floors,
@@ -187,9 +187,10 @@ public class LightBurstOcclusionMesh : MonoBehaviour
         /*
          * Each radial sample looks for the first genuine Burst blocker.
          *
-         * RaycastAll is important here because BurstPassThrough platforms remain
-         * on the Ground layer for normal player collision. A single Raycast would
-         * stop at those platforms before discovering a real wall behind them.
+         * RaycastAll is important here because BurstPassThrough platforms and
+         * Bloom Platforms remain on the Ground layer for normal player collision.
+         * A single Raycast would stop at those platforms before discovering a
+         * genuine wall or other blocking surface behind them.
          */
         OcclusionSample[] samples =
             new OcclusionSample[
@@ -235,16 +236,30 @@ public class LightBurstOcclusionMesh : MonoBehaviour
                 }
 
                 /*
-                 * These platforms should still behave as Ground for movement,
-                 * but visually the Burst is allowed to continue through them.
-                 *
-                 * Skipping them here prevents the harsh radial cut that appeared
-                 * when small platforms were treated like full walls.
+                 * Small Burst-pass-through platforms still need to behave as
+                 * Ground for player movement, but they should not visually cut
+                 * the Burst. Their tag marks them as safe to ignore here.
                  */
-                if (
+                bool isBurstPassThrough =
                     hit.collider.CompareTag(
                         "BurstPassThrough"
-                    )
+                    );
+
+                /*
+                 * Bloom Platforms also need solid Ground colliders while they
+                 * are bloomed so the player can stand on them, but they should
+                 * not act like walls for the Light Burst.
+                 *
+                 * GetComponentInParent is used intentionally because the
+                 * BoxCollider2D may live on a child GameObject while the
+                 * BloomPlatform component remains on the prefab root.
+                 */
+                bool belongsToBloomPlatform =
+                    hit.collider.GetComponentInParent<BloomPlatform>() != null;
+
+                if (
+                    isBurstPassThrough ||
+                    belongsToBloomPlatform
                 )
                 {
                     continue;
@@ -280,9 +295,10 @@ public class LightBurstOcclusionMesh : MonoBehaviour
             else
             {
                 /*
-                 * If this direction contains only BurstPassThrough platforms or
-                 * completely open space, no occlusion is generated. The circular
-                 * Burst therefore continues naturally in that direction.
+                 * If this direction contains only BurstPassThrough platforms,
+                 * Bloom Platforms, or completely open space, no occlusion is
+                 * generated. The circular Burst therefore continues naturally
+                 * in that direction.
                  */
                 sample.blocked =
                     false;
