@@ -539,4 +539,16 @@ public class PlayerLifeSystem : MonoBehaviour
             );
         }
     }
+
+    public void KillInstantly() //used for chase so if touched by wall is killed instantly 
+    {
+        if (!isDead)
+        {
+            currentLives = 0;
+            NotifyLivesChanged();
+
+            Die();
+        } 
+            
+    }
 }

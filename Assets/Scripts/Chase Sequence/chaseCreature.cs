@@ -2,24 +2,31 @@ using UnityEngine;
 
 public class chaseCreature : MonoBehaviour
 {
+    [Header("Spawn")]
+    public Transform spawnPoint;
+
     [Header("movement")]
     public float speed = 5f;
     public Vector2 direction = Vector2.right;
 
     [Header("damage")]
     public string playerTag = "Player";
-    public int damageAmount = 3;
-
     private bool isMoving = false;
 
     public void StartMoving()
     {
+        if (spawnPoint != null)
+        {
+            transform.position= spawnPoint.position;
+        }
+        gameObject.SetActive(true);
         isMoving = true;
     }
 
     public void StopMoving()
     {
         isMoving = false;
+        gameObject.SetActive(false); //dissapears after chase ends 
     }
 
     private void Update()
@@ -41,7 +48,7 @@ public class chaseCreature : MonoBehaviour
             return;
         }
 
-        life.TakeDamage(damageAmount); //player tagged and is moving then attack it     
+        life.KillInstantly(); //player tagged and is moving then attack it however kills outright ignores invulnerability    
 
     }
 }
