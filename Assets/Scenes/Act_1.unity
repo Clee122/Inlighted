@@ -13088,7 +13088,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2941586180050793022, guid: 226a539e60bebf1488521c69759a466a, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2942761728511424725, guid: 226a539e60bebf1488521c69759a466a, type: 3}
       propertyPath: promptObject
@@ -215853,12 +215853,16 @@ PrefabInstance:
     m_TransformParent: {fileID: 126697132}
     m_Modifications:
     - target: {fileID: 1676170033887073828, guid: 20a8d37d4d7841a40b086ee00a073d86, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.76175696
+      objectReference: {fileID: 0}
+    - target: {fileID: 1676170033887073828, guid: 20a8d37d4d7841a40b086ee00a073d86, type: 3}
       propertyPath: m_LocalPosition.x
       value: -7.74
       objectReference: {fileID: 0}
     - target: {fileID: 1676170033887073828, guid: 20a8d37d4d7841a40b086ee00a073d86, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 2.55
+      value: 2.5734
       objectReference: {fileID: 0}
     - target: {fileID: 2340873561078445466, guid: 20a8d37d4d7841a40b086ee00a073d86, type: 3}
       propertyPath: m_LocalScale.x
@@ -296368,7 +296372,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2941586180050793022, guid: 226a539e60bebf1488521c69759a466a, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2942761728511424725, guid: 226a539e60bebf1488521c69759a466a, type: 3}
       propertyPath: promptObject
@@ -364449,7 +364453,7 @@ PrefabInstance:
       objectReference: {fileID: 1646749639}
     - target: {fileID: 2336489064161112445, guid: 0ce227c27fb8e14459338eb72fee09dd, type: 3}
       propertyPath: enableDeveloperTeleport
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2336489064161112445, guid: 0ce227c27fb8e14459338eb72fee09dd, type: 3}
       propertyPath: teleportPoints.Array.size
