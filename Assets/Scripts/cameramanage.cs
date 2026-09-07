@@ -9,26 +9,34 @@ public class cameramanage : MonoBehaviour
 
     private Transform target;
     private Transform player;
+    private Transform camerapplace;
 
     public float zoomSpeed = 5f;
     public float targetOrtho;
-    public float normalOrtho = 4;
-    public float maxOrtho = 17.0f;
-    public CinemachineVirtualCamera vcam;
-    private bool movingBack = false;
+    public float normalOrtho = 4f;
+    public float maxOrtho = 17f;
 
+    public CinemachineVirtualCamera vcam;
+    private bool movingToCameraSpace = false;
+    private bool movingBack = false;
 
     void Awake()
     {
         player = GameObject.FindGameObjectWithTag("Player").transform;
-        target = player;
+
         vcam = GetComponent<CinemachineVirtualCamera>();
-        
+
         if (vcam == null)
         {
             enabled = false;
             return;
         }
+
+        target = player;
+        GameObject followObject = new GameObject("CameraFollowPoint");
+        camerapplace = followObject.transform;
+        camerapplace.position = player.position;
+        vcam.Follow = camerapplace;
         normalOrtho = vcam.m_Lens.OrthographicSize;
         targetOrtho = normalOrtho;
     }
@@ -40,55 +48,67 @@ public class cameramanage : MonoBehaviour
     }
 
     public void MoveCam()
-    {
+{
     if (target == null || player == null)
         return;
 
-    Vector3 newPos = new Vector3(target.position.x, target.position.y + 2, -10);
+    if (!movingToCameraSpace && !movingBack)
+    {
+        camerapplace.position = player.position;
+        return;
+    }
+
+    if (movingToCameraSpace)
+    {
+        camerapplace.position = Vector3.MoveTowards(camerapplace.position, target.position, speed * Time.deltaTime);
+        return;
+    }
 
     if (movingBack)
     {
-        transform.position = Vector3.MoveTowards(transform.position, newPos, speed * Time.deltaTime);
-
-        if (Vector3.Distance(transform.position, newPos) < 0.05f)
+        camerapplace.position = Vector3.MoveTowards(camerapplace.position, player.position, speed * Time.deltaTime);
+         if (Vector3.Distance(camerapplace.position, player.position) < 0.1f)
         {
-            transform.position = newPos;
+            camerapplace.position = player.position;
             movingBack = false;
         }
     }
-    else if (target == player)
-    {
-        transform.position = newPos;
-    }
-    else
-    {
-        transform.position = Vector3.MoveTowards(transform.position, newPos, speed * Time.deltaTime);
-    }
-    }
-        public void ZoomCam()
+}
+
+    public void ZoomCam()
     {
         vcam.m_Lens.OrthographicSize = Mathf.MoveTowards(vcam.m_Lens.OrthographicSize, targetOrtho, zoomSpeed * Time.deltaTime);
     }
 
     public void Movetocameraspace(Transform cameraspace)
     {
-        target = cameraspace;
-        targetOrtho = maxOrtho;
-        movingBack = false;
+    target = cameraspace;
+
+    movingToCameraSpace = true;
+    movingBack = false;
+    }
+
+    public void ZoomOut(float zoomSize)
+    {
+        targetOrtho = zoomSize;
     }
 
     public void Movecamback()
     {
         target = player;
-        targetOrtho = normalOrtho;
+        movingToCameraSpace = false;
         movingBack = true;
+        targetOrtho = normalOrtho;
     }
+
     public void Movecambackdie()
     {
         target = player;
+        movingToCameraSpace = false;
+        movingBack = false;
+        camerapplace.position = player.position;
         targetOrtho = normalOrtho;
-        transform.position = new Vector3(player.position.x, player.position.y + 2, -10);
-        vcam.PreviousStateIsValid = false;
         vcam.m_Lens.OrthographicSize = normalOrtho;
+        vcam.PreviousStateIsValid = false;
     }
 }
