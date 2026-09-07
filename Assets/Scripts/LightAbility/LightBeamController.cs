@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using System;
 
 public class LightBeamController : MonoBehaviour
 {
@@ -101,6 +102,9 @@ public class LightBeamController : MonoBehaviour
     // Beam aiming remains available during dash, but this reference lets the
     // actual firing action wait until dash movement has finished.
     private PlayerDash playerDash;
+
+    private Boolean keyboardActivatedBeam;
+    private Vector2 mouseScreenPosition;
 
     private void Awake()
     {
@@ -236,12 +240,19 @@ public class LightBeamController : MonoBehaviour
         if (
             UnityEngine.InputSystem.Mouse.current
                 .leftButton
-                .wasPressedThisFrame || 
+                .wasPressedThisFrame
+            )
+        {
+            keyboardActivatedBeam = true;
+            ConfirmFireBeam();
+        }
+        else if (
             UnityEngine.InputSystem.Gamepad.current
                 .rightTrigger
                 .wasPressedThisFrame
-        )
+            )
         {
+            keyboardActivatedBeam = false;
             ConfirmFireBeam();
         }
         //can put right trigger here for controller
@@ -896,23 +907,37 @@ public class LightBeamController : MonoBehaviour
         }
 
         if (
-            mainCamera == null ||
+            mainCamera == null /*||
             UnityEngine.InputSystem.Mouse.current ==
-            null
+            null  */
         )
         {
             return lastBeamDirection;
         }
 
-        Vector2 mouseScreenPosition =
+        if (keyboardActivatedBeam == true)
+        {
+            Vector2 mouseScreenPosition =
             UnityEngine.InputSystem.Mouse.current
                 .position
                 .ReadValue();
+            Debug.Log("mouse aiming");
+            Debug.Log(mouseScreenPosition);
+        }
+        else
+        {
+            Vector2 mouseScreenPosition = UnityEngine.InputSystem.Gamepad.current.rightStick.ReadValue() + originPosition;
+            Debug.Log("gamepad aiming");
+            Debug.Log(mouseScreenPosition);
+        }
+
 
         Vector3 mouseWorldPosition =
             mainCamera.ScreenToWorldPoint(
                 mouseScreenPosition
             );
+
+
 
         mouseWorldPosition.z = 0f;
 
