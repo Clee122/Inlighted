@@ -189210,7 +189210,7 @@ Transform:
   m_GameObject: {fileID: 519420028}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -54.782707, y: -6.99837, z: -10}
+  m_LocalPosition: {x: -54.850857, y: -7.12328, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -351284,7 +351284,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1e0f58b38400fc247a664a6aa7648adf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::cameramanage
---- !u!114 &2014357494
+--- !u!114 &2014357493
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -351293,14 +351293,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 803350205}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a2fba25a5cd15594e8f050a11e386c80, type: 3}
+  m_Script: {fileID: 11500000, guid: f453f694addf4275988fac205bc91968, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Cinemachine::Cinemachine.CinemachineConfiner
-  m_ConfineMode: 0
-  m_BoundingVolume: {fileID: 0}
+  m_EditorClassIdentifier: Cinemachine::Cinemachine.CinemachineConfiner2D
   m_BoundingShape2D: {fileID: 1640310480}
-  m_ConfineScreenEdges: 1
   m_Damping: 0.5
+  m_MaxWindowSize: -1
+  m_Padding: 0
 --- !u!1001 &2014431921
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -365698,7 +365697,7 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 1690681473222098530, guid: cdb5d760aadfe834293fa4caa42625c9, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 2014357494}
+      addedObject: {fileID: 2014357493}
     - targetCorrespondingSourceObject: {fileID: 2770276064714881410, guid: cdb5d760aadfe834293fa4caa42625c9, type: 3}
       insertIndex: -1
       addedObject: {fileID: 585462933}
