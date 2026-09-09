@@ -44,6 +44,11 @@ public class PlayerController2D : MonoBehaviour
 
     [Header("Fall")]
 
+    // Stronger gravity is applied only while CatMoth is moving downward.
+    // This makes the second half of a jump feel less floaty while leaving the
+    // upward jump unchanged and preserving the existing jump height.
+    [SerializeField] private float fallGravityMultiplier = 1.3f;
+
     // Maximum fall speed prevents gravity from accelerating CatMoth indefinitely
     // during long drops. Keeping the downward speed predictable also makes it
     // easier to tune Cinemachine so the camera can continue following the player.
@@ -196,7 +201,11 @@ public class PlayerController2D : MonoBehaviour
         DetectSlope();
         ApplyMovement();
 
-        // Fall speed is limited after normal movement has updated the Rigidbody.
+        // Falling gravity is applied before the final fall-speed clamp so CatMoth
+        // can accelerate downward more quickly without exceeding the chosen cap.
+        ApplyFallGravity();
+
+        // Fall speed is limited after gravity has updated the Rigidbody.
         // This keeps long falls controlled without changing upward jump velocity.
         ApplyMaximumFallSpeed();
 
@@ -601,6 +610,64 @@ public class PlayerController2D : MonoBehaviour
         }
 
         return acceleration;
+    }
+
+    private void ApplyFallGravity()
+    {
+        if (rb == null)
+        {
+            return;
+        }
+
+        if (
+            playerDash != null &&
+            playerDash.IsDashing()
+        )
+        {
+            // Dash owns Rigidbody movement and gravity while active, so normal
+            // falling behaviour must not interfere with the dash trajectory.
+            return;
+        }
+
+        if (
+            lightBeamController != null &&
+            lightBeamController.IsBeamActive()
+        )
+        {
+            // Beam intentionally freezes CatMoth in place, so fall gravity must
+            // remain disabled for the full duration of the active Beam.
+            return;
+        }
+
+        if (
+            isGrounded &&
+            isOnWalkableSlope
+        )
+        {
+            // Slope movement deliberately disables gravity so CatMoth stays
+            // attached to the surface instead of sliding or fighting the slope.
+            return;
+        }
+
+        if (rb.linearVelocity.y < 0f)
+        {
+            // Gravity scale is increased only after CatMoth begins descending.
+            // The upward half of the jump therefore continues using the original
+            // Rigidbody gravity and keeps the same jump height and launch feel.
+            rb.gravityScale =
+                defaultGravityScale *
+                Mathf.Max(
+                    0f,
+                    fallGravityMultiplier
+                );
+        }
+        else
+        {
+            // Returning to the default gravity while rising or grounded prevents
+            // the fall multiplier from carrying into the next jump.
+            rb.gravityScale =
+                defaultGravityScale;
+        }
     }
 
     private void ApplyMaximumFallSpeed()
