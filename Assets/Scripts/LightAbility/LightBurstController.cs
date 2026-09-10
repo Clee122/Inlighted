@@ -4,11 +4,14 @@ using System.Collections;
 public class LightBurstController : MonoBehaviour
 {
     [Header("Burst Settings")]
-    [SerializeField] private float burstDuration = 2f;
 
-    // The gameplay radius expands separately from the total Burst duration so
-    // the hitbox can match the visible VFX even if the particles remain active
-    // after they have already reached their maximum size.
+    // Cooldown timing is now separate from how long the Burst itself is active.
+    // The Burst only remains active while expanding, while darkness affected by
+    // the cast will later manage its own lingering and reform behaviour.
+    [SerializeField] private float burstCooldownDuration = 2f;
+
+    // The gameplay radius expands separately from the cooldown so the hitbox can
+    // continue matching the visible VFX without forcing Burst to linger at full size.
     [SerializeField] private float burstExpansionDuration = 1f;
 
     // The Burst begins close to the player instead of immediately affecting the
@@ -39,7 +42,7 @@ public class LightBurstController : MonoBehaviour
     [SerializeField] private GameObject burstVisual;
 
     // The wall-aware radial mesh is controlled separately from the original
-    // Burst VFX so it can be enabled only while the ability is active.
+    // Burst VFX so it can be enabled only while the ability is actively expanding.
     [SerializeField] private GameObject burstWallVisual;
 
     [Header("Reveal Mask")]
@@ -136,7 +139,7 @@ public class LightBurstController : MonoBehaviour
     private void Update()
     {
         // Debug lines are drawn continuously during Play Mode while the Burst is
-        // active so the expanding gameplay radius is easier to compare with VFX.
+        // actively expanding so the gameplay radius is easier to compare with VFX.
         if (
             showBurstDebug &&
             isBurstActive
@@ -291,8 +294,9 @@ public class LightBurstController : MonoBehaviour
     {
         isBurstActive = true;
 
-        // Every Burst begins from the small inner radius so gameplay starts close
-        // to the player and expands outward alongside the visible VFX.
+        // Every Burst still begins close to the player and expands outward.
+        // The radius is now updated every rendered frame so the visual cut-out
+        // grows smoothly instead of stepping forward at the physics-check interval.
         currentBurstRadius =
             startingBurstRadius;
 
@@ -301,15 +305,15 @@ public class LightBurstController : MonoBehaviour
             burstVisual.SetActive(true);
         }
 
-        // The radial mesh becomes visible at the same moment as the gameplay
-        // Burst so its wall-aware shape can expand alongside the ability.
+        // The wall-aware radial mesh remains visible during the expanding cast so
+        // the player can still read how Burst interacts with nearby level geometry.
         if (burstWallVisual != null)
         {
             burstWallVisual.SetActive(true);
         }
 
-        // The reveal mask is enabled for the same period as the Burst so the
-        // hidden-space effect remains synchronised with the visible ability.
+        // The reveal mask follows only the live Burst expansion for now.
+        // Affected puzzle objects will later manage their own lingering state.
         TurnMaskOn();
 
         Debug.Log(
@@ -317,12 +321,21 @@ public class LightBurstController : MonoBehaviour
         );
 
         float timer = 0f;
-        float dispelCheckInterval = 0.05f;
 
-        while (timer < burstDuration)
+        // Darkness and platform overlap checks do not need to happen every rendered
+        // frame. Keeping them on a short interval avoids unnecessary physics queries
+        // while allowing the visible Burst radius itself to update smoothly.
+        float dispelCheckInterval = 0.05f;
+        float dispelCheckTimer = 0f;
+
+        while (timer < burstExpansionDuration)
         {
-            // Expansion uses its own timing value because the VFX can reach full
-            // size before the overall Burst active period has finished.
+            timer +=
+                Time.deltaTime;
+
+            dispelCheckTimer +=
+                Time.deltaTime;
+
             float normalisedExpansionTime =
                 burstExpansionDuration > 0f
                     ? Mathf.Clamp01(
@@ -330,8 +343,8 @@ public class LightBurstController : MonoBehaviour
                     )
                     : 1f;
 
-            // The AnimationCurve shapes how quickly the radius grows so the
-            // gameplay timing can follow the visible Burst more closely.
+            // The curve still controls the shape of the expansion, but evaluating it
+            // every frame produces continuous motion rather than visible radius jumps.
             float expansionAmount =
                 Mathf.Clamp01(
                     burstExpansionCurve.Evaluate(
@@ -346,33 +359,35 @@ public class LightBurstController : MonoBehaviour
                     expansionAmount
                 );
 
-            DispelDarknessInRadius();
-            CheckLightPlatformInBurst();
-
-            // This temporary log helps verify the radius while testing.
-            Debug.Log(
-                "Light Burst expansion: " +
-                (normalisedExpansionTime * 100f).ToString("0") +
-                "% | Radius: " +
-                currentBurstRadius.ToString("0.00")
-            );
-
-            timer +=
-                dispelCheckInterval;
-
-            yield return new WaitForSeconds(
+            if (
+                dispelCheckTimer >=
                 dispelCheckInterval
-            );
+            )
+            {
+                DispelDarknessInRadius();
+                CheckLightPlatformInBurst();
+
+                dispelCheckTimer = 0f;
+            }
+
+            // Yielding for one frame lets the radius respond at the same frequency
+            // as rendering, which makes the expanding cut-out appear much smoother.
+            yield return null;
         }
 
-        // The final check guarantees the gameplay Burst reaches the full range
-        // even if timing differences prevent the loop landing exactly on 100%.
+        // Force the exact maximum radius at the end so floating-point timing cannot
+        // leave the Burst slightly smaller than its configured final size.
         currentBurstRadius =
             burstDispelRadius;
 
         DispelDarknessInRadius();
         CheckLightPlatformInBurst();
 
+        /*
+         * Burst finishes once the smooth expansion reaches maximum size.
+         * Darkness affected by the cast will later preserve the final opening
+         * independently during its hold and reform behaviour.
+         */
         isBurstActive = false;
 
         if (burstVisual != null)
@@ -380,15 +395,11 @@ public class LightBurstController : MonoBehaviour
             burstVisual.SetActive(false);
         }
 
-        // The wall-aware visual is hidden when Burst ends so its clipped ring
-        // cannot remain visible after gameplay detection has stopped.
         if (burstWallVisual != null)
         {
             burstWallVisual.SetActive(false);
         }
 
-        // The mask must be disabled when Burst ends so hidden areas do not remain
-        // revealed after the ability's active period.
         TurnMaskOff();
 
         currentBurstRadius =
@@ -397,7 +408,7 @@ public class LightBurstController : MonoBehaviour
         burstCoroutine = null;
 
         Debug.Log(
-            "Light burst ended."
+            "Light burst expansion completed."
         );
     }
 
@@ -446,8 +457,8 @@ public class LightBurstController : MonoBehaviour
 
     private IEnumerator CooldownRoutine()
     {
-        // The cooldown begins with activation so Burst cannot be restarted while
-        // its current active period is still running.
+        // Cooldown is independent from Burst expansion so shortening the actual
+        // cast does not accidentally allow the player to activate Burst more often.
         isOnCooldown = true;
 
         Debug.Log(
@@ -455,7 +466,7 @@ public class LightBurstController : MonoBehaviour
         );
 
         yield return new WaitForSeconds(
-            burstDuration
+            burstCooldownDuration
         );
 
         isOnCooldown = false;
