@@ -1,25 +1,49 @@
 using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class LightBurstController : MonoBehaviour
 {
+    private enum BurstEffectPhase
+    {
+        Expanding,
+        Holding,
+        Reforming
+    }
+
+    /*
+     * Each cast keeps its own environmental state after the visible Burst ends.
+     * This allows several Burst openings to linger/reform independently instead
+     * of forcing the darkness system to own the ability's lifetime.
+     */
+    private class BurstEffectData
+    {
+        public BurstEffectPhase phase;
+
+        public Vector2 originWorld;
+
+        public float currentRadius;
+        public float maximumRadius;
+
+        public float holdTimer;
+        public float reformTimer;
+    }
+
     [Header("Burst Settings")]
 
-    // Cooldown timing is now separate from how long the Burst itself is active.
-    // The Burst only remains active while expanding, while darkness affected by
-    // the cast will later manage its own lingering and reform behaviour.
+    // Cooldown remains separate from the environmental lifetime so another Burst
+    // can become available without forcing an older darkness opening to disappear.
     [SerializeField] private float burstCooldownDuration = 2f;
 
-    // The gameplay radius expands separately from the cooldown so the hitbox can
-    // continue matching the visible VFX without forcing Burst to linger at full size.
-    [SerializeField] private float burstExpansionDuration = 1f;
+    // Burst expands quickly so activation feels immediate while still retaining
+    // visible outward growth for the VFX and darkness response.
+    [SerializeField] private float burstExpansionDuration = 0.2f;
 
-    // The Burst begins close to the player instead of immediately affecting the
+    // The Burst begins close to the player instead of instantly affecting the
     // entire maximum radius.
     [SerializeField] private float startingBurstRadius = 0.2f;
 
-    // This curve controls how quickly the gameplay radius grows over the
-    // expansion period so it can be matched closely to the Burst VFX.
+    // This curve controls how quickly the gameplay radius reaches maximum size.
     [SerializeField]
     private AnimationCurve burstExpansionCurve =
         new AnimationCurve(
@@ -30,19 +54,30 @@ public class LightBurstController : MonoBehaviour
             new Keyframe(1f, 1f)
         );
 
+    [Header("Burst Persistence")]
+
+    // After the visible Burst finishes, the environmental effect stays at full
+    // radius so the player has time to move through the cleared darkness.
+    [SerializeField] private float burstHoldDuration = 2.5f;
+
+    // After holding, the environmental effect shrinks so darkness can reform
+    // gradually rather than snapping back immediately.
+    [SerializeField] private float burstReformDuration = 1.5f;
+
     [Header("Light Resource Cost")]
     [SerializeField] private float lightCost = 25f;
 
     [Header("Audio")]
+
     // Burst audio is assigned independently from the VFX so the final sound
-    // can be added later without changing the ability's gameplay behaviour.
+    // can change without affecting gameplay timing.
     [SerializeField] private AudioClip burstSound;
 
     [Header("Burst Visual")]
     [SerializeField] private GameObject burstVisual;
 
-    // The wall-aware radial mesh is controlled separately from the original
-    // Burst VFX so it can be enabled only while the ability is actively expanding.
+    // This visual exists only during the short expanding cast. The lingering
+    // environmental effect is represented by the darkness system instead.
     [SerializeField] private GameObject burstWallVisual;
 
     [Header("Reveal Mask")]
@@ -53,8 +88,8 @@ public class LightBurstController : MonoBehaviour
     [SerializeField] private LayerMask darknessLayer;
     [SerializeField] private LayerMask GroundLayer;
 
-    // Walls are checked separately after targets are found inside the expanding
-    // radius so Burst cannot affect objects through solid level geometry.
+    // Gameplay Burst interaction still respects walls even though the Burst VFX
+    // itself may visually draw across normal level tiles.
     [SerializeField] private LayerMask wallLayer;
 
     [Header("Debug")]
@@ -64,39 +99,42 @@ public class LightBurstController : MonoBehaviour
     private bool isBurstActive = false;
     private bool isOnCooldown = false;
 
-    // This stores the live gameplay radius reached by the expanding Burst.
+    // This value represents only the currently expanding cast. Lingering Burst
+    // effects keep their own radii inside activeBurstEffects.
     private float currentBurstRadius = 0f;
 
     private Coroutine burstCoroutine;
     private Coroutine cooldownCoroutine;
 
+    /*
+     * The ability owns every lingering Burst effect. Darkness visuals and safe
+     * area gameplay read this list indirectly through the public getter methods.
+     */
+    private readonly List<BurstEffectData> activeBurstEffects =
+        new List<BurstEffectData>();
+
+    private BurstEffectData liveBurstEffect;
+
     private PlayerAbilityUnlocks abilityUnlocks;
     private PlayerLightResource playerLightResource;
     private PlayerLightChannel playerLightChannel;
-
-    // Existing Burst effects are allowed to continue through a dash, but this
-    // reference temporarily blocks beginning a new Burst during the dash itself.
     private PlayerDash playerDash;
 
     private void Awake()
     {
-        // The unlock system controls whether the player has earned access to
-        // Light Burst before the input is allowed to activate the ability.
+        // The unlock system controls whether Light Burst has been earned.
         abilityUnlocks =
             GetComponent<PlayerAbilityUnlocks>();
 
-        // All Burst energy costs are handled through the shared player light
-        // resource so abilities do not maintain separate energy values.
+        // All Burst costs come from the shared light resource.
         playerLightResource =
             GetComponent<PlayerLightResource>();
 
-        // Burst checks the channel state before spending light or displaying
-        // visuals because healing and ability use must remain mutually exclusive.
+        // Channeling and Burst remain mutually exclusive.
         playerLightChannel =
             GetComponent<PlayerLightChannel>();
 
-        // New Burst activation during dash remains disabled for this prototype.
-        // This does not affect a Burst that was already active before dashing.
+        // Burst cannot begin during an active dash.
         playerDash =
             GetComponent<PlayerDash>();
 
@@ -109,22 +147,16 @@ public class LightBurstController : MonoBehaviour
             );
         }
 
-        // Burst visuals begin disabled because they should appear only during
-        // an active and successfully paid-for Burst.
         if (burstVisual != null)
         {
             burstVisual.SetActive(false);
         }
 
-        // The wall-aware radial mesh also begins hidden so geometry from a
-        // previous Burst cannot remain visible before the ability activates.
         if (burstWallVisual != null)
         {
             burstWallVisual.SetActive(false);
         }
 
-        // The reveal mask must also begin disabled so it does not reveal hidden
-        // areas before the player activates Light Burst.
         TurnMaskOff();
 
         currentBurstRadius =
@@ -138,8 +170,13 @@ public class LightBurstController : MonoBehaviour
 
     private void Update()
     {
-        // Debug lines are drawn continuously during Play Mode while the Burst is
-        // actively expanding so the gameplay radius is easier to compare with VFX.
+        /*
+         * Lingering effects continue updating after the visible Burst coroutine
+         * ends. Keeping this outside BurstRoutine also lets several older casts
+         * reform independently while a newer Burst is fired.
+         */
+        UpdateBurstEffectLifetimes();
+
         if (
             showBurstDebug &&
             isBurstActive
@@ -151,12 +188,78 @@ public class LightBurstController : MonoBehaviour
 
     public bool IsBurstActive()
     {
+        // This remains expansion-only so existing systems can still distinguish
+        // the actual cast from the longer environmental consequence.
         return isBurstActive;
     }
 
     public bool IsOnCooldown()
     {
         return isOnCooldown;
+    }
+
+    public int GetActiveBurstEffectCount()
+    {
+        // Darkness systems use the count rather than receiving the mutable list,
+        // preventing outside scripts from accidentally modifying ability state.
+        return activeBurstEffects.Count;
+    }
+
+    public Vector2 GetBurstEffectOrigin(
+        int index
+    )
+    {
+        if (
+            index < 0 ||
+            index >= activeBurstEffects.Count
+        )
+        {
+            return transform.position;
+        }
+
+        return
+            activeBurstEffects[index].originWorld;
+    }
+
+    public float GetBurstEffectRadius(
+        int index
+    )
+    {
+        if (
+            index < 0 ||
+            index >= activeBurstEffects.Count
+        )
+        {
+            return 0f;
+        }
+
+        return
+            activeBurstEffects[index].currentRadius;
+    }
+
+    public bool IsPositionInsideBurstEffect(
+        Vector2 worldPosition
+    )
+    {
+        /*
+         * Other gameplay systems can query the same ability-owned areas that
+         * drive the darkness cut-out, keeping safety and visuals consistent.
+         */
+        foreach (BurstEffectData effect in activeBurstEffects)
+        {
+            if (
+                Vector2.Distance(
+                    worldPosition,
+                    effect.originWorld
+                ) <=
+                effect.currentRadius
+            )
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public void ActivateBurst()
@@ -166,8 +269,6 @@ public class LightBurstController : MonoBehaviour
             playerLightChannel.IsChanneling()
         )
         {
-            // Burst input is ignored while channeling so the player cannot heal
-            // and activate a light ability at the same time.
             Debug.Log(
                 "Light Burst was blocked because the player is channeling."
             );
@@ -180,8 +281,6 @@ public class LightBurstController : MonoBehaviour
             playerDash.IsDashing()
         )
         {
-            // Casting Burst during dash remains disabled while this interaction
-            // is still being tested. A Burst started before dash is not cancelled.
             Debug.Log(
                 "Light Burst activation was blocked because the player is dashing."
             );
@@ -189,8 +288,6 @@ public class LightBurstController : MonoBehaviour
             return;
         }
 
-        // The player should not be able to use Light Burst until the ability
-        // has been unlocked through the intended level progression.
         if (
             abilityUnlocks != null &&
             !abilityUnlocks.HasLightBurst()
@@ -230,8 +327,6 @@ public class LightBurstController : MonoBehaviour
             return;
         }
 
-        // Light is spent only after every other activation requirement passes.
-        // This prevents rejected input from consuming the player's resource.
         if (
             !playerLightResource.TrySpendLight(
                 lightCost,
@@ -246,9 +341,6 @@ public class LightBurstController : MonoBehaviour
             return;
         }
 
-        // Burst audio is triggered only after every gameplay requirement has
-        // succeeded and the light cost has been paid. This prevents blocked
-        // Burst attempts from producing misleading activation audio.
         if (
             burstSound != null &&
             AudioManager.Instance != null
@@ -294,26 +386,46 @@ public class LightBurstController : MonoBehaviour
     {
         isBurstActive = true;
 
-        // Every Burst still begins close to the player and expands outward.
-        // The radius is now updated every rendered frame so the visual cut-out
-        // grows smoothly instead of stepping forward at the physics-check interval.
         currentBurstRadius =
             startingBurstRadius;
+
+        /*
+         * A new environmental effect is created immediately so the darkness can
+         * follow the same expanding radius as the visible Burst from frame one.
+         */
+        liveBurstEffect =
+            new BurstEffectData
+            {
+                phase =
+                    BurstEffectPhase.Expanding,
+
+                originWorld =
+                    transform.position,
+
+                currentRadius =
+                    startingBurstRadius,
+
+                maximumRadius =
+                    burstDispelRadius,
+
+                holdTimer = 0f,
+                reformTimer = 0f
+            };
+
+        activeBurstEffects.Add(
+            liveBurstEffect
+        );
 
         if (burstVisual != null)
         {
             burstVisual.SetActive(true);
         }
 
-        // The wall-aware radial mesh remains visible during the expanding cast so
-        // the player can still read how Burst interacts with nearby level geometry.
         if (burstWallVisual != null)
         {
             burstWallVisual.SetActive(true);
         }
 
-        // The reveal mask follows only the live Burst expansion for now.
-        // Affected puzzle objects will later manage their own lingering state.
         TurnMaskOn();
 
         Debug.Log(
@@ -321,10 +433,6 @@ public class LightBurstController : MonoBehaviour
         );
 
         float timer = 0f;
-
-        // Darkness and platform overlap checks do not need to happen every rendered
-        // frame. Keeping them on a short interval avoids unnecessary physics queries
-        // while allowing the visible Burst radius itself to update smoothly.
         float dispelCheckInterval = 0.05f;
         float dispelCheckTimer = 0f;
 
@@ -339,12 +447,11 @@ public class LightBurstController : MonoBehaviour
             float normalisedExpansionTime =
                 burstExpansionDuration > 0f
                     ? Mathf.Clamp01(
-                        timer / burstExpansionDuration
+                        timer /
+                        burstExpansionDuration
                     )
                     : 1f;
 
-            // The curve still controls the shape of the expansion, but evaluating it
-            // every frame produces continuous motion rather than visible radius jumps.
             float expansionAmount =
                 Mathf.Clamp01(
                     burstExpansionCurve.Evaluate(
@@ -359,6 +466,19 @@ public class LightBurstController : MonoBehaviour
                     expansionAmount
                 );
 
+            /*
+             * Only the currently casting Burst follows the player. Once expansion
+             * finishes, its lingering area stays fixed at the cast location.
+             */
+            if (liveBurstEffect != null)
+            {
+                liveBurstEffect.originWorld =
+                    transform.position;
+
+                liveBurstEffect.currentRadius =
+                    currentBurstRadius;
+            }
+
             if (
                 dispelCheckTimer >=
                 dispelCheckInterval
@@ -370,23 +490,33 @@ public class LightBurstController : MonoBehaviour
                 dispelCheckTimer = 0f;
             }
 
-            // Yielding for one frame lets the radius respond at the same frequency
-            // as rendering, which makes the expanding cut-out appear much smoother.
             yield return null;
         }
 
-        // Force the exact maximum radius at the end so floating-point timing cannot
-        // leave the Burst slightly smaller than its configured final size.
         currentBurstRadius =
             burstDispelRadius;
+
+        if (liveBurstEffect != null)
+        {
+            liveBurstEffect.currentRadius =
+                burstDispelRadius;
+
+            /*
+             * The visible cast has finished, but the ability itself now owns the
+             * full-radius lingering period before darkness is allowed to reform.
+             */
+            liveBurstEffect.phase =
+                BurstEffectPhase.Holding;
+
+            liveBurstEffect.holdTimer = 0f;
+        }
 
         DispelDarknessInRadius();
         CheckLightPlatformInBurst();
 
         /*
-         * Burst finishes once the smooth expansion reaches maximum size.
-         * Darkness affected by the cast will later preserve the final opening
-         * independently during its hold and reform behaviour.
+         * The casting/VFX state ends here. The environmental Burst remains in
+         * activeBurstEffects and continues independently.
          */
         isBurstActive = false;
 
@@ -405,17 +535,93 @@ public class LightBurstController : MonoBehaviour
         currentBurstRadius =
             startingBurstRadius;
 
+        liveBurstEffect = null;
         burstCoroutine = null;
 
         Debug.Log(
-            "Light burst expansion completed."
+            "Light burst expansion completed. Environmental effect is lingering."
         );
+    }
+
+    private void UpdateBurstEffectLifetimes()
+    {
+        /*
+         * Each Burst owns its own timers so newer casts never cancel an older
+         * opening that is still holding or reforming elsewhere in the level.
+         */
+        for (
+            int i = activeBurstEffects.Count - 1;
+            i >= 0;
+            i--
+        )
+        {
+            BurstEffectData effect =
+                activeBurstEffects[i];
+
+            // Expansion is controlled directly by BurstRoutine.
+            if (
+                effect.phase ==
+                BurstEffectPhase.Expanding
+            )
+            {
+                continue;
+            }
+
+            if (
+                effect.phase ==
+                BurstEffectPhase.Holding
+            )
+            {
+                effect.holdTimer +=
+                    Time.deltaTime;
+
+                if (
+                    effect.holdTimer >=
+                    burstHoldDuration
+                )
+                {
+                    effect.phase =
+                        BurstEffectPhase.Reforming;
+
+                    effect.reformTimer = 0f;
+                }
+
+                continue;
+            }
+
+            effect.reformTimer +=
+                Time.deltaTime;
+
+            float reformProgress =
+                burstReformDuration > 0f
+                    ? Mathf.Clamp01(
+                        effect.reformTimer /
+                        burstReformDuration
+                    )
+                    : 1f;
+
+            /*
+             * Reform shrinks the ability-owned radius itself. Darkness and safe
+             * area systems therefore automatically see the same closing opening.
+             */
+            effect.currentRadius =
+                Mathf.Lerp(
+                    effect.maximumRadius,
+                    0f,
+                    reformProgress
+                );
+
+            if (reformProgress >= 1f)
+            {
+                activeBurstEffects.RemoveAt(
+                    i
+                );
+            }
+        }
     }
 
     private void DispelDarknessInRadius()
     {
-        // Burst first finds darkness inside the current expanding radius. Each
-        // target then requires a clear path so walls block the gameplay effect.
         Collider2D[] hits =
             Physics2D.OverlapCircleAll(
                 transform.position,
@@ -428,6 +634,10 @@ public class LightBurstController : MonoBehaviour
 
         foreach (Collider2D hit in hits)
         {
+            /*
+             * Gameplay interaction still respects walls even though the Burst
+             * visual itself can be rendered over normal tiles.
+             */
             if (!HasClearBurstPath(hit))
             {
                 blockedCount++;
@@ -445,8 +655,6 @@ public class LightBurstController : MonoBehaviour
             }
         }
 
-        // This temporary log confirms whether nearby darkness is being reached
-        // normally or rejected because a wall sits between it and the player.
         Debug.Log(
             "Light Burst darkness check. Dispelled: " +
             dispelledCount +
@@ -457,8 +665,6 @@ public class LightBurstController : MonoBehaviour
 
     private IEnumerator CooldownRoutine()
     {
-        // Cooldown is independent from Burst expansion so shortening the actual
-        // cast does not accidentally allow the player to activate Burst more often.
         isOnCooldown = true;
 
         Debug.Log(
@@ -479,7 +685,6 @@ public class LightBurstController : MonoBehaviour
 
     private void OnDrawGizmosSelected()
     {
-        // The yellow circle shows the maximum configured Burst range.
         Gizmos.color =
             Color.yellow;
 
@@ -488,8 +693,6 @@ public class LightBurstController : MonoBehaviour
             burstDispelRadius
         );
 
-        // The cyan circle shows the current gameplay radius when the Player is
-        // selected in the Scene view.
         Gizmos.color =
             Color.cyan;
 
@@ -511,8 +714,6 @@ public class LightBurstController : MonoBehaviour
             return;
         }
 
-        // Debug.DrawLine creates a temporary circle from short line segments so
-        // the live radius is easier to inspect during Play Mode than Gizmos alone.
         Vector3 centre =
             transform.position;
 
@@ -559,14 +760,11 @@ public class LightBurstController : MonoBehaviour
 
     public float GetBurstDispelRadius()
     {
-        // Darkness systems can still access the maximum possible Burst range.
         return burstDispelRadius;
     }
 
     public float GetCurrentBurstRadius()
     {
-        // Other systems can use the live radius when they need to know how far
-        // the expanding Burst has currently reached.
         return currentBurstRadius;
     }
 
@@ -588,8 +786,6 @@ public class LightBurstController : MonoBehaviour
 
     private void CheckLightPlatformInBurst()
     {
-        // Burst platforms use the same expanding radius and wall rule as
-        // darkness so they cannot activate through solid level geometry.
         Collider2D[] hits =
             Physics2D.OverlapCircleAll(
                 transform.position,
@@ -599,6 +795,8 @@ public class LightBurstController : MonoBehaviour
 
         foreach (Collider2D hit in hits)
         {
+            // Platform activation remains blocked by normal walls even though the
+            // Burst VFX itself can visually overlap those tiles.
             if (!HasClearBurstPath(hit))
             {
                 continue;
@@ -626,8 +824,6 @@ public class LightBurstController : MonoBehaviour
         Vector2 burstOrigin =
             transform.position;
 
-        // ClosestPoint checks the nearest part of the target collider instead
-        // of always aiming at its centre, which works better for larger objects.
         Vector2 targetPoint =
             targetCollider.ClosestPoint(
                 burstOrigin
@@ -640,8 +836,6 @@ public class LightBurstController : MonoBehaviour
         float distance =
             direction.magnitude;
 
-        // A target already touching the Burst origin does not need a meaningful
-        // wall check because there is effectively no space between them.
         if (distance <= 0.001f)
         {
             return true;

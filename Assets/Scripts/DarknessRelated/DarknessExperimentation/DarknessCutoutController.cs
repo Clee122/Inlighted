@@ -3,12 +3,6 @@ using UnityEngine;
 
 public class DarknessCutoutController : MonoBehaviour
 {
-    private enum CutoutType
-    {
-        Burst,
-        Beam
-    }
-
     private enum CutoutPhase
     {
         Active,
@@ -17,20 +11,16 @@ public class DarknessCutoutController : MonoBehaviour
     }
 
     /*
-     * Every light cast receives its own CutoutData instance. This allows an
-     * arbitrary number of Burst and Beam openings to exist at the same time
-     * instead of newer casts overwriting older lingering cut-outs.
+     * Beam cut-outs remain owned by this controller because Beam persistence
+     * has not been moved into LightBeamController. Burst lifetime is now owned
+     * entirely by LightBurstController and is read separately below.
      */
-    private class CutoutData
+    private class BeamCutoutData
     {
-        public CutoutType type;
         public CutoutPhase phase;
 
         public Vector2 originWorld;
         public Vector2 directionWorld = Vector2.right;
-
-        public float currentRadius;
-        public float maximumRadius;
 
         public float currentBeamPushDistance;
         public float maximumBeamPushDistance;
@@ -57,35 +47,24 @@ public class DarknessCutoutController : MonoBehaviour
     [SerializeField]
     private SpriteRenderer darknessRenderer;
 
-    [Header("Burst Persistence")]
-
-    // Burst openings remain fully displaced after the cast finishes so the
-    // player has time to traverse or interact with revealed puzzle elements.
-    [SerializeField]
-    private float burstHoldDuration = 2.5f;
-
-    // Burst reform shrinks each individual circular opening independently.
-    [SerializeField]
-    private float burstReformDuration = 1.5f;
-
     [Header("Beam Settings")]
 
     // This controls the maximum distance removed around the Beam line.
     [SerializeField]
     private float beamMaximumPushDistance = 1.5f;
 
-    // Beam cut-outs expand briefly rather than immediately appearing at full width.
+    // Beam cut-outs expand briefly so the darkness still visibly reacts to firing.
     [SerializeField]
     private float beamPushDuration = 0.3f;
 
     [Header("Beam Persistence")]
 
-    // Each fired Beam corridor owns its own hold timer so firing another Beam
-    // cannot cancel a corridor that is already lingering.
+    // Beam still owns its persistence here because that behaviour has not yet
+    // been transferred into LightBeamController.
     [SerializeField]
     private float beamHoldDuration = 2.5f;
 
-    // Each Beam corridor closes independently after its hold period finishes.
+    // The Beam corridor gradually closes after its hold period.
     [SerializeField]
     private float beamReformDuration = 1.5f;
 
@@ -104,8 +83,7 @@ public class DarknessCutoutController : MonoBehaviour
 
     /*
      * Softness is measured in world units around the cut-out boundary.
-     * Instead of changing immediately from fully cleared to fully dark, pixels
-     * near the boundary receive intermediate alpha values to reduce jagged edges.
+     * Intermediate alpha values soften the low-resolution CPU mask edge.
      */
     [SerializeField]
     private float maskEdgeSoftness = 0.15f;
@@ -114,8 +92,7 @@ public class DarknessCutoutController : MonoBehaviour
 
     /*
      * The generated mask does not need to rebuild every rendered frame.
-     * Updating it at a controlled rate reduces CPU and texture-upload cost while
-     * retaining a responsive enough visual result for this experiment.
+     * Limiting uploads reduces CPU and texture processing cost.
      */
     [SerializeField]
     private float maskUpdateRate = 45f;
@@ -126,17 +103,18 @@ public class DarknessCutoutController : MonoBehaviour
     private Texture2D cutoutMaskTexture;
     private Color32[] maskPixels;
 
-    private readonly List<CutoutData> activeCutouts =
-        new List<CutoutData>();
+    /*
+     * Only Beam cut-outs are stored here now. Burst effects remain inside
+     * LightBurstController so there is one authoritative Burst lifetime.
+     */
+    private readonly List<BeamCutoutData> activeBeamCutouts =
+        new List<BeamCutoutData>();
 
-    private bool wasBurstActive = false;
     private bool wasBeamActive = false;
 
-    // These references identify only the cut-out belonging to the ability that
-    // is currently being fired. Once a cast ends, its cut-out remains in the
-    // list while later casts create completely separate instances.
-    private CutoutData liveBurstCutout;
-    private CutoutData liveBeamCutout;
+    // This identifies only the Beam currently being fired. Older Beam corridors
+    // remain stored while they independently hold and reform.
+    private BeamCutoutData liveBeamCutout;
 
     private static readonly int CutoutMaskID =
         Shader.PropertyToID("_CutoutMask");
@@ -151,8 +129,6 @@ public class DarknessCutoutController : MonoBehaviour
 
         if (darknessRenderer == null)
         {
-            // The message uses the current controller name so missing renderer
-            // problems are easier to identify after the script rename.
             Debug.LogError(
                 "DarknessCutoutController could not find a SpriteRenderer."
             );
@@ -161,8 +137,8 @@ public class DarknessCutoutController : MonoBehaviour
             return;
         }
 
-        // A local material instance prevents this darkness object from changing
-        // every renderer that uses the same shared material asset.
+        // A local material instance prevents this darkness object from altering
+        // every renderer that uses the same material asset.
         darknessMaterial =
             darknessRenderer.material;
 
@@ -181,14 +157,12 @@ public class DarknessCutoutController : MonoBehaviour
         }
 
         /*
-         * Ability state and gameplay cut-out lifetimes continue updating every
-         * frame so gameplay remains responsive even when the visual mask itself
-         * is rebuilt at a controlled frequency.
+         * Burst does not need detection here anymore because LightBurstController
+         * owns its effects continuously. Only Beam still needs local lifecycle
+         * detection and persistence management.
          */
-        DetectBurst();
         DetectBeam();
-
-        UpdateCutoutLifetimes();
+        UpdateBeamCutoutLifetimes();
 
         maskUpdateTimer +=
             Time.deltaTime;
@@ -224,8 +198,8 @@ public class DarknessCutoutController : MonoBehaviour
             );
 
         /*
-         * The texture is created at runtime because it represents temporary
-         * gameplay state rather than an authored darkness texture asset.
+         * The mask is created at runtime because it represents temporary
+         * ability state rather than an authored texture asset.
          */
         cutoutMaskTexture =
             new Texture2D(
@@ -235,8 +209,6 @@ public class DarknessCutoutController : MonoBehaviour
                 false
             );
 
-        // Bilinear filtering works together with grey edge pixels to interpolate
-        // the generated mask more smoothly between neighbouring samples.
         cutoutMaskTexture.filterMode =
             FilterMode.Bilinear;
 
@@ -255,96 +227,6 @@ public class DarknessCutoutController : MonoBehaviour
         );
 
         BuildDynamicMask();
-    }
-
-    private void DetectBurst()
-    {
-        if (lightBurstController == null)
-        {
-            wasBurstActive = false;
-            liveBurstCutout = null;
-
-            return;
-        }
-
-        bool burstActive =
-            lightBurstController.IsBurstActive();
-
-        if (
-            burstActive &&
-            !wasBurstActive
-        )
-        {
-            /*
-             * A completely new data object is created for every Burst cast.
-             * Previous Burst openings remain untouched in activeCutouts.
-             */
-            liveBurstCutout =
-                new CutoutData
-                {
-                    type = CutoutType.Burst,
-                    phase = CutoutPhase.Active,
-
-                    originWorld =
-                        lightBurstController.transform.position,
-
-                    currentRadius =
-                        lightBurstController.GetCurrentBurstRadius(),
-
-                    maximumRadius =
-                        lightBurstController.GetBurstDispelRadius(),
-
-                    holdDuration =
-                        burstHoldDuration,
-
-                    reformDuration =
-                        burstReformDuration
-                };
-
-            activeCutouts.Add(
-                liveBurstCutout
-            );
-        }
-
-        if (
-            burstActive &&
-            liveBurstCutout != null
-        )
-        {
-            /*
-             * Only the currently active Burst follows the live ability radius.
-             * Previous cut-outs retain their own independent position and lifetime.
-             */
-            liveBurstCutout.originWorld =
-                lightBurstController.transform.position;
-
-            liveBurstCutout.currentRadius =
-                lightBurstController.GetCurrentBurstRadius();
-        }
-
-        if (
-            !burstActive &&
-            wasBurstActive &&
-            liveBurstCutout != null
-        )
-        {
-            /*
-             * When expansion finishes, this cut-out becomes an independent
-             * environmental effect and remains at its full radius while holding.
-             */
-            liveBurstCutout.phase =
-                CutoutPhase.Holding;
-
-            liveBurstCutout.currentRadius =
-                liveBurstCutout.maximumRadius;
-
-            liveBurstCutout.holdTimer = 0f;
-
-            liveBurstCutout = null;
-        }
-
-        wasBurstActive =
-            burstActive;
     }
 
     private void DetectBeam()
@@ -369,14 +251,14 @@ public class DarknessCutoutController : MonoBehaviour
         )
         {
             /*
-             * Each Beam receives its own origin, direction and lifetime so
-             * several lingering corridors can coexist without replacing one another.
+             * Each Beam receives independent geometry and timing so several
+             * previously fired corridors can coexist while reforming.
              */
             liveBeamCutout =
-                new CutoutData
+                new BeamCutoutData
                 {
-                    type = CutoutType.Beam,
-                    phase = CutoutPhase.Active,
+                    phase =
+                        CutoutPhase.Active,
 
                     originWorld =
                         lightBeamController.transform.position,
@@ -390,9 +272,8 @@ public class DarknessCutoutController : MonoBehaviour
                         beamMaximumPushDistance,
 
                     /*
-                     * The exact locked Beam distance is shared from the Beam
-                     * controller so the darkness ends at the same wall or Bloom
-                     * Receiver instead of using its own separate fixed range.
+                     * Darkness uses the exact endpoint captured by the Beam
+                     * controller so the opening ends at the same wall or receiver.
                      */
                     beamLength =
                         lightBeamController.GetLockedBeamLength(),
@@ -404,7 +285,7 @@ public class DarknessCutoutController : MonoBehaviour
                         beamReformDuration
                 };
 
-            activeCutouts.Add(
+            activeBeamCutouts.Add(
                 liveBeamCutout
             );
         }
@@ -414,8 +295,6 @@ public class DarknessCutoutController : MonoBehaviour
             liveBeamCutout != null
         )
         {
-            // The corridor reaches full width over a short duration so the
-            // darkness still appears to react instead of disappearing instantly.
             float pushSpeed =
                 beamMaximumPushDistance /
                 Mathf.Max(
@@ -439,8 +318,8 @@ public class DarknessCutoutController : MonoBehaviour
         )
         {
             /*
-             * Beam ending finishes only the cast. Its corridor remains stored and
-             * enters its independent hold period before darkness reforms.
+             * Firing ends before persistence ends. The completed Beam corridor
+             * stays open for its configured traversal window before reforming.
              */
             liveBeamCutout.phase =
                 CutoutPhase.Holding;
@@ -457,27 +336,33 @@ public class DarknessCutoutController : MonoBehaviour
             beamActive;
     }
 
-    private void UpdateCutoutLifetimes()
+    private void UpdateBeamCutoutLifetimes()
     {
         /*
-         * Iterating backwards allows completed cut-outs to be safely removed
-         * without changing the index of entries that still need to be processed.
+         * Beam remains managed locally until its lifetime is also moved into
+         * LightBeamController. Iterating backwards permits safe removal.
          */
         for (
-            int i = activeCutouts.Count - 1;
+            int i = activeBeamCutouts.Count - 1;
             i >= 0;
             i--
         )
         {
-            CutoutData cutout =
-                activeCutouts[i];
+            BeamCutoutData cutout =
+                activeBeamCutouts[i];
 
-            if (cutout.phase == CutoutPhase.Active)
+            if (
+                cutout.phase ==
+                CutoutPhase.Active
+            )
             {
                 continue;
             }
 
-            if (cutout.phase == CutoutPhase.Holding)
+            if (
+                cutout.phase ==
+                CutoutPhase.Holding
+            )
             {
                 cutout.holdTimer +=
                     Time.deltaTime;
@@ -507,31 +392,20 @@ public class DarknessCutoutController : MonoBehaviour
                     )
                     : 1f;
 
-            if (cutout.type == CutoutType.Burst)
-            {
-                // Each Burst closes by shrinking its own radius independently.
-                cutout.currentRadius =
-                    Mathf.Lerp(
-                        cutout.maximumRadius,
-                        0f,
-                        reformProgress
-                    );
-            }
-            else
-            {
-                // Each Beam closes by reducing its own opening until the corridor
-                // has completely reformed.
-                cutout.currentBeamPushDistance =
-                    Mathf.Lerp(
-                        cutout.maximumBeamPushDistance,
-                        0f,
-                        reformProgress
-                    );
-            }
+            // Beam closes by reducing its corridor width until darkness has
+            // completely returned to the previously cleared space.
+            cutout.currentBeamPushDistance =
+                Mathf.Lerp(
+                    cutout.maximumBeamPushDistance,
+                    0f,
+                    reformProgress
+                );
 
-            if (reformProgress >= 1f)
+            if (
+                reformProgress >= 1f
+            )
             {
-                activeCutouts.RemoveAt(
+                activeBeamCutouts.RemoveAt(
                     i
                 );
             }
@@ -570,8 +444,8 @@ public class DarknessCutoutController : MonoBehaviour
                     maskWidth;
 
                 /*
-                 * Each mask pixel is converted into world space because all
-                 * ability sizes and positions are already defined in world units.
+                 * Mask pixels are evaluated in world space because Burst and Beam
+                 * positions and distances are already expressed in world units.
                  */
                 Vector3 localPosition =
                     new Vector3(
@@ -593,11 +467,6 @@ public class DarknessCutoutController : MonoBehaviour
                         localPosition
                     );
 
-                /*
-                 * A value of 1 means fully visible darkness and 0 means fully
-                 * cleared darkness. Values between them form the anti-aliased
-                 * transition around Burst and Beam boundaries.
-                 */
                 float darknessAmount =
                     GetDarknessAmountAtPosition(
                         worldPosition
@@ -631,8 +500,8 @@ public class DarknessCutoutController : MonoBehaviour
         );
 
         /*
-         * Apply uploads the rebuilt texture to the GPU. Because this operation is
-         * relatively expensive, it only occurs at the configured update rate.
+         * Texture upload happens only at the configured mask rate because Apply
+         * is one of the more expensive operations in this CPU-mask approach.
          */
         cutoutMaskTexture.Apply(
             false,
@@ -644,40 +513,77 @@ public class DarknessCutoutController : MonoBehaviour
         Vector2 worldPosition
     )
     {
-        // Begin with completely visible darkness. Every active cut-out can lower
-        // the value, and taking the minimum naturally combines overlapping holes.
         float darknessAmount = 1f;
 
-        foreach (CutoutData cutout in activeCutouts)
+        /*
+         * Burst persistence now comes directly from LightBurstController.
+         * Darkness does not start, hold or reform Burst openings itself anymore.
+         */
+        if (lightBurstController != null)
         {
-            float cutoutDarknessAmount;
+            int burstEffectCount =
+                lightBurstController.GetActiveBurstEffectCount();
 
-            if (cutout.type == CutoutType.Burst)
+            for (
+                int i = 0;
+                i < burstEffectCount;
+                i++
+            )
             {
-                cutoutDarknessAmount =
+                Vector2 burstOrigin =
+                    lightBurstController.GetBurstEffectOrigin(
+                        i
+                    );
+
+                float burstRadius =
+                    lightBurstController.GetBurstEffectRadius(
+                        i
+                    );
+
+                float burstDarknessAmount =
                     GetBurstDarknessAmount(
                         worldPosition,
-                        cutout
+                        burstOrigin,
+                        burstRadius
                     );
-            }
-            else
-            {
-                cutoutDarknessAmount =
-                    GetBeamDarknessAmount(
-                        worldPosition,
-                        cutout
+
+                darknessAmount =
+                    Mathf.Min(
+                        darknessAmount,
+                        burstDarknessAmount
                     );
+
+                if (
+                    darknessAmount <= 0f
+                )
+                {
+                    return 0f;
+                }
             }
+        }
+
+        // Beam still uses locally stored cut-outs because its persistence has
+        // intentionally been left in this controller for now.
+        foreach (
+            BeamCutoutData cutout
+            in activeBeamCutouts
+        )
+        {
+            float beamDarknessAmount =
+                GetBeamDarknessAmount(
+                    worldPosition,
+                    cutout
+                );
 
             darknessAmount =
                 Mathf.Min(
                     darknessAmount,
-                    cutoutDarknessAmount
+                    beamDarknessAmount
                 );
 
-            // Nothing can become more transparent than zero, so there is no
-            // reason to evaluate additional cut-outs once this pixel is cleared.
-            if (darknessAmount <= 0f)
+            if (
+                darknessAmount <= 0f
+            )
             {
                 break;
             }
@@ -688,23 +594,24 @@ public class DarknessCutoutController : MonoBehaviour
 
     private float GetBurstDarknessAmount(
         Vector2 worldPosition,
-        CutoutData cutout
+        Vector2 burstOrigin,
+        float burstRadius
     )
     {
         float distanceFromCentre =
             Vector2.Distance(
                 worldPosition,
-                cutout.originWorld
+                burstOrigin
             );
 
         /*
-         * Signed distance is negative inside the cut-out and positive outside.
-         * Mapping a small range around zero to 0-1 creates a smooth transition
-         * around the circle instead of a hard pixel staircase.
+         * LightBurstController supplies the radius, including its expansion,
+         * holding and reforming phases. Darkness only converts that radius into
+         * the visual mask and does not modify its lifetime.
          */
         float signedDistance =
             distanceFromCentre -
-            cutout.currentRadius;
+            burstRadius;
 
         return
             ConvertSignedDistanceToMask(
@@ -714,7 +621,7 @@ public class DarknessCutoutController : MonoBehaviour
 
     private float GetBeamDarknessAmount(
         Vector2 worldPosition,
-        CutoutData cutout
+        BeamCutoutData cutout
     )
     {
         if (
@@ -732,11 +639,6 @@ public class DarknessCutoutController : MonoBehaviour
             worldPosition -
             cutout.originWorld;
 
-        /*
-         * Projection determines how far this pixel sits along the fired Beam.
-         * This remains stable for horizontal, diagonal and vertical shots and
-         * keeps the cut-out limited to the Beam's wall-controlled length.
-         */
         float distanceAlongBeam =
             Vector2.Dot(
                 fromBeamOrigin,
@@ -744,9 +646,8 @@ public class DarknessCutoutController : MonoBehaviour
             );
 
         /*
-         * The 2D cross-product magnitude gives the perpendicular relationship
-         * between the pixel and the Beam line without using a slope equation.
-         * This avoids the instability that appears as the Beam approaches vertical.
+         * Cross-product magnitude provides perpendicular distance without a slope
+         * calculation, keeping the Beam stable when fired nearly vertically.
          */
         float crossDistance =
             Mathf.Abs(
@@ -764,10 +665,7 @@ public class DarknessCutoutController : MonoBehaviour
             ) > 0.1f
         )
         {
-            /*
-             * Horizontal and diagonal shots preserve the selected behaviour where
-             * darkness separates vertically above and below the Beam line.
-             */
+            // Horizontal and diagonal shots preserve vertical separation.
             distanceFromBeam =
                 crossDistance /
                 Mathf.Abs(
@@ -776,12 +674,8 @@ public class DarknessCutoutController : MonoBehaviour
         }
         else
         {
-            /*
-             * A near-vertical Beam cannot use vertical separation because every
-             * point along the line can otherwise appear to have zero vertical
-             * distance. In this case the darkness separates left and right,
-             * preventing the entire darkness surface from being cleared.
-             */
+            // Near-vertical shots separate darkness left and right so a vertical
+            // Beam cannot accidentally clear the entire darkness surface.
             distanceFromBeam =
                 crossDistance /
                 Mathf.Max(
@@ -801,10 +695,6 @@ public class DarknessCutoutController : MonoBehaviour
                 widthSignedDistance
             );
 
-        /*
-         * These boundaries keep the opening between the firing point and the
-         * exact endpoint captured from the Beam controller.
-         */
         float startBoundaryMask =
             ConvertSignedDistanceToMask(
                 -distanceAlongBeam
@@ -837,9 +727,8 @@ public class DarknessCutoutController : MonoBehaviour
             );
 
         /*
-         * The transition spans a small distance on both sides of the mathematical
-         * boundary. SmoothStep keeps the generated edge visually softer without
-         * requiring a much larger runtime texture.
+         * A short SmoothStep transition softens the generated mask boundary
+         * without requiring a substantially higher-resolution CPU texture.
          */
         float normalisedEdge =
             Mathf.InverseLerp(
@@ -861,73 +750,42 @@ public class DarknessCutoutController : MonoBehaviour
     )
     {
         /*
-         * Gameplay continues to use the exact mathematical cut-out rather than
-         * the feathered edge so partially transparent boundary pixels do not
-         * produce ambiguous darkness damage behaviour.
+         * Burst safety is queried from the same ability-owned radius that drives
+         * the visual opening. This keeps damage behaviour aligned during hold
+         * and reform rather than maintaining another Burst timer here.
          */
-        return
-            IsPositionInsideAnyCutout(
+        if (
+            lightBurstController != null &&
+            lightBurstController.IsPositionInsideBurstEffect(
                 worldPosition
-            );
-    }
+            )
+        )
+        {
+            return true;
+        }
 
-    private bool IsPositionInsideAnyCutout(
-        Vector2 worldPosition
-    )
-    {
-        foreach (CutoutData cutout in activeCutouts)
+        foreach (
+            BeamCutoutData cutout
+            in activeBeamCutouts
+        )
         {
             if (
-                cutout.type ==
-                CutoutType.Burst
+                IsPositionInsideBeamCutout(
+                    worldPosition,
+                    cutout
+                )
             )
             {
-                if (
-                    IsPositionInsideBurstCutout(
-                        worldPosition,
-                        cutout
-                    )
-                )
-                {
-                    return true;
-                }
-            }
-            else
-            {
-                if (
-                    IsPositionInsideBeamCutout(
-                        worldPosition,
-                        cutout
-                    )
-                )
-                {
-                    return true;
-                }
+                return true;
             }
         }
 
         return false;
     }
 
-    private bool IsPositionInsideBurstCutout(
-        Vector2 worldPosition,
-        CutoutData cutout
-    )
-    {
-        float distance =
-            Vector2.Distance(
-                worldPosition,
-                cutout.originWorld
-            );
-
-        return
-            distance <=
-            cutout.currentRadius;
-    }
-
     private bool IsPositionInsideBeamCutout(
         Vector2 worldPosition,
-        CutoutData cutout
+        BeamCutoutData cutout
     )
     {
         if (
@@ -951,8 +809,8 @@ public class DarknessCutoutController : MonoBehaviour
                 beamDirection
             );
 
-        // Gameplay safety uses the same wall-limited Beam endpoint as the visual
-        // mask so neither system continues beyond the physical shot.
+        // Gameplay uses the same endpoint as the visual corridor so the player's
+        // safe area never extends beyond the actual Beam.
         if (
             distanceAlongBeam < 0f ||
             distanceAlongBeam > cutout.beamLength
@@ -961,11 +819,6 @@ public class DarknessCutoutController : MonoBehaviour
             return false;
         }
 
-        /*
-         * Gameplay uses the same direction-aware width calculation as the visual
-         * mask. Horizontal/diagonal shots keep vertical separation, while
-         * near-vertical shots use horizontal separation instead.
-         */
         float crossDistance =
             Mathf.Abs(
                 fromBeamOrigin.x *
@@ -1007,8 +860,10 @@ public class DarknessCutoutController : MonoBehaviour
 
     private void OnDestroy()
     {
-        // The runtime-created texture is destroyed with the darkness object so
-        // repeated Play Mode sessions do not leave unnecessary texture instances.
+        /*
+         * The runtime-created mask texture is cleaned up with the darkness object
+         * so repeated Play Mode sessions do not leave unnecessary allocations.
+         */
         if (cutoutMaskTexture != null)
         {
             Destroy(

@@ -188477,7 +188477,7 @@ Transform:
   m_GameObject: {fileID: 519420028}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -54.756813, y: -7.12429, z: -10}
+  m_LocalPosition: {x: -52.885593, y: -7.14431, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -208799,6 +208799,10 @@ PrefabInstance:
     - target: {fileID: -5335877252066859057, guid: 1a2b6faaca96b144c9f1e527bae249d1, type: 3}
       propertyPath: wallLayer.m_Bits
       value: 128
+      objectReference: {fileID: 0}
+    - target: {fileID: -5335877252066859057, guid: 1a2b6faaca96b144c9f1e527bae249d1, type: 3}
+      propertyPath: burstDispelRadius
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: -5335877252066859057, guid: 1a2b6faaca96b144c9f1e527bae249d1, type: 3}
       propertyPath: GroundLayer.m_Bits
@@ -362968,6 +362972,10 @@ PrefabInstance:
     - target: {fileID: 4092552228676311875, guid: de6744dd40ef8944bb0cc0175c42f8ef, type: 3}
       propertyPath: m_Offset.y
       value: -18.001982
+      objectReference: {fileID: 0}
+    - target: {fileID: 5321109612616729276, guid: de6744dd40ef8944bb0cc0175c42f8ef, type: 3}
+      propertyPath: speed
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 6324671343649773974, guid: de6744dd40ef8944bb0cc0175c42f8ef, type: 3}
       propertyPath: m_LocalPosition.x
