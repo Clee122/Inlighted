@@ -4,11 +4,14 @@ using System.Collections;
 public class LightBurstController : MonoBehaviour
 {
     [Header("Burst Settings")]
-    [SerializeField] private float burstDuration = 2f;
 
-    // The gameplay radius expands separately from the total Burst duration so
-    // the hitbox can match the visible VFX even if the particles remain active
-    // after they have already reached their maximum size.
+    // Cooldown timing is now separate from how long the Burst itself is active.
+    // The Burst only remains active while expanding, while darkness affected by
+    // the cast will later manage its own lingering and reform behaviour.
+    [SerializeField] private float burstCooldownDuration = 2f;
+
+    // The gameplay radius expands separately from the cooldown so the hitbox can
+    // continue matching the visible VFX without forcing Burst to linger at full size.
     [SerializeField] private float burstExpansionDuration = 1f;
 
     // The Burst begins close to the player instead of immediately affecting the
@@ -39,20 +42,8 @@ public class LightBurstController : MonoBehaviour
     [SerializeField] private GameObject burstVisual;
 
     // The wall-aware radial mesh is controlled separately from the original
-    // Burst VFX so it can be enabled only while the ability is active.
+    // Burst VFX so it can be enabled only while the ability is actively expanding.
     [SerializeField] private GameObject burstWallVisual;
-
-    [Header("Burst Expiry Warning")]
-
-    // The Burst begins blinking shortly before its normal duration ends.
-    // Only the renderers are hidden so gameplay remains fully active during
-    // the warning and the Burst can still end through its existing timer.
-    [SerializeField] private float flickerWarningDuration = 0.5f;
-
-    // This controls how quickly the Burst alternates between visible and hidden.
-    // Keeping it separate from the Burst duration makes the warning easy to tune
-    // or remove later if the Burst ability is redesigned.
-    [SerializeField] private float flickerInterval = 0.1f;
 
     [Header("Reveal Mask")]
     [SerializeField] private GameObject revealMask;
@@ -83,19 +74,9 @@ public class LightBurstController : MonoBehaviour
     private PlayerLightResource playerLightResource;
     private PlayerLightChannel playerLightChannel;
 
-    // Burst asks the shared animation controller to play CatMoth's ability
-    // reaction only after the ability has genuinely activated.
-    private PlayerAnimationController playerAnimationController;
-
     // Existing Burst effects are allowed to continue through a dash, but this
     // reference temporarily blocks beginning a new Burst during the dash itself.
     private PlayerDash playerDash;
-
-    // Renderers are cached so the expiry warning can hide only the visible
-    // parts of the Burst. The GameObjects stay active, which avoids restarting
-    // particle systems or interfering with gameplay while the warning blinks.
-    private Renderer[] burstVisualRenderers;
-    private Renderer[] burstWallVisualRenderers;
 
     private void Awake()
     {
@@ -114,11 +95,6 @@ public class LightBurstController : MonoBehaviour
         playerLightChannel =
             GetComponent<PlayerLightChannel>();
 
-        // The animation controller remains responsible for Animator triggers so
-        // the ability script does not need to know how CatMoth's state machine is built.
-        playerAnimationController =
-            GetComponent<PlayerAnimationController>();
-
         // New Burst activation during dash remains disabled for this prototype.
         // This does not affect a Burst that was already active before dashing.
         playerDash =
@@ -131,25 +107,6 @@ public class LightBurstController : MonoBehaviour
                 gameObject.name +
                 ". Light Burst will not activate until the component is added."
             );
-        }
-
-        // The expiry warning controls renderer visibility rather than repeatedly
-        // enabling and disabling the Burst objects. This allows particle systems
-        // and other visual behaviour to continue running normally while hidden.
-        if (burstVisual != null)
-        {
-            burstVisualRenderers =
-                burstVisual.GetComponentsInChildren<Renderer>(
-                    true
-                );
-        }
-
-        if (burstWallVisual != null)
-        {
-            burstWallVisualRenderers =
-                burstWallVisual.GetComponentsInChildren<Renderer>(
-                    true
-                );
         }
 
         // Burst visuals begin disabled because they should appear only during
@@ -182,7 +139,7 @@ public class LightBurstController : MonoBehaviour
     private void Update()
     {
         // Debug lines are drawn continuously during Play Mode while the Burst is
-        // active so the expanding gameplay radius is easier to compare with VFX.
+        // actively expanding so the gameplay radius is easier to compare with VFX.
         if (
             showBurstDebug &&
             isBurstActive
@@ -289,20 +246,6 @@ public class LightBurstController : MonoBehaviour
             return;
         }
 
-        // The CatMoth animation starts only after every activation check has
-        // succeeded and light has actually been spent. Movement remains untouched
-        // so CatMoth can continue running while performing the Burst animation.
-        if (playerAnimationController != null)
-        {
-            playerAnimationController.PlayLightBurstAnimation();
-        }
-        else
-        {
-            Debug.LogWarning(
-                "Light Burst activated, but PlayerAnimationController was not found so the CatMoth Burst animation could not play."
-            );
-        }
-
         // Burst audio is triggered only after every gameplay requirement has
         // succeeded and the light cost has been paid. This prevents blocked
         // Burst attempts from producing misleading activation audio.
@@ -351,31 +294,26 @@ public class LightBurstController : MonoBehaviour
     {
         isBurstActive = true;
 
-        // Every Burst begins from the small inner radius so gameplay starts close
-        // to the player and expands outward alongside the visible VFX.
+        // Every Burst still begins close to the player and expands outward.
+        // The radius is now updated every rendered frame so the visual cut-out
+        // grows smoothly instead of stepping forward at the physics-check interval.
         currentBurstRadius =
             startingBurstRadius;
-
-        // Renderer visibility is restored before every new Burst so a previous
-        // activation cannot leave the next Burst hidden after ending mid-flicker.
-        SetBurstRenderersVisible(
-            true
-        );
 
         if (burstVisual != null)
         {
             burstVisual.SetActive(true);
         }
 
-        // The radial mesh becomes visible at the same moment as the gameplay
-        // Burst so its wall-aware shape can expand alongside the ability.
+        // The wall-aware radial mesh remains visible during the expanding cast so
+        // the player can still read how Burst interacts with nearby level geometry.
         if (burstWallVisual != null)
         {
             burstWallVisual.SetActive(true);
         }
 
-        // The reveal mask is enabled for the same period as the Burst so the
-        // hidden-space effect remains synchronised with the visible ability.
+        // The reveal mask follows only the live Burst expansion for now.
+        // Affected puzzle objects will later manage their own lingering state.
         TurnMaskOn();
 
         Debug.Log(
@@ -383,17 +321,21 @@ public class LightBurstController : MonoBehaviour
         );
 
         float timer = 0f;
+
+        // Darkness and platform overlap checks do not need to happen every rendered
+        // frame. Keeping them on a short interval avoids unnecessary physics queries
+        // while allowing the visible Burst radius itself to update smoothly.
         float dispelCheckInterval = 0.05f;
+        float dispelCheckTimer = 0f;
 
-        // Flicker timing remains local to this Burst activation so the warning
-        // can be removed later without changing the ability's core state.
-        float flickerTimer = 0f;
-        bool visualsVisible = true;
-
-        while (timer < burstDuration)
+        while (timer < burstExpansionDuration)
         {
-            // Expansion uses its own timing value because the VFX can reach full
-            // size before the overall Burst active period has finished.
+            timer +=
+                Time.deltaTime;
+
+            dispelCheckTimer +=
+                Time.deltaTime;
+
             float normalisedExpansionTime =
                 burstExpansionDuration > 0f
                     ? Mathf.Clamp01(
@@ -401,8 +343,8 @@ public class LightBurstController : MonoBehaviour
                     )
                     : 1f;
 
-            // The AnimationCurve shapes how quickly the radius grows so the
-            // gameplay timing can follow the visible Burst more closely.
+            // The curve still controls the shape of the expansion, but evaluating it
+            // every frame produces continuous motion rather than visible radius jumps.
             float expansionAmount =
                 Mathf.Clamp01(
                     burstExpansionCurve.Evaluate(
@@ -417,70 +359,35 @@ public class LightBurstController : MonoBehaviour
                     expansionAmount
                 );
 
-            DispelDarknessInRadius();
-            CheckLightPlatformInBurst();
-
-            // This temporary log helps verify the radius while testing.
-            Debug.Log(
-                "Light Burst expansion: " +
-                (normalisedExpansionTime * 100f).ToString("0") +
-                "% | Radius: " +
-                currentBurstRadius.ToString("0.00")
-            );
-
-            float remainingBurstTime =
-                burstDuration -
-                timer;
-
-            // Only the visible Burst begins flickering near expiry. Darkness
-            // dispelling, platform activation, the reveal mask and Burst state
-            // continue normally until the original duration has fully elapsed.
             if (
-                remainingBurstTime <=
-                flickerWarningDuration
+                dispelCheckTimer >=
+                dispelCheckInterval
             )
             {
-                flickerTimer +=
-                    dispelCheckInterval;
+                DispelDarknessInRadius();
+                CheckLightPlatformInBurst();
 
-                if (
-                    flickerTimer >=
-                    flickerInterval
-                )
-                {
-                    visualsVisible =
-                        !visualsVisible;
-
-                    SetBurstRenderersVisible(
-                        visualsVisible
-                    );
-
-                    flickerTimer = 0f;
-                }
+                dispelCheckTimer = 0f;
             }
 
-            timer +=
-                dispelCheckInterval;
-
-            yield return new WaitForSeconds(
-                dispelCheckInterval
-            );
+            // Yielding for one frame lets the radius respond at the same frequency
+            // as rendering, which makes the expanding cut-out appear much smoother.
+            yield return null;
         }
 
-        // The final check guarantees the gameplay Burst reaches the full range
-        // even if timing differences prevent the loop landing exactly on 100%.
+        // Force the exact maximum radius at the end so floating-point timing cannot
+        // leave the Burst slightly smaller than its configured final size.
         currentBurstRadius =
             burstDispelRadius;
 
         DispelDarknessInRadius();
         CheckLightPlatformInBurst();
 
-        // Renderer visibility is restored before the Burst objects are disabled
-        // so the next activation always begins fully visible.
-        SetBurstRenderersVisible(
-            true
-        );
-
+        /*
+         * Burst finishes once the smooth expansion reaches maximum size.
+         * Darkness affected by the cast will later preserve the final opening
+         * independently during its hold and reform behaviour.
+         */
         isBurstActive = false;
 
         if (burstVisual != null)
@@ -488,15 +395,11 @@ public class LightBurstController : MonoBehaviour
             burstVisual.SetActive(false);
         }
 
-        // The wall-aware visual is hidden when Burst ends so its clipped ring
-        // cannot remain visible after gameplay detection has stopped.
         if (burstWallVisual != null)
         {
             burstWallVisual.SetActive(false);
         }
 
-        // The mask must be disabled when Burst ends so hidden areas do not remain
-        // revealed after the ability's active period.
         TurnMaskOff();
 
         currentBurstRadius =
@@ -505,46 +408,8 @@ public class LightBurstController : MonoBehaviour
         burstCoroutine = null;
 
         Debug.Log(
-            "Light burst ended."
+            "Light burst expansion completed."
         );
-    }
-
-    private void SetBurstRenderersVisible(
-        bool shouldBeVisible
-    )
-    {
-        // Renderer.enabled affects only whether the Burst can be seen. Keeping
-        // the GameObjects active allows their particle simulation and gameplay
-        // behaviour to continue uninterrupted throughout the warning.
-        if (burstVisualRenderers != null)
-        {
-            foreach (
-                Renderer burstRenderer
-                in burstVisualRenderers
-            )
-            {
-                if (burstRenderer != null)
-                {
-                    burstRenderer.enabled =
-                        shouldBeVisible;
-                }
-            }
-        }
-
-        if (burstWallVisualRenderers != null)
-        {
-            foreach (
-                Renderer burstRenderer
-                in burstWallVisualRenderers
-            )
-            {
-                if (burstRenderer != null)
-                {
-                    burstRenderer.enabled =
-                        shouldBeVisible;
-                }
-            }
-        }
     }
 
     private void DispelDarknessInRadius()
@@ -592,8 +457,8 @@ public class LightBurstController : MonoBehaviour
 
     private IEnumerator CooldownRoutine()
     {
-        // The cooldown begins with activation so Burst cannot be restarted while
-        // its current active period is still running.
+        // Cooldown is independent from Burst expansion so shortening the actual
+        // cast does not accidentally allow the player to activate Burst more often.
         isOnCooldown = true;
 
         Debug.Log(
@@ -601,7 +466,7 @@ public class LightBurstController : MonoBehaviour
         );
 
         yield return new WaitForSeconds(
-            burstDuration
+            burstCooldownDuration
         );
 
         isOnCooldown = false;
