@@ -243,7 +243,7 @@ public class LightBeamController : MonoBehaviour
                 .wasPressedThisFrame
             )
         {
-            keyboardActivatedBeam = true;
+            //keyboardActivatedBeam = true;
             ConfirmFireBeam();
         }
         else if (
@@ -252,7 +252,7 @@ public class LightBeamController : MonoBehaviour
                 .wasPressedThisFrame
             )
         {
-            keyboardActivatedBeam = false;
+            //keyboardActivatedBeam = false;
             ConfirmFireBeam();
         }
         //can put right trigger here for controller
