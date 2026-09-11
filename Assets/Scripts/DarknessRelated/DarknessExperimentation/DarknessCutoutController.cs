@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class DarknessCombinedCutoutUVTest : MonoBehaviour
+public class DarknessCutoutController : MonoBehaviour
 {
     private enum CutoutType
     {
@@ -70,12 +70,7 @@ public class DarknessCombinedCutoutUVTest : MonoBehaviour
 
     [Header("Beam Settings")]
 
-    // The stored Beam length matches the gameplay range so the generated mask
-    // does not create safe space beyond where the actual ability travelled.
-    [SerializeField]
-    private float beamWorldLength = 6f;
-
-    // This controls the maximum vertical distance removed around the Beam line.
+    // This controls the maximum distance removed around the Beam line.
     [SerializeField]
     private float beamMaximumPushDistance = 1.5f;
 
@@ -97,15 +92,15 @@ public class DarknessCombinedCutoutUVTest : MonoBehaviour
     [Header("Dynamic Mask")]
 
     /*
-     * The mask resolution controls how accurately the cut-out shape is sampled.
-     * A moderate resolution is kept because edge smoothing now handles aliasing
-     * without requiring an excessively expensive high-resolution texture.
+     * The lower CPU-mask resolution deliberately trades some edge precision for
+     * substantially lower processing cost. Visual styling can later disguise
+     * the remaining jaggedness around the cut-out boundaries.
      */
     [SerializeField]
-    private int maskWidth = 512;
+    private int maskWidth = 256;
 
     [SerializeField]
-    private int maskHeight = 256;
+    private int maskHeight = 128;
 
     /*
      * Softness is measured in world units around the cut-out boundary.
@@ -156,16 +151,18 @@ public class DarknessCombinedCutoutUVTest : MonoBehaviour
 
         if (darknessRenderer == null)
         {
+            // The message uses the current controller name so missing renderer
+            // problems are easier to identify after the script rename.
             Debug.LogError(
-                "DarknessCombinedCutoutUVTest could not find a SpriteRenderer."
+                "DarknessCutoutController could not find a SpriteRenderer."
             );
 
             enabled = false;
             return;
         }
 
-        // A local material instance prevents this experimental darkness object
-        // from changing every renderer that uses the same shared material asset.
+        // A local material instance prevents this darkness object from changing
+        // every renderer that uses the same shared material asset.
         darknessMaterial =
             darknessRenderer.material;
 
@@ -392,8 +389,13 @@ public class DarknessCombinedCutoutUVTest : MonoBehaviour
                     maximumBeamPushDistance =
                         beamMaximumPushDistance,
 
+                    /*
+                     * The exact locked Beam distance is shared from the Beam
+                     * controller so the darkness ends at the same wall or Bloom
+                     * Receiver instead of using its own separate fixed range.
+                     */
                     beamLength =
-                        beamWorldLength,
+                        lightBeamController.GetLockedBeamLength(),
 
                     holdDuration =
                         beamHoldDuration,
@@ -517,8 +519,8 @@ public class DarknessCombinedCutoutUVTest : MonoBehaviour
             }
             else
             {
-                // Each Beam closes by reducing its own vertical opening until the
-                // corridor has completely reformed.
+                // Each Beam closes by reducing its own opening until the corridor
+                // has completely reformed.
                 cutout.currentBeamPushDistance =
                     Mathf.Lerp(
                         cutout.maximumBeamPushDistance,
@@ -731,9 +733,9 @@ public class DarknessCombinedCutoutUVTest : MonoBehaviour
             cutout.originWorld;
 
         /*
-         * Projection onto the Beam direction gives a stable distance along the
-         * fired ray for every angle. This replaces slope-based calculations that
-         * could become unstable and produce large visual jumps for steep shots.
+         * Projection determines how far this pixel sits along the fired Beam.
+         * This remains stable for horizontal, diagonal and vertical shots and
+         * keeps the cut-out limited to the Beam's wall-controlled length.
          */
         float distanceAlongBeam =
             Vector2.Dot(
@@ -742,28 +744,56 @@ public class DarknessCombinedCutoutUVTest : MonoBehaviour
             );
 
         /*
-         * Reconstructing the closest point on the Beam line avoids dividing by
-         * direction.x. This keeps the darkness opening stable for shallow,
-         * diagonal and near-vertical shots.
+         * The 2D cross-product magnitude gives the perpendicular relationship
+         * between the pixel and the Beam line without using a slope equation.
+         * This avoids the instability that appears as the Beam approaches vertical.
          */
-        Vector2 closestPointOnBeam =
-            cutout.originWorld +
-            beamDirection *
-            distanceAlongBeam;
-
-        /*
-         * The selected darkness behaviour splits vertically in world space.
-         * Only vertical distance from the Beam line controls how far the darkness
-         * is cleared above and below the fired Beam.
-         */
-        float verticalDistanceFromBeam =
+        float crossDistance =
             Mathf.Abs(
-                worldPosition.y -
-                closestPointOnBeam.y
+                fromBeamOrigin.x *
+                beamDirection.y -
+                fromBeamOrigin.y *
+                beamDirection.x
             );
 
+        float distanceFromBeam;
+
+        if (
+            Mathf.Abs(
+                beamDirection.x
+            ) > 0.1f
+        )
+        {
+            /*
+             * Horizontal and diagonal shots preserve the selected behaviour where
+             * darkness separates vertically above and below the Beam line.
+             */
+            distanceFromBeam =
+                crossDistance /
+                Mathf.Abs(
+                    beamDirection.x
+                );
+        }
+        else
+        {
+            /*
+             * A near-vertical Beam cannot use vertical separation because every
+             * point along the line can otherwise appear to have zero vertical
+             * distance. In this case the darkness separates left and right,
+             * preventing the entire darkness surface from being cleared.
+             */
+            distanceFromBeam =
+                crossDistance /
+                Mathf.Max(
+                    Mathf.Abs(
+                        beamDirection.y
+                    ),
+                    0.0001f
+                );
+        }
+
         float widthSignedDistance =
-            verticalDistanceFromBeam -
+            distanceFromBeam -
             cutout.currentBeamPushDistance;
 
         float widthBoundaryMask =
@@ -772,8 +802,8 @@ public class DarknessCombinedCutoutUVTest : MonoBehaviour
             );
 
         /*
-         * Separate boundaries keep the cut-out in front of the firing point and
-         * prevent it from extending past the configured Beam range.
+         * These boundaries keep the opening between the firing point and the
+         * exact endpoint captured from the Beam controller.
          */
         float startBoundaryMask =
             ConvertSignedDistanceToMask(
@@ -786,10 +816,6 @@ public class DarknessCombinedCutoutUVTest : MonoBehaviour
                 cutout.beamLength
             );
 
-        /*
-         * A point is fully cleared only when it is within the vertical opening
-         * and also falls between the start and end of the Beam.
-         */
         return
             Mathf.Max(
                 widthBoundaryMask,
@@ -925,8 +951,8 @@ public class DarknessCombinedCutoutUVTest : MonoBehaviour
                 beamDirection
             );
 
-        // Darkness behind the firing point or beyond the Beam's configured range
-        // remains dangerous because the light never actually cleared that region.
+        // Gameplay safety uses the same wall-limited Beam endpoint as the visual
+        // mask so neither system continues beyond the physical shot.
         if (
             distanceAlongBeam < 0f ||
             distanceAlongBeam > cutout.beamLength
@@ -936,28 +962,52 @@ public class DarknessCombinedCutoutUVTest : MonoBehaviour
         }
 
         /*
-         * Gameplay reconstructs the same closest point on the Beam line used by
-         * the visual mask so safe space remains aligned with the visible opening.
+         * Gameplay uses the same direction-aware width calculation as the visual
+         * mask. Horizontal/diagonal shots keep vertical separation, while
+         * near-vertical shots use horizontal separation instead.
          */
-        Vector2 closestPointOnBeam =
-            cutout.originWorld +
-            beamDirection *
-            distanceAlongBeam;
-
-        float verticalDistanceFromBeam =
+        float crossDistance =
             Mathf.Abs(
-                worldPosition.y -
-                closestPointOnBeam.y
+                fromBeamOrigin.x *
+                beamDirection.y -
+                fromBeamOrigin.y *
+                beamDirection.x
             );
 
+        float distanceFromBeam;
+
+        if (
+            Mathf.Abs(
+                beamDirection.x
+            ) > 0.1f
+        )
+        {
+            distanceFromBeam =
+                crossDistance /
+                Mathf.Abs(
+                    beamDirection.x
+                );
+        }
+        else
+        {
+            distanceFromBeam =
+                crossDistance /
+                Mathf.Max(
+                    Mathf.Abs(
+                        beamDirection.y
+                    ),
+                    0.0001f
+                );
+        }
+
         return
-            verticalDistanceFromBeam <=
+            distanceFromBeam <=
             cutout.currentBeamPushDistance;
     }
 
     private void OnDestroy()
     {
-        // The runtime-created texture is destroyed with the experiment object so
+        // The runtime-created texture is destroyed with the darkness object so
         // repeated Play Mode sessions do not leave unnecessary texture instances.
         if (cutoutMaskTexture != null)
         {

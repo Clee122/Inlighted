@@ -208,7 +208,7 @@ public class DarknessDynamicRenderTextureTest : MonoBehaviour
         }
 
         // A local darkness material instance prevents this test from changing
-        // other renderers that happen to use the same material asset.
+        // other renderers that happen to use the same shared material asset.
         darknessMaterial =
             darknessRenderer.material;
 
@@ -332,9 +332,8 @@ public class DarknessDynamicRenderTextureTest : MonoBehaviour
         )
         {
             /*
-             * During the live cast the newest Burst still follows the player's
-             * position and expanding gameplay radius. Once the cast ends, these
-             * values become fixed and stop following later movement.
+             * During the live cast the newest Burst follows the current ability
+             * radius. Once the cast ends, this cut-out becomes independent.
              */
             liveBurstCutout.originWorld =
                 lightBurstController.transform.position;
@@ -621,49 +620,42 @@ public class DarknessDynamicRenderTextureTest : MonoBehaviour
         CutoutData cutout
     )
     {
-        Bounds spriteBounds =
-            darknessRenderer.sprite.bounds;
+        /*
+         * Renderer.bounds provides the actual world-space rectangle occupied by
+         * the visible darkness. Using that rectangle directly keeps mask UVs
+         * aligned with what the player sees.
+         */
+        Bounds darknessWorldBounds =
+            darknessRenderer.bounds;
 
-        Vector3 originLocal =
-            darknessRenderer.transform.InverseTransformPoint(
-                cutout.originWorld
-            );
+        float darknessWorldWidth =
+            darknessWorldBounds.size.x;
 
-        // Manual conversion deliberately allows values outside 0-1 because a
-        // light cast outside the darkness should remain outside rather than snap
-        // onto its nearest texture edge.
+        float darknessWorldHeight =
+            darknessWorldBounds.size.y;
+
+        /*
+         * Convert the light interaction directly into the 0-1 UV range of the
+         * visible darkness. Values outside the darkness remain outside 0-1 rather
+         * than being clamped onto the edge.
+         */
         float originUVX =
-            spriteBounds.size.x > 0f
+            darknessWorldWidth > 0f
                 ? (
-                    originLocal.x -
-                    spriteBounds.min.x
+                    cutout.originWorld.x -
+                    darknessWorldBounds.min.x
                 ) /
-                spriteBounds.size.x
+                darknessWorldWidth
                 : 0f;
 
         float originUVY =
-            spriteBounds.size.y > 0f
+            darknessWorldHeight > 0f
                 ? (
-                    originLocal.y -
-                    spriteBounds.min.y
+                    cutout.originWorld.y -
+                    darknessWorldBounds.min.y
                 ) /
-                spriteBounds.size.y
+                darknessWorldHeight
                 : 0f;
-
-        Vector3 lossyScale =
-            darknessRenderer.transform.lossyScale;
-
-        float darknessWorldWidth =
-            spriteBounds.size.x *
-            Mathf.Abs(
-                lossyScale.x
-            );
-
-        float darknessWorldHeight =
-            spriteBounds.size.y *
-            Mathf.Abs(
-                lossyScale.y
-            );
 
         cutoutStampMaterial.SetVector(
             OriginUVID,
@@ -683,8 +675,9 @@ public class DarknessDynamicRenderTextureTest : MonoBehaviour
         if (cutout.type == CutoutType.Burst)
         {
             /*
-             * Burst uses separate UV radii because the darkness SpriteRenderer
-             * can be stretched horizontally and vertically by different amounts.
+             * The same world-space Burst radius becomes different X and Y UV
+             * values when the darkness rectangle is not square. This preserves
+             * a circular world-space opening.
              */
             float radiusUVX =
                 darknessWorldWidth > 0f
@@ -723,8 +716,9 @@ public class DarknessDynamicRenderTextureTest : MonoBehaviour
         }
 
         /*
-         * Beam direction is translated into the UV proportions of the darkness
-         * surface so a rectangular darkness visual does not distort the shot.
+         * Beam direction is converted into the same UV proportions as the
+         * darkness bounds so the mask does not distort when the visual rectangle
+         * is much wider than it is tall.
          */
         Vector2 directionUV =
             new Vector2(
@@ -817,8 +811,8 @@ public class DarknessDynamicRenderTextureTest : MonoBehaviour
     {
         /*
          * Gameplay still uses the same mathematical cut-out data that creates
-         * the GPU mask. This keeps traversable safe space aligned with what the
-         * player sees without reading pixels back from the GPU.
+         * the GPU mask. This keeps safe space aligned with what the player sees
+         * without requiring expensive GPU texture readback.
          */
         foreach (CutoutData cutout in activeCutouts)
         {
@@ -894,8 +888,7 @@ public class DarknessDynamicRenderTextureTest : MonoBehaviour
 
         /*
          * Projection gives a stable point on the Beam line at every angle and
-         * avoids the slope calculations that caused unstable steep Beam shapes
-         * during the earlier CPU-mask experiment.
+         * avoids slope calculations that become unstable for steep directions.
          */
         Vector2 closestPointOnBeam =
             cutout.originWorld +
@@ -916,12 +909,13 @@ public class DarknessDynamicRenderTextureTest : MonoBehaviour
     private void OnDestroy()
     {
         /*
-         * Only the runtime working textures are destroyed here. The assigned
-         * RT_DarknessCutoutMaskTest asset belongs to the project and must remain.
+         * Only the runtime-created working textures are destroyed here. The
+         * project RenderTexture asset itself must remain untouched.
          */
         if (workingMaskA != null)
         {
             workingMaskA.Release();
+
             Destroy(
                 workingMaskA
             );
@@ -930,6 +924,7 @@ public class DarknessDynamicRenderTextureTest : MonoBehaviour
         if (workingMaskB != null)
         {
             workingMaskB.Release();
+
             Destroy(
                 workingMaskB
             );

@@ -2,17 +2,18 @@ using UnityEngine;
 
 public class DarknessSafeAreaExperimentController : MonoBehaviour
 {
-    [Header("Darkness Cutout Reference")]
-
-    // The combined darkness controller owns both visual deformation and gameplay
-    // safety so the player is protected by exactly the openings shown on screen.
     [SerializeField]
-    private DarknessCombinedCutoutUVTest darknessCutout;
+    private DarknessCutoutController darknessCutout;
 
     public bool IsPositionSafe(
         Vector2 worldPosition
     )
     {
+        /*
+         * Gameplay safety asks the same controller that generates the visible
+         * Burst and Beam openings. This keeps damage behaviour aligned with the
+         * actual darkness cut-outs instead of maintaining a second calculation.
+         */
         if (darknessCutout == null)
         {
             return false;
