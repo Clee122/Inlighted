@@ -76,8 +76,9 @@ public class LightBurstController : MonoBehaviour
     [Header("Burst Visual")]
     [SerializeField] private GameObject burstVisual;
 
-    // This visual exists only during the short expanding cast. The lingering
-    // environmental effect is represented by the darkness system instead.
+    // This generated radial visual remains active only during the short cast.
+    // It deliberately ignores level geometry so Burst can visibly pass through
+    // normal walls, floors and platforms.
     [SerializeField] private GameObject burstWallVisual;
 
     [Header("Reveal Mask")]
@@ -87,10 +88,6 @@ public class LightBurstController : MonoBehaviour
     [SerializeField] private float burstDispelRadius = 3f;
     [SerializeField] private LayerMask darknessLayer;
     [SerializeField] private LayerMask GroundLayer;
-
-    // Gameplay Burst interaction still respects walls even though the Burst VFX
-    // itself may visually draw across normal level tiles.
-    [SerializeField] private LayerMask wallLayer;
 
     [Header("Debug")]
     [SerializeField] private bool showBurstDebug = true;
@@ -622,6 +619,11 @@ public class LightBurstController : MonoBehaviour
 
     private void DispelDarknessInRadius()
     {
+        /*
+         * Burst now behaves as a true radial ability. Every darkness object
+         * inside the current radius can be affected regardless of walls,
+         * floors or platforms between the player and the darkness.
+         */
         Collider2D[] hits =
             Physics2D.OverlapCircleAll(
                 transform.position,
@@ -630,21 +632,9 @@ public class LightBurstController : MonoBehaviour
             );
 
         int dispelledCount = 0;
-        int blockedCount = 0;
 
         foreach (Collider2D hit in hits)
         {
-            /*
-             * Gameplay interaction still respects walls even though the Burst
-             * visual itself can be rendered over normal tiles.
-             */
-            if (!HasClearBurstPath(hit))
-            {
-                blockedCount++;
-
-                continue;
-            }
-
             DarknessZone darknessZone =
                 hit.GetComponentInParent<DarknessZone>();
 
@@ -655,16 +645,17 @@ public class LightBurstController : MonoBehaviour
             }
         }
 
+        // This temporary log now reports only successful radial interactions
+        // because Burst no longer performs wall-obstruction checks.
         Debug.Log(
             "Light Burst darkness check. Dispelled: " +
-            dispelledCount +
-            ", blocked by walls: " +
-            blockedCount
+            dispelledCount
         );
     }
 
     private IEnumerator CooldownRoutine()
     {
+        // Cooldown remains independent from the visual and lingering durations.
         isOnCooldown = true;
 
         Debug.Log(
@@ -685,6 +676,7 @@ public class LightBurstController : MonoBehaviour
 
     private void OnDrawGizmosSelected()
     {
+        // The yellow circle represents the complete radial area Burst can affect.
         Gizmos.color =
             Color.yellow;
 
@@ -693,6 +685,7 @@ public class LightBurstController : MonoBehaviour
             burstDispelRadius
         );
 
+        // The cyan circle represents the currently expanding gameplay radius.
         Gizmos.color =
             Color.cyan;
 
@@ -786,6 +779,11 @@ public class LightBurstController : MonoBehaviour
 
     private void CheckLightPlatformInBurst()
     {
+        /*
+         * Burst platforms now respond solely to radial distance. Walls and
+         * ordinary platforms no longer block the activation, allowing hidden
+         * platforms on the opposite side of geometry to be revealed.
+         */
         Collider2D[] hits =
             Physics2D.OverlapCircleAll(
                 transform.position,
@@ -795,13 +793,6 @@ public class LightBurstController : MonoBehaviour
 
         foreach (Collider2D hit in hits)
         {
-            // Platform activation remains blocked by normal walls even though the
-            // Burst VFX itself can visually overlap those tiles.
-            if (!HasClearBurstPath(hit))
-            {
-                continue;
-            }
-
             appear_and_disappeear_by_burst lightPlatform =
                 hit.GetComponentInParent<appear_and_disappeear_by_burst>();
 
@@ -810,45 +801,5 @@ public class LightBurstController : MonoBehaviour
                 lightPlatform.ActivatePlatform();
             }
         }
-    }
-
-    private bool HasClearBurstPath(
-        Collider2D targetCollider
-    )
-    {
-        if (targetCollider == null)
-        {
-            return false;
-        }
-
-        Vector2 burstOrigin =
-            transform.position;
-
-        Vector2 targetPoint =
-            targetCollider.ClosestPoint(
-                burstOrigin
-            );
-
-        Vector2 direction =
-            targetPoint -
-            burstOrigin;
-
-        float distance =
-            direction.magnitude;
-
-        if (distance <= 0.001f)
-        {
-            return true;
-        }
-
-        RaycastHit2D wallHit =
-            Physics2D.Raycast(
-                burstOrigin,
-                direction.normalized,
-                distance,
-                wallLayer
-            );
-
-        return wallHit.collider == null;
     }
 }
