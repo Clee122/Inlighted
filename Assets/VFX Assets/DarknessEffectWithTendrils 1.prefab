@@ -207,8 +207,8 @@ ParticleSystem:
     startLifetime:
       serializedVersion: 2
       minMaxState: 3
-      scalar: 1.59
-      minScalar: 0.84
+      scalar: 1.5
+      minScalar: 0.5
       maxCurve:
         serializedVersion: 2
         m_Curve:
@@ -4939,7 +4939,7 @@ GameObject:
   - component: {fileID: 1872024067940089457}
   - component: {fileID: 7205685288323664794}
   m_Layer: 0
-  m_Name: DarknessEffectWithTendrils
+  m_Name: DarknessEffectWithTendrils 1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
