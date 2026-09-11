@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3657076962750213189}
   m_Layer: 0
-  m_Name: LightBeamUpdatedWithParticles
+  m_Name: LightBeamReflectorUpdated
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -257,7 +257,7 @@ ParticleSystem:
       serializedVersion: 2
       minMaxState: 0
       minColor: {r: 1, g: 1, b: 1, a: 1}
-      maxColor: {r: 1, g: 0.9728898, b: 0.9264151, a: 1}
+      maxColor: {r: 1, g: 0.77269113, b: 0.3830188, a: 1}
       maxGradient:
         serializedVersion: 2
         key0: {r: 1, g: 1, b: 1, a: 1}
@@ -4928,7 +4928,7 @@ LineRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 168f7902e0a1002458ccd285ae6c801b, type: 2}
+  - {fileID: 2100000, guid: b3c246b0ab1790642ad2bb84e9fc2f4b, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -4961,8 +4961,8 @@ LineRenderer:
       serializedVersion: 2
       m_Curve:
       - serializedVersion: 3
-        time: 0
-        value: 1
+        time: 0.03312683
+        value: 0.7090912
         inSlope: 0
         outSlope: 0
         tangentMode: 0
@@ -4974,8 +4974,8 @@ LineRenderer:
       m_RotationOrder: 4
     colorGradient:
       serializedVersion: 2
-      key0: {r: 1, g: 0.9768733, b: 0.9264151, a: 0}
-      key1: {r: 1, g: 0.99129874, b: 0.9641509, a: 0.622406}
+      key0: {r: 0.8415094, g: 0.57457906, b: 0, a: 0}
+      key1: {r: 1, g: 0.8293501, b: 0.2320754, a: 0.622406}
       key2: {r: 0, g: 0, b: 0, a: 1}
       key3: {r: 0, g: 0, b: 0, a: 0.58431375}
       key4: {r: 0, g: 0, b: 0, a: 0}
@@ -5235,7 +5235,7 @@ ParticleSystem:
       serializedVersion: 2
       minMaxState: 0
       minColor: {r: 1, g: 1, b: 1, a: 1}
-      maxColor: {r: 0.9924528, g: 0.9786316, b: 0.9344037, a: 1}
+      maxColor: {r: 1, g: 0.7574703, b: 0.33773577, a: 1}
       maxGradient:
         serializedVersion: 2
         key0: {r: 1, g: 1, b: 1, a: 1}
