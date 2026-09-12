@@ -4,16 +4,17 @@ public class cameratrigger : MonoBehaviour
 {
     public cameramanage Cameramanager;
     public Transform cameraspace;
-
+    public float maxOrtho;
      private void OnTriggerEnter2D(Collider2D collision)
     {
         Debug.Log("Something entered trigger: " + collision.name);
 
         if (collision.CompareTag("Player"))
         {
-            Debug.Log("PLAYER TRIGGERED CAMERA");
+            Debug.Log("Player trigger");
 
             Cameramanager.Movetocameraspace(cameraspace);
+            Cameramanager.ZoomOut(maxOrtho);
         }
     }
 
@@ -23,7 +24,7 @@ public class cameratrigger : MonoBehaviour
 
         if (collision.CompareTag("Player"))
         {
-            Debug.Log("PLAYER LEFT CAMERA TRIGGER");
+            Debug.Log("Player lift trigger");
 
             Cameramanager.Movecamback();
         }
