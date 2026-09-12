@@ -59,7 +59,7 @@ public class DarknessCutoutController : MonoBehaviour
     /*
      * ParticleSystemRenderer is a different renderer type from SpriteRenderer,
      * so the tendril particle system needs its own array even though it receives
-     * the same cut-out texture and UV-remapping information.
+     * the same cut-out texture.
      */
     [SerializeField]
     private ParticleSystemRenderer[] reactiveParticleRenderers;
@@ -128,9 +128,9 @@ public class DarknessCutoutController : MonoBehaviour
         new List<SpriteRenderer>();
 
     /*
-     * Particle-system renderers also need independent runtime material instances.
-     * This allows the tendril effect to receive this darkness zone's cut-out
-     * without changing particle materials elsewhere in the project.
+     * Particle systems also need independent runtime material instances so their
+     * cut-out properties can be changed without modifying the original material
+     * asset elsewhere in the project.
      */
     private readonly List<Material> reactiveParticleMaterials =
         new List<Material>();
@@ -158,14 +158,27 @@ public class DarknessCutoutController : MonoBehaviour
         Shader.PropertyToID("_CutoutMask");
 
     /*
-     * These values remap each secondary VFX renderer's own 0-1 UV coordinates
-     * into the matching area of the main darkness cut-out texture.
+     * Sprite-based VFX still use their own UV remapping because a SpriteRenderer
+     * has one consistent 0-1 UV rectangle.
      */
     private static readonly int MaskUVScaleID =
         Shader.PropertyToID("_MaskUVScale");
 
     private static readonly int MaskUVOffsetID =
         Shader.PropertyToID("_MaskUVOffset");
+
+    /*
+     * Particle billboards cannot use their own UVs to locate one shared darkness
+     * mask because every particle starts again at 0-1 UV coordinates.
+     *
+     * Instead, these values tell the tendril shader where the main darkness
+     * rectangle appears in camera viewport space.
+     */
+    private static readonly int MaskScreenMinID =
+        Shader.PropertyToID("_MaskScreenMin");
+
+    private static readonly int MaskScreenSizeID =
+        Shader.PropertyToID("_MaskScreenSize");
 
     private void Awake()
     {
@@ -243,9 +256,8 @@ public class DarknessCutoutController : MonoBehaviour
         }
 
         /*
-         * Cache the ParticleSystemRenderer separately because Unity does not treat
-         * it as a SpriteRenderer. The tendril material still receives the same
-         * shader properties as the sprite-based darkness layers.
+         * Cache ParticleSystemRenderer materials separately because Particle
+         * System shaders require screen-space mapping rather than sprite UVs.
          */
         reactiveParticleMaterials.Clear();
         validReactiveParticleRenderers.Clear();
@@ -282,13 +294,13 @@ public class DarknessCutoutController : MonoBehaviour
                     runtimeMaterial.HasProperty(
                         CutoutMaskID
                     ) +
-                    " | Has _MaskUVScale: " +
+                    " | Has _MaskScreenMin: " +
                     runtimeMaterial.HasProperty(
-                        MaskUVScaleID
+                        MaskScreenMinID
                     ) +
-                    " | Has _MaskUVOffset: " +
+                    " | Has _MaskScreenSize: " +
                     runtimeMaterial.HasProperty(
-                        MaskUVOffsetID
+                        MaskScreenSizeID
                     )
                 );
             }
@@ -329,6 +341,13 @@ public class DarknessCutoutController : MonoBehaviour
         )
         {
             maskUpdateTimer = 0f;
+
+            /*
+             * Particle shaders need the darkness rectangle converted into
+             * viewport coordinates because individual particle UVs cannot
+             * represent one shared world-space cut-out.
+             */
+            UpdateParticleScreenMaskMapping();
 
             BuildDynamicMask();
         }
@@ -380,6 +399,12 @@ public class DarknessCutoutController : MonoBehaviour
         AssignMaskToSpriteVfx();
         AssignMaskToParticleVfx();
 
+        /*
+         * Calculate the first particle mapping immediately so the tendrils have
+         * valid screen-space coordinates before the first mask update occurs.
+         */
+        UpdateParticleScreenMaskMapping();
+
         BuildDynamicMask();
     }
 
@@ -410,11 +435,10 @@ public class DarknessCutoutController : MonoBehaviour
                 continue;
             }
 
-            AssignMaskToMaterial(
+            AssignMaskToSpriteMaterial(
                 reactiveMaterial,
                 reactiveRenderer.bounds,
-                reactiveRenderer.name,
-                "VFX DEBUG"
+                reactiveRenderer.name
             );
         }
     }
@@ -422,9 +446,9 @@ public class DarknessCutoutController : MonoBehaviour
     private void AssignMaskToParticleVfx()
     {
         /*
-         * Particle tendrils receive the same cut-out texture as the sprite layers.
-         * Their renderer bounds are used here so the particle material can sample
-         * the mask relative to the main darkness area.
+         * Particle materials receive the same cut-out texture as the sprites.
+         * Their screen-space alignment is handled separately because each
+         * particle billboard has its own independent UV coordinates.
          */
         for (
             int i = 0;
@@ -446,20 +470,54 @@ public class DarknessCutoutController : MonoBehaviour
                 continue;
             }
 
-            AssignMaskToMaterial(
-                reactiveMaterial,
-                reactiveRenderer.bounds,
-                reactiveRenderer.name,
-                "VFX PARTICLE DEBUG"
+            bool hasCutoutMask =
+                reactiveMaterial.HasProperty(
+                    CutoutMaskID
+                );
+
+            bool hasScreenMin =
+                reactiveMaterial.HasProperty(
+                    MaskScreenMinID
+                );
+
+            bool hasScreenSize =
+                reactiveMaterial.HasProperty(
+                    MaskScreenSizeID
+                );
+
+            Debug.Log(
+                "VFX PARTICLE DEBUG | " +
+                reactiveRenderer.name +
+                " | Has _CutoutMask: " +
+                hasCutoutMask +
+                " | Has _MaskScreenMin: " +
+                hasScreenMin +
+                " | Has _MaskScreenSize: " +
+                hasScreenSize
+            );
+
+            if (!hasCutoutMask)
+            {
+                Debug.LogWarning(
+                    "VFX PARTICLE DEBUG | " +
+                    reactiveRenderer.name +
+                    " cannot receive the cut-out because its shader does not expose _CutoutMask."
+                );
+
+                continue;
+            }
+
+            reactiveMaterial.SetTexture(
+                CutoutMaskID,
+                cutoutMaskTexture
             );
         }
     }
 
-    private void AssignMaskToMaterial(
+    private void AssignMaskToSpriteMaterial(
         Material reactiveMaterial,
         Bounds reactiveBounds,
-        string rendererName,
-        string debugPrefix
+        string rendererName
     )
     {
         bool hasCutoutMask =
@@ -478,8 +536,7 @@ public class DarknessCutoutController : MonoBehaviour
             );
 
         Debug.Log(
-            debugPrefix +
-            " | " +
+            "VFX DEBUG | " +
             rendererName +
             " | Has _CutoutMask: " +
             hasCutoutMask +
@@ -491,14 +548,13 @@ public class DarknessCutoutController : MonoBehaviour
 
         /*
          * A renderer whose shader does not expose _CutoutMask cannot react to
-         * Burst or Beam, so it is skipped rather than silently changing an
+         * Burst or Beam, so it is skipped rather than silently modifying an
          * unrelated shader property.
          */
         if (!hasCutoutMask)
         {
             Debug.LogWarning(
-                debugPrefix +
-                " | " +
+                "VFX DEBUG | " +
                 rendererName +
                 " cannot receive the cut-out because its shader does not expose _CutoutMask."
             );
@@ -514,10 +570,6 @@ public class DarknessCutoutController : MonoBehaviour
         Bounds mainBounds =
             darknessRenderer.bounds;
 
-        /*
-         * A tiny minimum prevents division by zero if the main darkness visual
-         * is ever temporarily scaled to zero on either axis.
-         */
         Vector2 mainSize =
             new Vector2(
                 Mathf.Max(
@@ -569,16 +621,105 @@ public class DarknessCutoutController : MonoBehaviour
                 maskUVOffset
             );
         }
+    }
 
-        Debug.Log(
-            debugPrefix +
-            " | Mask assigned to " +
-            rendererName +
-            " | UV Scale = " +
-            maskUVScale +
-            " | UV Offset = " +
-            maskUVOffset
-        );
+    private void UpdateParticleScreenMaskMapping()
+    {
+        /*
+         * Particle billboards each have their own 0-1 UV space. Using Camera
+         * viewport coordinates gives every particle and trail fragment one common
+         * coordinate system that matches the main darkness rectangle.
+         */
+        Camera activeCamera =
+            Camera.main;
+
+        if (
+            activeCamera == null ||
+            darknessRenderer == null
+        )
+        {
+            return;
+        }
+
+        Bounds darknessBounds =
+            darknessRenderer.bounds;
+
+        Vector3 viewportMin =
+            activeCamera.WorldToViewportPoint(
+                new Vector3(
+                    darknessBounds.min.x,
+                    darknessBounds.min.y,
+                    darknessBounds.center.z
+                )
+            );
+
+        Vector3 viewportMax =
+            activeCamera.WorldToViewportPoint(
+                new Vector3(
+                    darknessBounds.max.x,
+                    darknessBounds.max.y,
+                    darknessBounds.center.z
+                )
+            );
+
+        Vector2 screenMin =
+            new Vector2(
+                viewportMin.x,
+                viewportMin.y
+            );
+
+        /*
+         * The minimum size prevents division by zero if the darkness visual is
+         * temporarily scaled to an extremely small value.
+         */
+        Vector2 screenSize =
+            new Vector2(
+                Mathf.Max(
+                    viewportMax.x -
+                    viewportMin.x,
+                    0.0001f
+                ),
+                Mathf.Max(
+                    viewportMax.y -
+                    viewportMin.y,
+                    0.0001f
+                )
+            );
+
+        foreach (
+            Material particleMaterial
+            in reactiveParticleMaterials
+        )
+        {
+            if (particleMaterial == null)
+            {
+                continue;
+            }
+
+            if (
+                particleMaterial.HasProperty(
+                    MaskScreenMinID
+                )
+            )
+            {
+                particleMaterial.SetVector(
+                    MaskScreenMinID,
+                    screenMin
+                );
+            }
+
+            if (
+                particleMaterial.HasProperty(
+                    MaskScreenSizeID
+                )
+            )
+            {
+                particleMaterial.SetVector(
+                    MaskScreenSizeID,
+                    screenSize
+                );
+            }
+        }
     }
 
     private void DetectBeam()
@@ -623,10 +764,6 @@ public class DarknessCutoutController : MonoBehaviour
                     maximumBeamPushDistance =
                         beamMaximumPushDistance,
 
-                    /*
-                     * Darkness uses the exact endpoint captured by the Beam
-                     * controller so the opening ends at the same wall or receiver.
-                     */
                     beamLength =
                         lightBeamController.GetLockedBeamLength(),
 
@@ -690,10 +827,6 @@ public class DarknessCutoutController : MonoBehaviour
 
     private void UpdateBeamCutoutLifetimes()
     {
-        /*
-         * Beam remains managed locally until its lifetime is also moved into
-         * LightBeamController. Iterating backwards permits safe removal.
-         */
         for (
             int i = activeBeamCutouts.Count - 1;
             i >= 0;
@@ -744,8 +877,6 @@ public class DarknessCutoutController : MonoBehaviour
                     )
                     : 1f;
 
-            // Beam closes by reducing its corridor width until darkness has
-            // completely returned to the previously cleared space.
             cutout.currentBeamPushDistance =
                 Mathf.Lerp(
                     cutout.maximumBeamPushDistance,
@@ -867,10 +998,6 @@ public class DarknessCutoutController : MonoBehaviour
     {
         float darknessAmount = 1f;
 
-        /*
-         * Burst persistence comes directly from LightBurstController. Darkness
-         * only converts the ability-owned radius into the visual mask.
-         */
         if (lightBurstController != null)
         {
             int burstEffectCount =
@@ -914,8 +1041,6 @@ public class DarknessCutoutController : MonoBehaviour
             }
         }
 
-        // Beam still uses locally stored cut-outs because its persistence remains
-        // owned by this controller.
         foreach (
             BeamCutoutData cutout
             in activeBeamCutouts
@@ -956,10 +1081,6 @@ public class DarknessCutoutController : MonoBehaviour
                 burstOrigin
             );
 
-        /*
-         * The radius already includes Burst expansion, holding and reforming,
-         * so this controller only converts distance into mask visibility.
-         */
         float signedDistance =
             distanceFromCentre -
             burstRadius;
@@ -996,10 +1117,6 @@ public class DarknessCutoutController : MonoBehaviour
                 beamDirection
             );
 
-        /*
-         * Cross-product magnitude provides perpendicular distance without a slope
-         * calculation, keeping the Beam stable when fired nearly vertically.
-         */
         float crossDistance =
             Mathf.Abs(
                 fromBeamOrigin.x *
@@ -1074,10 +1191,6 @@ public class DarknessCutoutController : MonoBehaviour
                 0.0001f
             );
 
-        /*
-         * A short SmoothStep transition softens the generated mask boundary
-         * without requiring a substantially higher-resolution CPU texture.
-         */
         float normalisedEdge =
             Mathf.InverseLerp(
                 -softness,
@@ -1097,10 +1210,6 @@ public class DarknessCutoutController : MonoBehaviour
         Vector2 worldPosition
     )
     {
-        /*
-         * Burst safety is queried from the same ability-owned radius that drives
-         * the visual opening so visual and gameplay behaviour stay aligned.
-         */
         if (
             lightBurstController != null &&
             lightBurstController.IsPositionInsideBurstEffect(
@@ -1156,8 +1265,6 @@ public class DarknessCutoutController : MonoBehaviour
                 beamDirection
             );
 
-        // Gameplay uses the same endpoint as the visual corridor so the player's
-        // safe area never extends beyond the actual Beam.
         if (
             distanceAlongBeam < 0f ||
             distanceAlongBeam > cutout.beamLength
