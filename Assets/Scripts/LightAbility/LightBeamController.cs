@@ -4,7 +4,12 @@ using System.Collections;
 public class LightBeamController : MonoBehaviour
 {
     [Header("Beam Settings")]
-    [SerializeField] private float beamRange = 6f;
+
+    // Beam Range is now a safety fallback rather than the normal stopping distance.
+    // The Beam searches indefinitely for a wall or Bloom Receiver and only uses
+    // this value when nothing exists ahead of the shot.
+    [SerializeField] private float beamRange = 100f;
+
     [SerializeField] private float beamWidth = 1.5f;
     [SerializeField] private LayerMask darknessLayer;
     [SerializeField] private LayerMask wallLayer;
@@ -17,6 +22,7 @@ public class LightBeamController : MonoBehaviour
     [SerializeField] private float lightCost = 15f;
 
     [Header("Audio")]
+
     // Beam audio belongs to the committed shot rather than the aiming preview,
     // allowing the final clip to be assigned later without changing input logic.
     [SerializeField] private AudioClip beamSound;
@@ -262,6 +268,16 @@ public class LightBeamController : MonoBehaviour
         return isAiming;
     }
 
+    public float GetLockedBeamLength()
+    {
+        /*
+         * Darkness reads the exact distance captured when the player committed
+         * the shot. Sharing this value prevents the darkness cut-out from using
+         * a separate range that could stop before or continue beyond the Beam.
+         */
+        return lockedBeamSize.x;
+    }
+
     // Called by the Beam input.
     public void FireBeam()
     {
@@ -470,9 +486,9 @@ public class LightBeamController : MonoBehaviour
             );
         }
 
-        // The final red indicator result becomes the fixed fired trajectory.
-        // The active Beam will continue using these values even if the player
-        // moves the mouse or changes position after confirming the shot.
+        // The final aiming result already contains the exact distance to the
+        // nearest wall or Bloom Receiver. Locking it here gives the fired Beam
+        // and the darkness system one shared endpoint.
         lockedBeamCenter =
             lastBeamCenter;
 
@@ -924,13 +940,15 @@ public class LightBeamController : MonoBehaviour
     }
 
     private float GetBeamRangeBeforeWall(
-     Vector2 originPosition,
-     Vector2 direction
- )
+        Vector2 originPosition,
+        Vector2 direction
+    )
     {
-        // Walls and Bloom Receivers both act as endpoints for the Beam.
-        // This prevents a shot that activates one receiver from visually
-        // continuing through it and activating another receiver behind it.
+        /*
+         * Walls and Bloom Receivers remain physical endpoints for the Beam.
+         * The raycast searches forward without the old six-unit restriction so
+         * the shot can travel until actual level geometry blocks it.
+         */
         LayerMask beamStoppingLayers =
             wallLayer |
             bloomReceiverLayer;
@@ -939,7 +957,7 @@ public class LightBeamController : MonoBehaviour
             Physics2D.Raycast(
                 originPosition,
                 direction,
-                beamRange,
+                Mathf.Infinity,
                 beamStoppingLayers
             );
 
@@ -948,6 +966,10 @@ public class LightBeamController : MonoBehaviour
             return blockingHit.distance;
         }
 
+        /*
+         * Visuals and gameplay still need a finite distance when nothing exists
+         * ahead of the shot. Beam Range therefore acts only as a safe fallback.
+         */
         return beamRange;
     }
 
