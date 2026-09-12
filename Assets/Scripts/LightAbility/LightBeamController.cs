@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections;
 using System;
+using UnityEngine.InputSystem;
 
 public class LightBeamController : MonoBehaviour
 {
@@ -105,6 +106,8 @@ public class LightBeamController : MonoBehaviour
 
     private Boolean keyboardActivatedBeam;
     private Vector2 mouseScreenPosition;
+    private Boolean ePressed;
+    private Boolean ePressedReset;
 
     private void Awake()
     {
@@ -218,6 +221,17 @@ public class LightBeamController : MonoBehaviour
 
     private void Update()
     {
+        if (UnityEngine.InputSystem.Keyboard.current.eKey.wasPressedThisFrame 
+            && ePressedReset)
+        {
+            ePressed = true;
+            ePressedReset = false;
+        }
+        else if (ePressedReset)
+        {
+            ePressed = false;
+        }
+
         if (!isAiming)
         {
             return;
@@ -243,7 +257,7 @@ public class LightBeamController : MonoBehaviour
                 .wasPressedThisFrame
             )
         {
-            //keyboardActivatedBeam = true;
+            ePressedReset = true;
             ConfirmFireBeam();
         }
         else if (
@@ -252,7 +266,7 @@ public class LightBeamController : MonoBehaviour
                 .wasPressedThisFrame
             )
         {
-            //keyboardActivatedBeam = false;
+            ePressedReset = true;
             ConfirmFireBeam();
         }
         //can put right trigger here for controller
@@ -266,6 +280,7 @@ public class LightBeamController : MonoBehaviour
                 .wasPressedThisFrame
         )
         {
+            ePressedReset = true;
             CancelBeamAim();
         }
     }
@@ -293,11 +308,11 @@ public class LightBeamController : MonoBehaviour
             Debug.Log(
                 "Light Beam aiming was blocked because the player is channeling."
             );
-
+            ePressedReset = true;
             return;
         }
-
-        BeginBeamAim();
+        
+            BeginBeamAim();
     }
 
     public void BeginBeamAim()
@@ -312,7 +327,7 @@ public class LightBeamController : MonoBehaviour
             Debug.Log(
                 "Light Beam aiming was blocked because the player is channeling."
             );
-
+            ePressedReset = true;
             return;
         }
 
@@ -324,7 +339,7 @@ public class LightBeamController : MonoBehaviour
             Debug.Log(
                 "Light Beam is locked"
             );
-
+            ePressedReset = true;
             return;
         }
 
@@ -333,7 +348,7 @@ public class LightBeamController : MonoBehaviour
             Debug.Log(
                 "Light Beam aiming could not begin because the ability is on cooldown."
             );
-
+            ePressedReset = true;
             return;
         }
 
@@ -342,7 +357,7 @@ public class LightBeamController : MonoBehaviour
             Debug.Log(
                 "Light Beam aiming could not begin because the beam is already active."
             );
-
+            ePressedReset = true;
             return;
         }
 
@@ -656,6 +671,7 @@ public class LightBeamController : MonoBehaviour
         Debug.Log(
             "Light beam ended."
         );
+        ePressedReset = true;
     }
 
     private void UpdateBeamPreview(
@@ -907,45 +923,44 @@ public class LightBeamController : MonoBehaviour
         }
 
         if (
-            mainCamera == null /*||
+            mainCamera == null ||
             UnityEngine.InputSystem.Mouse.current ==
-            null  */
+            null
         )
         {
             return lastBeamDirection;
         }
 
-        if (keyboardActivatedBeam == true)
+        Vector2 direction;
+
+        if (ePressed == true)
         {
             Vector2 mouseScreenPosition =
             UnityEngine.InputSystem.Mouse.current
                 .position
                 .ReadValue();
-            Debug.Log("mouse aiming");
-            Debug.Log(mouseScreenPosition);
+
+            Vector3 mouseWorldPosition =
+                mainCamera.ScreenToWorldPoint(
+                    mouseScreenPosition
+                );
+
+            mouseWorldPosition.z = 0f;
+
+            direction =
+                (
+                    (Vector2)mouseWorldPosition -
+                    originPosition
+                ).normalized;
+
         }
         else
         {
-            Vector2 mouseScreenPosition = UnityEngine.InputSystem.Gamepad.current.rightStick.ReadValue() + originPosition;
-            Debug.Log("gamepad aiming");
-            Debug.Log(mouseScreenPosition);
+            direction = UnityEngine.InputSystem.Gamepad.current.rightStick.ReadValue();
+            //Debug.Log("gamepad aiming");
+            //Debug.Log(direction);
         }
 
-
-        Vector3 mouseWorldPosition =
-            mainCamera.ScreenToWorldPoint(
-                mouseScreenPosition
-            );
-
-
-
-        mouseWorldPosition.z = 0f;
-
-        Vector2 direction =
-            (
-                (Vector2)mouseWorldPosition -
-                originPosition
-            ).normalized;
 
         if (direction.sqrMagnitude <= 0.001f)
         {
