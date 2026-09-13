@@ -1,5 +1,7 @@
 using UnityEngine;
 using System.Collections;
+using System;
+using UnityEngine.InputSystem;
 
 public class LightBeamController : MonoBehaviour
 {
@@ -36,6 +38,28 @@ public class LightBeamController : MonoBehaviour
 
     [SerializeField] private float beamCooldown = 2f;
     [SerializeField] private float beamCheckInterval = 0.05f;
+
+    [Header("Beam Darkness Cutout")]
+
+    /*
+     * Controls the total visible width of the opening created in the darkness.
+     * This does not change the Beam's gameplay width, aiming preview, visual
+     * thickness, Bloom Receiver detection or gate detection.
+     */
+    [SerializeField] private float darknessCutoutWidth = 4.5f;
+
+    // Controls how quickly the darkness reaches the Beam's full clearing width.
+    // DarknessCutoutController performs the expansion while the Beam defines
+    // how quickly its own darkness-clearing effect should appear.
+    [SerializeField] private float darknessCutoutExpansionDuration = 0.3f;
+
+    // Controls how long the cleared Beam corridor remains fully open after
+    // the visible Beam itself has finished firing.
+    [SerializeField] private float darknessCutoutHoldDuration = 4f;
+
+    // Controls how long the darkness takes to close back over the Beam corridor
+    // after the hold period has finished.
+    [SerializeField] private float darknessCutoutReformDuration = 2f;
 
     [Header("Beam Origin")]
     [SerializeField] private Transform beamOrigin;
@@ -107,6 +131,11 @@ public class LightBeamController : MonoBehaviour
     // Beam aiming remains available during dash, but this reference lets the
     // actual firing action wait until dash movement has finished.
     private PlayerDash playerDash;
+
+    private Boolean keyboardActivatedBeam;
+    private Vector2 mouseScreenPosition;
+    private Boolean ePressed;
+    private Boolean ePressedReset;
 
     private void Awake()
     {
@@ -220,6 +249,17 @@ public class LightBeamController : MonoBehaviour
 
     private void Update()
     {
+        if (UnityEngine.InputSystem.Keyboard.current.eKey.wasPressedThisFrame 
+            && ePressedReset)
+        {
+            ePressed = true;
+            ePressedReset = false;
+        }
+        else if (ePressedReset)
+        {
+            ePressed = false;
+        }
+
         if (!isAiming)
         {
             return;
@@ -243,17 +283,32 @@ public class LightBeamController : MonoBehaviour
             UnityEngine.InputSystem.Mouse.current
                 .leftButton
                 .wasPressedThisFrame
-        )
+            )
         {
+            ePressedReset = true;
             ConfirmFireBeam();
         }
+        else if (
+            UnityEngine.InputSystem.Gamepad.current
+                .rightTrigger
+                .wasPressedThisFrame
+            )
+        {
+            ePressedReset = true;
+            ConfirmFireBeam();
+        }
+        //can put right trigger here for controller
 
         if (
             UnityEngine.InputSystem.Mouse.current
                 .rightButton
+                .wasPressedThisFrame ||
+            UnityEngine.InputSystem.Gamepad.current
+                .leftShoulder
                 .wasPressedThisFrame
         )
         {
+            ePressedReset = true;
             CancelBeamAim();
         }
     }
@@ -278,6 +333,37 @@ public class LightBeamController : MonoBehaviour
         return lockedBeamSize.x;
     }
 
+    public float GetDarknessCutoutHalfWidth()
+    {
+        /*
+         * The Inspector exposes the complete darkness opening width because that
+         * is easier to tune visually. DarknessCutoutController calculates the
+         * distance from the Beam centre line, so it needs half of that width.
+         */
+        return darknessCutoutWidth * 0.5f;
+    }
+
+    public float GetDarknessCutoutExpansionDuration()
+    {
+        // The darkness controller performs the visual expansion, but the Beam
+        // owns how quickly its clearing effect reaches its configured full width.
+        return darknessCutoutExpansionDuration;
+    }
+
+    public float GetDarknessCutoutHoldDuration()
+    {
+        // Each fired Beam stores this value with its own corridor so previous
+        // openings can continue holding independently of later Beam shots.
+        return darknessCutoutHoldDuration;
+    }
+
+    public float GetDarknessCutoutReformDuration()
+    {
+        // The Beam determines how long its darkness effect takes to disappear
+        // while DarknessCutoutController performs the gradual closing effect.
+        return darknessCutoutReformDuration;
+    }
+
     // Called by the Beam input.
     public void FireBeam()
     {
@@ -291,11 +377,11 @@ public class LightBeamController : MonoBehaviour
             Debug.Log(
                 "Light Beam aiming was blocked because the player is channeling."
             );
-
+            ePressedReset = true;
             return;
         }
-
-        BeginBeamAim();
+        
+            BeginBeamAim();
     }
 
     public void BeginBeamAim()
@@ -310,7 +396,7 @@ public class LightBeamController : MonoBehaviour
             Debug.Log(
                 "Light Beam aiming was blocked because the player is channeling."
             );
-
+            ePressedReset = true;
             return;
         }
 
@@ -322,7 +408,7 @@ public class LightBeamController : MonoBehaviour
             Debug.Log(
                 "Light Beam is locked"
             );
-
+            ePressedReset = true;
             return;
         }
 
@@ -331,7 +417,7 @@ public class LightBeamController : MonoBehaviour
             Debug.Log(
                 "Light Beam aiming could not begin because the ability is on cooldown."
             );
-
+            ePressedReset = true;
             return;
         }
 
@@ -340,7 +426,7 @@ public class LightBeamController : MonoBehaviour
             Debug.Log(
                 "Light Beam aiming could not begin because the beam is already active."
             );
-
+            ePressedReset = true;
             return;
         }
 
@@ -654,6 +740,7 @@ public class LightBeamController : MonoBehaviour
         Debug.Log(
             "Light beam ended."
         );
+        ePressedReset = true;
     }
 
     private void UpdateBeamPreview(
@@ -913,23 +1000,36 @@ public class LightBeamController : MonoBehaviour
             return lastBeamDirection;
         }
 
-        Vector2 mouseScreenPosition =
+        Vector2 direction;
+
+        if (ePressed == true)
+        {
+            Vector2 mouseScreenPosition =
             UnityEngine.InputSystem.Mouse.current
                 .position
                 .ReadValue();
 
-        Vector3 mouseWorldPosition =
-            mainCamera.ScreenToWorldPoint(
-                mouseScreenPosition
-            );
+            Vector3 mouseWorldPosition =
+                mainCamera.ScreenToWorldPoint(
+                    mouseScreenPosition
+                );
 
-        mouseWorldPosition.z = 0f;
+            mouseWorldPosition.z = 0f;
 
-        Vector2 direction =
-            (
-                (Vector2)mouseWorldPosition -
-                originPosition
-            ).normalized;
+            direction =
+                (
+                    (Vector2)mouseWorldPosition -
+                    originPosition
+                ).normalized;
+
+        }
+        else
+        {
+            direction = UnityEngine.InputSystem.Gamepad.current.rightStick.ReadValue();
+            //Debug.Log("gamepad aiming");
+            //Debug.Log(direction);
+        }
+
 
         if (direction.sqrMagnitude <= 0.001f)
         {

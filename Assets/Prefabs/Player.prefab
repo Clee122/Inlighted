@@ -669,6 +669,7 @@ GameObject:
   - component: {fileID: 1710765735611916135}
   - component: {fileID: 47331580341496888}
   - component: {fileID: 1176628217749975682}
+  - component: {fileID: 6046192413689431324}
   m_Layer: 6
   m_Name: Player
   m_TagString: Player
@@ -1076,6 +1077,10 @@ MonoBehaviour:
   slopeVisualProbeHalfWidth: 0.15
   slopeVisualAngleTolerance: 5
   jumpForce: 15
+  coyoteTime: 0.12
+  jumpBufferTime: 0.12
+  fallGravityMultiplier: 1.3
+  maximumFallSpeed: 20
   groundCheck: {fileID: 2408163920154985248}
   groundCheckRadius: 0.2
   groundLayer:
@@ -1118,7 +1123,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 00a3849ed7631514c93a97031b38aa64, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LightBurstController
-  burstDuration: 1
+  burstCooldownDuration: 2
   burstExpansionDuration: 1
   startingBurstRadius: 0.2
   burstExpansionCurve:
@@ -1172,21 +1177,18 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+  burstHoldDuration: 2.5
+  burstReformDuration: 1.5
   lightCost: 25
   burstSound: {fileID: 0}
   burstVisual: {fileID: 0}
   burstWallVisual: {fileID: 6800330690928581940}
-  flickerWarningDuration: 0.5
-  flickerInterval: 0.1
   revealMask: {fileID: 16026239851315679}
   burstDispelRadius: 3
   darknessLayer:
     serializedVersion: 2
     m_Bits: 0
   GroundLayer:
-    serializedVersion: 2
-    m_Bits: 0
-  wallLayer:
     serializedVersion: 2
     m_Bits: 0
   showBurstDebug: 1
@@ -1253,6 +1255,10 @@ MonoBehaviour:
   beamExpansionDuration: 0.2
   beamCooldown: 2
   beamCheckInterval: 0.05
+  darknessCutoutWidth: 4.5
+  darknessCutoutExpansionDuration: 0.3
+  darknessCutoutHoldDuration: 4
+  darknessCutoutReformDuration: 2
   beamOrigin: {fileID: 5347991434222150377}
   beamIndicatorVisual: {fileID: 4143527229475192825}
   beamVisual: {fileID: 6831116615011422170}
@@ -1289,6 +1295,8 @@ MonoBehaviour:
   catMothAnimator: {fileID: 5175401410128997756}
   catMothSpriteRenderer: {fileID: 2999778295786663979}
   beamOrigin: {fileID: 5347991434222150377}
+  hurtSortingLayerName: DeathPlayer
+  hurtOrderInLayer: 50
   deathSortingLayerName: DeathPlayer
   deathOrderInLayer: 100
   playerRigidbody: {fileID: 5995141665719187509}
@@ -1383,6 +1391,28 @@ MonoBehaviour:
     m_Bits: 128
   wallSkinWidth: 0.02
   showDashDebugLogs: 0
+--- !u!114 &6046192413689431324
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6740553540052544372}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 421114cfe1de5ae4aa5557d274b5ea20, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerIntroDrop
+  dropStartPoint: {fileID: 0}
+  introCameraPoint: {fileID: 0}
+  cameraManager: {fileID: 0}
+  landingLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  introGravityMultiplier: 0.65
+  introMaximumFallSpeed: 6
+  postLandingDelay: 0.08
+  maximumIntroDuration: 0.95
 --- !u!1 &6800330690928581940
 GameObject:
   m_ObjectHideFlags: 0

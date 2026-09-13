@@ -78,7 +78,10 @@ Material:
     - _BeamLengthUV: 0
     - _BeamPushDistanceUV: 0
     - _CutoutEnabled: 0
+    - _EdgeDistortion: 0.5
+    - _EdgeThickness: 1
     - _EnableExternalAlpha: 0
+    - _OrganicNoiseScale: 2.6
     - _ZWrite: 0
     m_Colors:
     - White: {r: 1, g: 1, b: 1, a: 1}
@@ -88,6 +91,7 @@ Material:
     - _BurstRadiusUV: {r: 0.1, g: 0.1, b: 0, a: 0}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _DarknessColour: {r: 0, g: 0, b: 0, a: 1}
+    - _FlowSpeed: {r: 0.03, g: 0.015, b: 0, a: 0}
     - _RendererColor: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

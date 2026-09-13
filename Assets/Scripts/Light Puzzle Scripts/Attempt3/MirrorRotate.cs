@@ -29,22 +29,35 @@ public class MirrorRotate : MonoBehaviour
 
     [Header("Interaction Timing")]
 
-    // A short lockout after each successful rotation prevents accidental rapid
-    // double inputs without limiting how many times the player can use the mirror.
+    // A short lockout after each completed rotation prevents accidental rapid
+    // double inputs while still allowing the mirror to be rotated repeatedly.
     [SerializeField] private float interactionCooldown = 1.5f;
 
     [Header("Rotation")]
 
-    // Every interaction rotates the mirror by one predictable step. There is no
-    // timer or automatic reset, allowing players to experiment with the laser
-    // path for as long as necessary.
+    // Every interaction moves the mirror towards one predictable angle step.
+    // The angle remains persistent because the mirror no longer automatically
+    // resets after a timer expires.
     public float angleIncrement = 90f;
+
+    // Controls how quickly the mirror physically turns towards its next angle.
+    // 180 degrees per second makes a 90-degree turn take roughly half a second,
+    // which keeps the movement visible without slowing the puzzle down too much.
+    [SerializeField] private float rotationSpeed = 180f;
 
     // Different mirrors can begin at different orientations while continuing
     // to use the same reusable interaction script.
     public float initialAngleChange = 0f;
 
     private float interactionCooldownTimer;
+
+    // The mirror rotates towards this orientation instead of snapping immediately.
+    // Storing a target also ensures repeated rotations remain exact 90-degree steps.
+    private Quaternion targetRotation;
+
+    // While a rotation is in progress, another interaction is blocked so the
+    // player cannot queue several turns before seeing the result of the first one.
+    private bool isRotating;
 
     private void Awake()
     {
@@ -55,6 +68,11 @@ public class MirrorRotate : MonoBehaviour
             0f,
             initialAngleChange
         );
+
+        // Begin with the target matching the mirror's actual starting rotation.
+        // This prevents the mirror from trying to move when the scene first loads.
+        targetRotation =
+            transform.localRotation;
 
         if (interactionOutline == null)
         {
@@ -111,10 +129,22 @@ public class MirrorRotate : MonoBehaviour
                 0f,
                 interactionCooldown
             );
+
+        // Preventing a zero or negative speed avoids creating a mirror that
+        // receives an interaction but can never reach its requested rotation.
+        rotationSpeed =
+            Mathf.Max(
+                0.01f,
+                rotationSpeed
+            );
     }
 
     private void Update()
     {
+        // Continue an already-started rotation before processing new input.
+        // This keeps the visual movement independent from interaction checks.
+        UpdateSmoothRotation();
+
         // Solving the overall puzzle freezes the successful mirror configuration.
         // It also removes interaction feedback because this mirror can no longer
         // be manipulated after the puzzle has been completed.
@@ -142,8 +172,9 @@ public class MirrorRotate : MonoBehaviour
             playerIsNearby
         );
 
-        // The cooldown only blocks another rotation briefly after a successful
-        // interaction instead of restricting how many times the mirror can rotate.
+        // The cooldown starts after the mirror reaches its requested angle.
+        // This keeps the short lockout meaningful even though rotation now takes
+        // time instead of happening instantly.
         if (interactionCooldownTimer > 0f)
         {
             interactionCooldownTimer -=
@@ -158,6 +189,51 @@ public class MirrorRotate : MonoBehaviour
         HandleInteraction(
             playerIsNearby
         );
+    }
+
+    private void UpdateSmoothRotation()
+    {
+        if (!isRotating)
+        {
+            return;
+        }
+
+        // RotateTowards gives the mirror a consistent visible turning speed
+        // without overshooting the exact target orientation.
+        transform.localRotation =
+            Quaternion.RotateTowards(
+                transform.localRotation,
+                targetRotation,
+                rotationSpeed * Time.deltaTime
+            );
+
+        // A very small tolerance avoids relying on perfect floating-point equality
+        // when deciding whether the requested movement has finished.
+        if (
+            Quaternion.Angle(
+                transform.localRotation,
+                targetRotation
+            ) <= 0.01f
+        )
+        {
+            // Snap the final tiny fraction to the intended orientation so repeated
+            // rotations never accumulate small rotational inaccuracies.
+            transform.localRotation =
+                targetRotation;
+
+            isRotating =
+                false;
+
+            // The cooldown begins once the player has actually seen the complete
+            // rotation rather than being consumed while the mirror is still moving.
+            interactionCooldownTimer =
+                interactionCooldown;
+
+            Debug.Log(
+                gameObject.name +
+                " finished rotating."
+            );
+        }
     }
 
     private bool IsPlayerWithinInteractionRange()
@@ -196,7 +272,8 @@ public class MirrorRotate : MonoBehaviour
         if (
             Player == null ||
             playerInteract == null ||
-            interactionCooldownTimer > 0f
+            interactionCooldownTimer > 0f ||
+            isRotating
         )
         {
             return;
@@ -212,23 +289,23 @@ public class MirrorRotate : MonoBehaviour
             return;
         }
 
-        // Each separate button press advances the mirror by one angle step.
-        // Because there is no reset timer, the chosen orientation persists
-        // while the player moves between other mirrors in the puzzle.
-        transform.Rotate(
-            0f,
-            0f,
-            angleIncrement
-        );
+        // Each separate button press advances the target orientation by one
+        // angle step. The mirror then visibly travels towards that orientation
+        // rather than instantly snapping to it.
+        targetRotation =
+            targetRotation *
+            Quaternion.Euler(
+                0f,
+                0f,
+                angleIncrement
+            );
 
-        // Starting the lockout only after a valid rotation prevents accidental
-        // rapid activations while keeping repeated deliberate interaction responsive.
-        interactionCooldownTimer =
-            interactionCooldown;
+        isRotating =
+            true;
 
         Debug.Log(
             gameObject.name +
-            " rotated by " +
+            " started rotating by " +
             angleIncrement.ToString("0.0") +
             " degrees."
         );
