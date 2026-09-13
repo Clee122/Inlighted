@@ -37,6 +37,28 @@ public class LightBeamController : MonoBehaviour
     [SerializeField] private float beamCooldown = 2f;
     [SerializeField] private float beamCheckInterval = 0.05f;
 
+    [Header("Beam Darkness Cutout")]
+
+    /*
+     * Controls the total visible width of the opening created in the darkness.
+     * This does not change the Beam's gameplay width, aiming preview, visual
+     * thickness, Bloom Receiver detection or gate detection.
+     */
+    [SerializeField] private float darknessCutoutWidth = 4.5f;
+
+    // Controls how quickly the darkness reaches the Beam's full clearing width.
+    // DarknessCutoutController performs the expansion while the Beam defines
+    // how quickly its own darkness-clearing effect should appear.
+    [SerializeField] private float darknessCutoutExpansionDuration = 0.3f;
+
+    // Controls how long the cleared Beam corridor remains fully open after
+    // the visible Beam itself has finished firing.
+    [SerializeField] private float darknessCutoutHoldDuration = 4f;
+
+    // Controls how long the darkness takes to close back over the Beam corridor
+    // after the hold period has finished.
+    [SerializeField] private float darknessCutoutReformDuration = 2f;
+
     [Header("Beam Origin")]
     [SerializeField] private Transform beamOrigin;
 
@@ -276,6 +298,37 @@ public class LightBeamController : MonoBehaviour
          * a separate range that could stop before or continue beyond the Beam.
          */
         return lockedBeamSize.x;
+    }
+
+    public float GetDarknessCutoutHalfWidth()
+    {
+        /*
+         * The Inspector exposes the complete darkness opening width because that
+         * is easier to tune visually. DarknessCutoutController calculates the
+         * distance from the Beam centre line, so it needs half of that width.
+         */
+        return darknessCutoutWidth * 0.5f;
+    }
+
+    public float GetDarknessCutoutExpansionDuration()
+    {
+        // The darkness controller performs the visual expansion, but the Beam
+        // owns how quickly its clearing effect reaches its configured full width.
+        return darknessCutoutExpansionDuration;
+    }
+
+    public float GetDarknessCutoutHoldDuration()
+    {
+        // Each fired Beam stores this value with its own corridor so previous
+        // openings can continue holding independently of later Beam shots.
+        return darknessCutoutHoldDuration;
+    }
+
+    public float GetDarknessCutoutReformDuration()
+    {
+        // The Beam determines how long its darkness effect takes to disappear
+        // while DarknessCutoutController performs the gradual closing effect.
+        return darknessCutoutReformDuration;
     }
 
     // Called by the Beam input.

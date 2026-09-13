@@ -11,9 +11,12 @@ public class DarknessCutoutController : MonoBehaviour
     }
 
     /*
-     * Beam cut-outs remain owned by this controller because Beam persistence
-     * has not been moved into LightBeamController. Burst lifetime is owned
-     * entirely by LightBurstController and is read separately below.
+     * Beam cut-outs remain owned by this controller because this script is
+     * responsible for generating and maintaining the darkness mask.
+     *
+     * Beam-specific tuning values such as width, expansion speed, hold time and
+     * reform time are now owned by LightBeamController and copied into each
+     * Beam cut-out when that Beam is fired.
      */
     private class BeamCutoutData
     {
@@ -25,6 +28,10 @@ public class DarknessCutoutController : MonoBehaviour
         public float currentBeamPushDistance;
         public float maximumBeamPushDistance;
         public float beamLength;
+
+        // Each fired Beam stores its own expansion duration so existing corridors
+        // continue behaving consistently and independently of later Beam shots.
+        public float pushDuration;
 
         public float holdTimer;
         public float reformTimer;
@@ -63,27 +70,6 @@ public class DarknessCutoutController : MonoBehaviour
      */
     [SerializeField]
     private ParticleSystemRenderer[] reactiveParticleRenderers;
-
-    [Header("Beam Settings")]
-
-    // This controls the maximum distance removed around the Beam line.
-    [SerializeField]
-    private float beamMaximumPushDistance = 1.5f;
-
-    // Beam cut-outs expand briefly so the darkness still visibly reacts to firing.
-    [SerializeField]
-    private float beamPushDuration = 0.3f;
-
-    [Header("Beam Persistence")]
-
-    // Beam still owns its persistence here because that behaviour has not yet
-    // been transferred into LightBeamController.
-    [SerializeField]
-    private float beamHoldDuration = 2.5f;
-
-    // The Beam corridor gradually closes after its hold period.
-    [SerializeField]
-    private float beamReformDuration = 1.5f;
 
     [Header("Dynamic Mask")]
 
@@ -745,7 +731,11 @@ public class DarknessCutoutController : MonoBehaviour
         {
             /*
              * Each Beam receives independent geometry and timing so several
-             * previously fired corridors can coexist while reforming.
+             * previously fired corridors can coexist while holding or reforming.
+             *
+             * Beam-specific darkness behaviour is owned by LightBeamController.
+             * These values are copied into this cut-out when firing begins so
+             * every Beam corridor keeps its own settings after the shot ends.
              */
             liveBeamCutout =
                 new BeamCutoutData
@@ -761,17 +751,25 @@ public class DarknessCutoutController : MonoBehaviour
 
                     currentBeamPushDistance = 0f,
 
+                    /*
+                     * The Beam Inspector exposes the total darkness opening width,
+                     * but this mask measures from the Beam centre line to one side.
+                     * LightBeamController therefore supplies half of the total width.
+                     */
                     maximumBeamPushDistance =
-                        beamMaximumPushDistance,
+                        lightBeamController.GetDarknessCutoutHalfWidth(),
 
                     beamLength =
                         lightBeamController.GetLockedBeamLength(),
 
+                    pushDuration =
+                        lightBeamController.GetDarknessCutoutExpansionDuration(),
+
                     holdDuration =
-                        beamHoldDuration,
+                        lightBeamController.GetDarknessCutoutHoldDuration(),
 
                     reformDuration =
-                        beamReformDuration
+                        lightBeamController.GetDarknessCutoutReformDuration()
                 };
 
             activeBeamCutouts.Add(
@@ -784,10 +782,14 @@ public class DarknessCutoutController : MonoBehaviour
             liveBeamCutout != null
         )
         {
+            /*
+             * Expansion uses the settings captured when this particular Beam
+             * fired so its opening remains independent of later Beam shots.
+             */
             float pushSpeed =
-                beamMaximumPushDistance /
+                liveBeamCutout.maximumBeamPushDistance /
                 Mathf.Max(
-                    beamPushDuration,
+                    liveBeamCutout.pushDuration,
                     0.01f
                 );
 
