@@ -32,6 +32,28 @@ public class PlayerController2D : MonoBehaviour
     [Header("Jump")]
     [SerializeField] private float jumpForce = 14f;
 
+    // Coyote time gives the player a short grace period after leaving a platform.
+    // This makes jumps near platform edges more forgiving without changing the
+    // normal jump height, movement speed, or physics of the jump itself.
+    [SerializeField] private float coyoteTime = 0.12f;
+
+    // Jump buffering remembers a jump input shortly before CatMoth lands.
+    // This prevents slightly early button presses from being lost and makes
+    // consecutive platform jumps feel more responsive and forgiving.
+    [SerializeField] private float jumpBufferTime = 0.12f;
+
+    [Header("Fall")]
+
+    // Stronger gravity is applied only while CatMoth is moving downward.
+    // This makes the second half of a jump feel less floaty while leaving the
+    // upward jump unchanged and preserving the existing jump height.
+    [SerializeField] private float fallGravityMultiplier = 1.3f;
+
+    // Maximum fall speed prevents gravity from accelerating CatMoth indefinitely
+    // during long drops. Keeping the downward speed predictable also makes it
+    // easier to tune Cinemachine so the camera can continue following the player.
+    [SerializeField] private float maximumFallSpeed = 20f;
+
     [Header("Ground Check")]
     [SerializeField] private Transform groundCheck;
     [SerializeField] private float groundCheckRadius = 0.2f;
@@ -40,6 +62,12 @@ public class PlayerController2D : MonoBehaviour
     [Header("Audio")]
     [SerializeField] private AudioClip walkingSound;
     [SerializeField] private AudioClip jumpSound;
+    [SerializeField] private AudioClip landingSound;
+
+    // Landing audio requires a short period of genuine airtime before it can play.
+    // This filters out brief ground-check interruptions caused by spawning,
+    // slopes, collider seams, or other tiny contact changes.
+    [SerializeField] private float minimumAirTimeForLandingSound = 0.1f;
 
     // Walking audio checks actual Rigidbody movement rather than input alone.
     // This prevents footsteps from continuing when the player holds against
@@ -53,6 +81,16 @@ public class PlayerController2D : MonoBehaviour
     private bool isOnWalkableSlope;
     private bool jumpQueued;
 
+    // The coyote timer remembers how recently CatMoth was grounded.
+    // While this value remains above zero, a jump can still be accepted even
+    // if the player has only just moved beyond the edge of a platform.
+    private float coyoteTimeCounter;
+
+    // The jump buffer timer keeps a recent jump press available while airborne.
+    // If CatMoth lands before this timer expires, the stored input can immediately
+    // become a normal grounded jump instead of requiring another button press.
+    private float jumpBufferCounter;
+
     // This records whether the player entered the air through a successful jump input.
     // It allows jumping to generate light without treating falling, knockback, or other
     // uncontrolled airborne movement as valid light-generating movement.
@@ -61,6 +99,10 @@ public class PlayerController2D : MonoBehaviour
     // The previous grounded state is stored so landing can be detected reliably.
     // Landing ends the player-controlled jump state and prevents it carrying into later falls.
     private bool wasGroundedLastFrame;
+
+    // Airtime is tracked separately from the grounded state so landing audio
+    // only plays after CatMoth has actually been airborne for a meaningful duration.
+    private float currentAirTime;
 
     private float moveInput;
     private float defaultGravityScale;
@@ -147,6 +189,7 @@ public class PlayerController2D : MonoBehaviour
     private void Update()
     {
         UpdateGroundedState();
+        UpdateJumpBuffer();
 
         // Walking audio is checked after grounded state so footsteps stop as soon
         // as CatMoth leaves the floor and resume only after valid grounded movement.
@@ -157,6 +200,15 @@ public class PlayerController2D : MonoBehaviour
     {
         DetectSlope();
         ApplyMovement();
+
+        // Falling gravity is applied before the final fall-speed clamp so CatMoth
+        // can accelerate downward more quickly without exceeding the chosen cap.
+        ApplyFallGravity();
+
+        // Fall speed is limited after gravity has updated the Rigidbody.
+        // This keeps long falls controlled without changing upward jump velocity.
+        ApplyMaximumFallSpeed();
+
         ProcessQueuedJump();
     }
 
@@ -191,11 +243,55 @@ public class PlayerController2D : MonoBehaviour
                 groundLayer
             );
 
+        if (isGrounded)
+        {
+            // Refreshing the timer whenever CatMoth is grounded ensures the full
+            // grace period is available immediately after stepping off an edge.
+            coyoteTimeCounter =
+                coyoteTime;
+        }
+        else
+        {
+            // Once CatMoth leaves the ground, the grace period counts down.
+            // Clamping it to zero keeps the timer predictable and avoids
+            // unnecessary negative values accumulating during long falls.
+            coyoteTimeCounter =
+                Mathf.Max(
+                    0f,
+                    coyoteTimeCounter -
+                    Time.deltaTime
+                );
+        }
+
+        if (!isGrounded)
+        {
+            // Airtime accumulates only while CatMoth is genuinely detected as airborne.
+            // Very short losses of contact on slopes or collider seams will normally
+            // remain below the landing-audio threshold and therefore stay silent.
+            currentAirTime +=
+                Time.deltaTime;
+        }
+
         if (
             isGrounded &&
             !wasGroundedLastFrame
         )
         {
+            // Landing audio only plays after enough actual airtime has passed.
+            // This prevents the initial spawn and tiny slope/contact interruptions
+            // from being treated as meaningful landings.
+            if (
+                currentAirTime >=
+                minimumAirTimeForLandingSound &&
+                landingSound != null &&
+                AudioManager.Instance != null
+            )
+            {
+                AudioManager.Instance.PlaySFX(
+                    landingSound
+                );
+            }
+
             if (
                 isInPlayerControlledJump &&
                 showMovementDebugLogs
@@ -208,6 +304,39 @@ public class PlayerController2D : MonoBehaviour
             }
 
             isInPlayerControlledJump = false;
+
+            // Resetting airtime after a grounded transition prepares the counter
+            // for the next real jump or fall.
+            currentAirTime = 0f;
+        }
+        else if (isGrounded)
+        {
+            // Remaining grounded clears any tiny accumulated airtime so brief
+            // slope or collider contact losses cannot carry into a later landing.
+            currentAirTime = 0f;
+        }
+    }
+
+    private void UpdateJumpBuffer()
+    {
+        if (jumpBufferCounter <= 0f)
+        {
+            return;
+        }
+
+        // A buffered input only remains valid for a deliberately short period.
+        // Once the timer expires, clearing the queued jump prevents an old input
+        // from causing CatMoth to jump much later when the player eventually lands.
+        jumpBufferCounter =
+            Mathf.Max(
+                0f,
+                jumpBufferCounter -
+                Time.deltaTime
+            );
+
+        if (jumpBufferCounter <= 0f)
+        {
+            jumpQueued = false;
         }
     }
 
@@ -483,6 +612,120 @@ public class PlayerController2D : MonoBehaviour
         return acceleration;
     }
 
+    private void ApplyFallGravity()
+    {
+        if (rb == null)
+        {
+            return;
+        }
+
+        if (
+            playerDash != null &&
+            playerDash.IsDashing()
+        )
+        {
+            // Dash owns Rigidbody movement and gravity while active, so normal
+            // falling behaviour must not interfere with the dash trajectory.
+            return;
+        }
+
+        if (
+            lightBeamController != null &&
+            lightBeamController.IsBeamActive()
+        )
+        {
+            // Beam intentionally freezes CatMoth in place, so fall gravity must
+            // remain disabled for the full duration of the active Beam.
+            return;
+        }
+
+        if (
+            isGrounded &&
+            isOnWalkableSlope
+        )
+        {
+            // Slope movement deliberately disables gravity so CatMoth stays
+            // attached to the surface instead of sliding or fighting the slope.
+            return;
+        }
+
+        if (rb.linearVelocity.y < 0f)
+        {
+            // Gravity scale is increased only after CatMoth begins descending.
+            // The upward half of the jump therefore continues using the original
+            // Rigidbody gravity and keeps the same jump height and launch feel.
+            rb.gravityScale =
+                defaultGravityScale *
+                Mathf.Max(
+                    0f,
+                    fallGravityMultiplier
+                );
+        }
+        else
+        {
+            // Returning to the default gravity while rising or grounded prevents
+            // the fall multiplier from carrying into the next jump.
+            rb.gravityScale =
+                defaultGravityScale;
+        }
+    }
+
+    private void ApplyMaximumFallSpeed()
+    {
+        if (rb == null)
+        {
+            return;
+        }
+
+        if (
+            playerDash != null &&
+            playerDash.IsDashing()
+        )
+        {
+            // Dash owns the Rigidbody while active, so the normal fall-speed
+            // limiter must not alter any vertical velocity used by the dash.
+            return;
+        }
+
+        if (
+            lightBeamController != null &&
+            lightBeamController.IsBeamActive()
+        )
+        {
+            // Beam intentionally freezes the Rigidbody completely, so there is
+            // no falling velocity for the normal movement system to control.
+            return;
+        }
+
+        if (rb.linearVelocity.y >= 0f)
+        {
+            // The limiter only affects downward movement. Upward jump velocity
+            // remains untouched so jump height and coyote-time jumps behave
+            // exactly as they did before maximum fall speed was introduced.
+            return;
+        }
+
+        float allowedFallSpeed =
+            Mathf.Max(
+                0f,
+                maximumFallSpeed
+            );
+
+        if (
+            rb.linearVelocity.y <
+            -allowedFallSpeed
+        )
+        {
+            // Only the downward velocity is clamped. Horizontal speed remains
+            // unchanged so CatMoth can still steer normally during long falls.
+            rb.linearVelocity =
+                new Vector2(
+                    rb.linearVelocity.x,
+                    -allowedFallSpeed
+                );
+        }
+    }
+
     private void ProcessQueuedJump()
     {
         if (!jumpQueued)
@@ -495,9 +738,10 @@ public class PlayerController2D : MonoBehaviour
             playerDash.IsDashing()
         )
         {
-            // Jump cannot execute while dash owns movement. Clearing the queued
-            // input prevents a delayed jump from firing immediately after dash.
+            // Jump cannot execute while dash owns movement. Clearing both the
+            // queue and buffer prevents a delayed jump from firing after dash.
             jumpQueued = false;
+            jumpBufferCounter = 0f;
             return;
         }
 
@@ -506,14 +750,18 @@ public class PlayerController2D : MonoBehaviour
             lightBeamController.IsBeamActive()
         )
         {
-            // Clear any jump that was queued before the Beam fired so it cannot
-            // happen during the shot or immediately after it ends.
+            // Clear buffered jump input when the Beam fires so an input stored
+            // before the movement lock cannot unexpectedly execute afterwards.
             jumpQueued = false;
+            jumpBufferCounter = 0f;
             return;
         }
 
         if (
-            isGrounded &&
+            (
+                isGrounded ||
+                coyoteTimeCounter > 0f
+            ) &&
             rb != null
         )
         {
@@ -525,6 +773,13 @@ public class PlayerController2D : MonoBehaviour
                     rb.linearVelocity.x,
                     jumpForce
                 );
+
+            // A successful jump consumes both forgiveness windows immediately.
+            // This prevents either timer from accidentally causing another jump
+            // from the same button press.
+            coyoteTimeCounter = 0f;
+            jumpBufferCounter = 0f;
+            jumpQueued = false;
 
             isInPlayerControlledJump = true;
 
@@ -545,9 +800,17 @@ public class PlayerController2D : MonoBehaviour
                 "Player-controlled jump started. " +
                 "This jump can generate light while the player remains airborne."
             );
+
+            return;
         }
 
-        jumpQueued = false;
+        // Unlike the old grounded-only jump queue, an airborne input is deliberately
+        // left queued while its buffer timer remains active. This allows landing
+        // shortly afterwards to convert that stored input into a valid jump.
+        if (jumpBufferCounter <= 0f)
+        {
+            jumpQueued = false;
+        }
     }
 
     public void OnMove(
@@ -590,6 +853,7 @@ public class PlayerController2D : MonoBehaviour
             // Jump input is ignored while channeling because healing requires the
             // player to remain grounded and committed to the channel action.
             jumpQueued = false;
+            jumpBufferCounter = 0f;
 
             if (showMovementDebugLogs)
             {
@@ -609,6 +873,7 @@ public class PlayerController2D : MonoBehaviour
             // Dash is a committed movement action, so jumping is ignored until
             // normal player movement has returned.
             jumpQueued = false;
+            jumpBufferCounter = 0f;
 
             if (showMovementDebugLogs)
             {
@@ -627,6 +892,7 @@ public class PlayerController2D : MonoBehaviour
         {
             // Jump input is ignored for the duration of the fired Beam.
             jumpQueued = false;
+            jumpBufferCounter = 0f;
 
             if (showMovementDebugLogs)
             {
@@ -638,14 +904,19 @@ public class PlayerController2D : MonoBehaviour
             return;
         }
 
-        if (isGrounded)
-        {
-            jumpQueued = true;
-        }
-        else if (showMovementDebugLogs)
+        // Every valid jump press is briefly stored instead of requiring CatMoth
+        // to already be grounded on the exact input frame. Grounded jumps and
+        // coyote-time jumps still execute immediately, while slightly early
+        // airborne presses can wait for an upcoming landing.
+        jumpQueued = true;
+        jumpBufferCounter = jumpBufferTime;
+
+        if (showMovementDebugLogs)
         {
             Debug.Log(
-                "Jump input was ignored because the player was not grounded."
+                "Jump input buffered for " +
+                jumpBufferTime +
+                " seconds."
             );
         }
     }
@@ -731,6 +1002,7 @@ public class PlayerController2D : MonoBehaviour
 
         moveInput = 0f;
         jumpQueued = false;
+        jumpBufferCounter = 0f;
         isInPlayerControlledJump = false;
 
         if (rb != null)
@@ -1008,6 +1280,18 @@ public class PlayerController2D : MonoBehaviour
         jumpQueued = false;
         isChannelingLocked = false;
         isInPlayerControlledJump = false;
+
+        // Coyote time belongs to the previous movement state, so respawning must
+        // clear it to prevent a stale grace period from allowing an unintended jump.
+        coyoteTimeCounter = 0f;
+
+        // Buffered jump input also belongs to the previous life, so clearing it
+        // prevents a jump pressed before death from executing after respawning.
+        jumpBufferCounter = 0f;
+
+        // Respawning should not carry old airtime into the new life because the
+        // player may begin already touching the ground at the respawn point.
+        currentAirTime = 0f;
 
         if (playerDash != null)
         {

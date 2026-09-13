@@ -1083,6 +1083,8 @@ MonoBehaviour:
     m_Bits: 128
   walkingSound: {fileID: 0}
   jumpSound: {fileID: 0}
+  landingSound: {fileID: 8300000, guid: 94fd34af6bab74ba1820a7d694e060bd, type: 3}
+  minimumAirTimeForLandingSound: 0.3
   walkingAudioSpeedThreshold: 0.1
   showMovementDebugLogs: 0
   Pauser: {fileID: 0}
@@ -1104,7 +1106,6 @@ MonoBehaviour:
   deathSound: {fileID: 0}
   DarknessIndicator: {fileID: 0}
   AMult: 0
-  deathIndicatorAlpha: 1
 --- !u!114 &-5335877252066859057
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1175,6 +1176,8 @@ MonoBehaviour:
   burstSound: {fileID: 0}
   burstVisual: {fileID: 0}
   burstWallVisual: {fileID: 6800330690928581940}
+  flickerWarningDuration: 0.5
+  flickerInterval: 0.1
   revealMask: {fileID: 16026239851315679}
   burstDispelRadius: 3
   darknessLayer:
@@ -1286,6 +1289,7 @@ MonoBehaviour:
   catMothAnimator: {fileID: 5175401410128997756}
   catMothSpriteRenderer: {fileID: 2999778295786663979}
   beamOrigin: {fileID: 5347991434222150377}
+  deathSortingLayerName: DeathPlayer
   deathOrderInLayer: 100
   playerRigidbody: {fileID: 5995141665719187509}
   runningThreshold: 0.2
@@ -1315,6 +1319,7 @@ MonoBehaviour:
   lightBurstController: {fileID: -5335877252066859057}
   lightBeamController: {fileID: 1063246405862751299}
   playerLightChannel: {fileID: 1710765735611916135}
+  playerLifeSystem: {fileID: 0}
   showDebugLogs: 1
   debugLightInterval: 5
 --- !u!114 &1710765735611916135

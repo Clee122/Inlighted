@@ -6,7 +6,12 @@ using UnityEngine.InputSystem;
 public class LightBeamController : MonoBehaviour
 {
     [Header("Beam Settings")]
-    [SerializeField] private float beamRange = 6f;
+
+    // Beam Range is now a safety fallback rather than the normal stopping distance.
+    // The Beam searches indefinitely for a wall or Bloom Receiver and only uses
+    // this value when nothing exists ahead of the shot.
+    [SerializeField] private float beamRange = 100f;
+
     [SerializeField] private float beamWidth = 1.5f;
     [SerializeField] private LayerMask darknessLayer;
     [SerializeField] private LayerMask wallLayer;
@@ -19,6 +24,7 @@ public class LightBeamController : MonoBehaviour
     [SerializeField] private float lightCost = 15f;
 
     [Header("Audio")]
+
     // Beam audio belongs to the committed shot rather than the aiming preview,
     // allowing the final clip to be assigned later without changing input logic.
     [SerializeField] private AudioClip beamSound;
@@ -32,6 +38,28 @@ public class LightBeamController : MonoBehaviour
 
     [SerializeField] private float beamCooldown = 2f;
     [SerializeField] private float beamCheckInterval = 0.05f;
+
+    [Header("Beam Darkness Cutout")]
+
+    /*
+     * Controls the total visible width of the opening created in the darkness.
+     * This does not change the Beam's gameplay width, aiming preview, visual
+     * thickness, Bloom Receiver detection or gate detection.
+     */
+    [SerializeField] private float darknessCutoutWidth = 4.5f;
+
+    // Controls how quickly the darkness reaches the Beam's full clearing width.
+    // DarknessCutoutController performs the expansion while the Beam defines
+    // how quickly its own darkness-clearing effect should appear.
+    [SerializeField] private float darknessCutoutExpansionDuration = 0.3f;
+
+    // Controls how long the cleared Beam corridor remains fully open after
+    // the visible Beam itself has finished firing.
+    [SerializeField] private float darknessCutoutHoldDuration = 4f;
+
+    // Controls how long the darkness takes to close back over the Beam corridor
+    // after the hold period has finished.
+    [SerializeField] private float darknessCutoutReformDuration = 2f;
 
     [Header("Beam Origin")]
     [SerializeField] private Transform beamOrigin;
@@ -295,6 +323,47 @@ public class LightBeamController : MonoBehaviour
         return isAiming;
     }
 
+    public float GetLockedBeamLength()
+    {
+        /*
+         * Darkness reads the exact distance captured when the player committed
+         * the shot. Sharing this value prevents the darkness cut-out from using
+         * a separate range that could stop before or continue beyond the Beam.
+         */
+        return lockedBeamSize.x;
+    }
+
+    public float GetDarknessCutoutHalfWidth()
+    {
+        /*
+         * The Inspector exposes the complete darkness opening width because that
+         * is easier to tune visually. DarknessCutoutController calculates the
+         * distance from the Beam centre line, so it needs half of that width.
+         */
+        return darknessCutoutWidth * 0.5f;
+    }
+
+    public float GetDarknessCutoutExpansionDuration()
+    {
+        // The darkness controller performs the visual expansion, but the Beam
+        // owns how quickly its clearing effect reaches its configured full width.
+        return darknessCutoutExpansionDuration;
+    }
+
+    public float GetDarknessCutoutHoldDuration()
+    {
+        // Each fired Beam stores this value with its own corridor so previous
+        // openings can continue holding independently of later Beam shots.
+        return darknessCutoutHoldDuration;
+    }
+
+    public float GetDarknessCutoutReformDuration()
+    {
+        // The Beam determines how long its darkness effect takes to disappear
+        // while DarknessCutoutController performs the gradual closing effect.
+        return darknessCutoutReformDuration;
+    }
+
     // Called by the Beam input.
     public void FireBeam()
     {
@@ -503,9 +572,9 @@ public class LightBeamController : MonoBehaviour
             );
         }
 
-        // The final red indicator result becomes the fixed fired trajectory.
-        // The active Beam will continue using these values even if the player
-        // moves the mouse or changes position after confirming the shot.
+        // The final aiming result already contains the exact distance to the
+        // nearest wall or Bloom Receiver. Locking it here gives the fired Beam
+        // and the darkness system one shared endpoint.
         lockedBeamCenter =
             lastBeamCenter;
 
@@ -971,13 +1040,15 @@ public class LightBeamController : MonoBehaviour
     }
 
     private float GetBeamRangeBeforeWall(
-     Vector2 originPosition,
-     Vector2 direction
- )
+        Vector2 originPosition,
+        Vector2 direction
+    )
     {
-        // Walls and Bloom Receivers both act as endpoints for the Beam.
-        // This prevents a shot that activates one receiver from visually
-        // continuing through it and activating another receiver behind it.
+        /*
+         * Walls and Bloom Receivers remain physical endpoints for the Beam.
+         * The raycast searches forward without the old six-unit restriction so
+         * the shot can travel until actual level geometry blocks it.
+         */
         LayerMask beamStoppingLayers =
             wallLayer |
             bloomReceiverLayer;
@@ -986,7 +1057,7 @@ public class LightBeamController : MonoBehaviour
             Physics2D.Raycast(
                 originPosition,
                 direction,
-                beamRange,
+                Mathf.Infinity,
                 beamStoppingLayers
             );
 
@@ -995,6 +1066,10 @@ public class LightBeamController : MonoBehaviour
             return blockingHit.distance;
         }
 
+        /*
+         * Visuals and gameplay still need a finite distance when nothing exists
+         * ahead of the shot. Beam Range therefore acts only as a safe fallback.
+         */
         return beamRange;
     }
 
