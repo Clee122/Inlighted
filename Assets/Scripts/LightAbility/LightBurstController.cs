@@ -117,6 +117,10 @@ public class LightBurstController : MonoBehaviour
     private PlayerLightChannel playerLightChannel;
     private PlayerDash playerDash;
 
+    // Light Burst tells the animation controller only after the cast has actually
+    // succeeded so blocked inputs never play the ability animation by mistake.
+    private PlayerAnimationController playerAnimationController;
+
     private void Awake()
     {
         // The unlock system controls whether Light Burst has been earned.
@@ -134,6 +138,11 @@ public class LightBurstController : MonoBehaviour
         // Burst cannot begin during an active dash.
         playerDash =
             GetComponent<PlayerDash>();
+
+        // Animation remains separate from Burst gameplay so this controller only
+        // needs to notify it when a successful ability cast should be shown.
+        playerAnimationController =
+            GetComponent<PlayerAnimationController>();
 
         if (playerLightResource == null)
         {
@@ -336,6 +345,13 @@ public class LightBurstController : MonoBehaviour
             );
 
             return;
+        }
+
+        // The animation is triggered only after every gameplay requirement has
+        // succeeded so CatMoth never plays the Burst reaction for a failed cast.
+        if (playerAnimationController != null)
+        {
+            playerAnimationController.PlayLightBurstAnimation();
         }
 
         if (
