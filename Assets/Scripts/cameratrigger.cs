@@ -7,26 +7,25 @@ public class cameratrigger : MonoBehaviour
     public float maxOrtho;
      private void OnTriggerEnter2D(Collider2D collision)
     {
-        Debug.Log("Something entered trigger: " + collision.name);
+        Debug.Log(" entered trigger: " + collision.name);
 
         if (collision.CompareTag("Player"))
         {
             Debug.Log("Player trigger");
 
-            Cameramanager.Movetocameraspace(cameraspace);
-            Cameramanager.ZoomOut(maxOrtho);
+            Cameramanager.SetCZoomout(cameraspace, maxOrtho);
         }
     }
 
     private void OnTriggerExit2D(Collider2D collision)
     {
-        Debug.Log("Something exited trigger: " + collision.name);
+        Debug.Log(" exited trigger: " + collision.name);
 
         if (collision.CompareTag("Player"))
         {
             Debug.Log("Player lift trigger");
 
-            Cameramanager.Movecamback();
+            Cameramanager.DisableCZoomout();
         }
     }
 }
