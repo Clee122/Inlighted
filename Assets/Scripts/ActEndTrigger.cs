@@ -6,12 +6,17 @@ using UnityEngine.InputSystem;
 public class ActEndTrigger : MonoBehaviour
 {
     [SerializeField] private string actCompleteMessage = "End of Act 1";
-    [SerializeField] private GameObject promptUI;// assign text/panel 
-    [SerializeField] private GameObject endPanel; //demo complete panel with a restart and menu and quit
+    [SerializeField] private GameObject promptUI; // Assign text/panel.
+    [SerializeField] private GameObject endPanel; // Demo complete panel with restart, menu and quit.
     [SerializeField] private CanvasGroup endPanelCanvas;
     [SerializeField] private float fadeDuration = 1.0f;
 
-    public UnityEvent onActComplete; //hook up ui in inspector
+    [Header("Input")]
+    // Using an Input Action Reference allows the end trigger to respond to the
+    // same keyboard and controller interaction binding used elsewhere in the game.
+    [SerializeField] private InputActionReference interactAction;
+
+    public UnityEvent onActComplete; // Hook up UI in Inspector.
 
     private bool playerInRange = false;
     private bool hasTriggered = false;
@@ -23,12 +28,32 @@ public class ActEndTrigger : MonoBehaviour
         pauseManager = FindFirstObjectByType<PauseManager>();
     }
 
+    private void OnEnable()
+    {
+        // The action needs to be enabled so this trigger can receive controller input
+        // even though it is not directly handled by the PlayerInput component.
+        if (interactAction != null)
+        {
+            interactAction.action.Enable();
+        }
+    }
+
+    private void OnDisable()
+    {
+        // Disabling the action prevents this object from continuing to listen for
+        // interaction input if the trigger is disabled or the scene changes.
+        if (interactAction != null)
+        {
+            interactAction.action.Disable();
+        }
+    }
+
     private void OnTriggerEnter2D(Collider2D other)
     {
         if (other.CompareTag("Player"))
         {
             playerInRange = true;
-            
+
             if (promptUI != null)
             {
                 promptUI.SetActive(true);
@@ -51,13 +76,23 @@ public class ActEndTrigger : MonoBehaviour
 
     private void Update()
     {
-        if (playerInRange &&  !hasTriggered && Keyboard.current.cKey.wasPressedThisFrame)
+        // The Input Action handles controller/keyboard bindings, while C remains
+        // as a fallback so the original keyboard behaviour is preserved.
+        bool interactPressed =
+            interactAction != null &&
+            interactAction.action.WasPressedThisFrame();
+
+        bool keyboardFallback =
+            Keyboard.current != null &&
+            Keyboard.current.cKey.wasPressedThisFrame;
+
+        if (playerInRange && !hasTriggered && (interactPressed || keyboardFallback))
         {
             hasTriggered = true;
+
             if (promptUI != null)
             {
                 promptUI.SetActive(false);
-
             }
 
             CompleteAct();
@@ -65,7 +100,7 @@ public class ActEndTrigger : MonoBehaviour
     }
 
     private void CompleteAct()
-    {   
+    {
         Debug.Log(actCompleteMessage);
         Time.timeScale = 0.0f;
 
@@ -73,6 +108,7 @@ public class ActEndTrigger : MonoBehaviour
         {
             pauseManager.LockPause();
         }
+
         onActComplete.Invoke();
 
         endPanel.SetActive(true);
@@ -86,7 +122,7 @@ public class ActEndTrigger : MonoBehaviour
 
         while (elapsed < fadeDuration)
         {
-            elapsed += Time.unscaledDeltaTime; //ignores timescale keeps a fading while pausing
+            elapsed += Time.unscaledDeltaTime; // Ignores time scale so fading continues while paused.
             endPanelCanvas.alpha = Mathf.Clamp01(elapsed / fadeDuration);
             yield return null;
         }

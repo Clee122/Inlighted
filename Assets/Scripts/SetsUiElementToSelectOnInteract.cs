@@ -12,6 +12,14 @@ public class SetsUiElementToSelectOnInteract : MonoBehaviour
     [SerializeField] private bool showVisualisation;
     [SerializeField] private Color navigationColour = Color.cyan;
 
+    // The pause menu is disabled during gameplay and enabled when pausing.
+    // Selecting the first button here ensures controller navigation has a valid starting point
+    // every time the menu becomes visible.
+    private void OnEnable()
+    {
+        JumpToElement();
+    }
+
     private void OnDrawGizmos()
     {
         if (!showVisualisation) return;
@@ -25,14 +33,27 @@ public class SetsUiElementToSelectOnInteract : MonoBehaviour
     {
         eventSystem = FindFirstObjectByType<EventSystem>();
 
-        if (eventSystem == null) Debug.LogError("No EventSystem found in scene!", this);
+        if (eventSystem == null)
+            Debug.LogError("No EventSystem found in scene!", this);
     }
 
     public void JumpToElement()
     {
-        if (eventSystem == null) Debug.LogError("No EventSystem found in scene!", this);
-        if (objectToSelect == null) Debug.LogWarning("No object to select", this);
+        if (eventSystem == null)
+        {
+            Debug.LogError("No EventSystem found in scene!", this);
+            return;
+        }
 
+        if (objectToSelect == null)
+        {
+            Debug.LogWarning("No object to select", this);
+            return;
+        }
+
+        // Clear the previous selection first so Unity reliably refreshes
+        // controller navigation when the pause menu opens.
+        eventSystem.SetSelectedGameObject(null);
         eventSystem.SetSelectedGameObject(objectToSelect.gameObject);
     }
 }
