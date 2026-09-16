@@ -220166,7 +220166,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2372123118690083170, guid: 1a2b6faaca96b144c9f1e527bae249d1, type: 3}
       propertyPath: m_ActionEvents.Array.size
-      value: 27
+      value: 29
       objectReference: {fileID: 0}
     - target: {fileID: 2372123118690083170, guid: 1a2b6faaca96b144c9f1e527bae249d1, type: 3}
       propertyPath: m_ActionEvents.Array.data[20].m_ActionId
@@ -220185,6 +220185,14 @@ PrefabInstance:
       value: fcff2c05-565a-4660-b9bb-06faad276392
       objectReference: {fileID: 0}
     - target: {fileID: 2372123118690083170, guid: 1a2b6faaca96b144c9f1e527bae249d1, type: 3}
+      propertyPath: m_ActionEvents.Array.data[27].m_ActionId
+      value: afef2904-aad8-45f3-811c-b591e15e0065
+      objectReference: {fileID: 0}
+    - target: {fileID: 2372123118690083170, guid: 1a2b6faaca96b144c9f1e527bae249d1, type: 3}
+      propertyPath: m_ActionEvents.Array.data[28].m_ActionId
+      value: 615ac558-8d8b-4e5e-a585-ca3a92b83103
+      objectReference: {fileID: 0}
+    - target: {fileID: 2372123118690083170, guid: 1a2b6faaca96b144c9f1e527bae249d1, type: 3}
       propertyPath: m_ActionEvents.Array.data[20].m_ActionName
       value: Player/Pause
       objectReference: {fileID: 0}
@@ -220199,6 +220207,14 @@ PrefabInstance:
     - target: {fileID: 2372123118690083170, guid: 1a2b6faaca96b144c9f1e527bae249d1, type: 3}
       propertyPath: m_ActionEvents.Array.data[26].m_ActionName
       value: 'Player/Dash[/Keyboard/shift]'
+      objectReference: {fileID: 0}
+    - target: {fileID: 2372123118690083170, guid: 1a2b6faaca96b144c9f1e527bae249d1, type: 3}
+      propertyPath: m_ActionEvents.Array.data[27].m_ActionName
+      value: 'Player/BeamShoot[/Mouse/leftButton]'
+      objectReference: {fileID: 0}
+    - target: {fileID: 2372123118690083170, guid: 1a2b6faaca96b144c9f1e527bae249d1, type: 3}
+      propertyPath: m_ActionEvents.Array.data[28].m_ActionName
+      value: Player/Aim Input
       objectReference: {fileID: 0}
     - target: {fileID: 2372123118690083170, guid: 1a2b6faaca96b144c9f1e527bae249d1, type: 3}
       propertyPath: m_ActionEvents.Array.data[0].m_PersistentCalls.m_Calls.Array.size
@@ -220218,7 +220234,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2372123118690083170, guid: 1a2b6faaca96b144c9f1e527bae249d1, type: 3}
       propertyPath: m_ActionEvents.Array.data[26].m_PersistentCalls.m_Calls.Array.size
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2372123118690083170, guid: 1a2b6faaca96b144c9f1e527bae249d1, type: 3}
       propertyPath: m_ActionEvents.Array.data[0].m_PersistentCalls.m_Calls.Array.data[1].m_Mode

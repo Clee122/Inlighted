@@ -164,10 +164,6 @@ public class PlayerController2D : MonoBehaviour
     // disabled while the fired Beam is active.
     private LightBeamController lightBeamController;
 
-    // The dash temporarily takes direct control of the Rigidbody, so normal
-    // movement must stop applying velocity until dash movement has finished.
-    private PlayerDash playerDash;
-
     private bool isChannelingLocked;
 
     public PauseManager Pauser;
@@ -217,11 +213,6 @@ public class PlayerController2D : MonoBehaviour
         // player should remain still for the full duration of a fired Beam.
         lightBeamController =
             GetComponent<LightBeamController>();
-
-        // Dash is kept in its own component because its movement has different
-        // timing and collision requirements from normal running and jumping.
-        playerDash =
-            GetComponent<PlayerDash>();
 
         if (showMovementDebugLogs)
         {
@@ -421,16 +412,6 @@ public class PlayerController2D : MonoBehaviour
             shouldPlayWalkingAudio = false;
         }
 
-        if (
-            playerDash != null &&
-            playerDash.IsDashing()
-        )
-        {
-            // Dash remains experimental and is not treated as normal walking.
-            // Preventing footsteps here avoids giving dash unintended audio.
-            shouldPlayWalkingAudio = false;
-        }
-
         if (shouldPlayWalkingAudio)
         {
             AudioManager.Instance.StartLoopingSFX(
@@ -512,16 +493,6 @@ public class PlayerController2D : MonoBehaviour
                     rb.linearVelocity.y
                 );
 
-            return;
-        }
-
-        if (
-            playerDash != null &&
-            playerDash.IsDashing()
-        )
-        {
-            // PlayerDash owns Rigidbody position, velocity and gravity for the
-            // short dash period. Normal movement must not fight against it.
             return;
         }
 
@@ -726,16 +697,6 @@ public class PlayerController2D : MonoBehaviour
         }
 
         if (
-            playerDash != null &&
-            playerDash.IsDashing()
-        )
-        {
-            // Dash owns Rigidbody movement and gravity while active, so normal
-            // airborne gravity must not interfere with the dash trajectory.
-            return;
-        }
-
-        if (
             lightBeamController != null &&
             lightBeamController.IsBeamActive()
         )
@@ -829,16 +790,6 @@ public class PlayerController2D : MonoBehaviour
         }
 
         if (
-            playerDash != null &&
-            playerDash.IsDashing()
-        )
-        {
-            // Dash owns the Rigidbody while active, so the normal fall-speed
-            // limiter must not alter any vertical velocity used by the dash.
-            return;
-        }
-
-        if (
             lightBeamController != null &&
             lightBeamController.IsBeamActive()
         )
@@ -881,18 +832,6 @@ public class PlayerController2D : MonoBehaviour
     {
         if (!jumpQueued)
         {
-            return;
-        }
-
-        if (
-            playerDash != null &&
-            playerDash.IsDashing()
-        )
-        {
-            // Jump cannot execute while dash owns movement. Clearing both the
-            // queue and buffer prevents a delayed jump from firing after dash.
-            jumpQueued = false;
-            jumpBufferCounter = 0f;
             return;
         }
 
@@ -982,8 +921,8 @@ public class PlayerController2D : MonoBehaviour
             return;
         }
 
-        // Movement input continues being recorded during Beam and dash locks.
-        // This lets held input resume immediately once normal movement returns.
+        // Movement input remains recorded while temporary ability locks are active
+        // so held input can resume immediately once normal movement returns.
         moveInput = input.x;
     }
 
@@ -1021,27 +960,6 @@ public class PlayerController2D : MonoBehaviour
             {
                 Debug.Log(
                     "Jump input was blocked because the player is channeling."
-                );
-            }
-
-            return;
-        }
-
-        if (
-            playerDash != null &&
-            playerDash.IsDashing()
-        )
-        {
-            // Dash is a committed movement action, so jumping is ignored until
-            // normal player movement has returned.
-            jumpQueued = false;
-            jumpBufferCounter = 0f;
-            jumpHeld = false;
-
-            if (showMovementDebugLogs)
-            {
-                Debug.Log(
-                    "Jump input was blocked because the player is dashing."
                 );
             }
 
@@ -1092,8 +1010,8 @@ public class PlayerController2D : MonoBehaviour
 
     public float GetHorizontalMovementInput()
     {
-        // Dash needs the actual left/right input value so it can choose direction
-        // without duplicating movement-input handling in another component.
+        // Exposing the current horizontal input allows other movement-related
+        // systems to read player intent without duplicating input handling.
         return moveInput;
     }
 
@@ -1109,15 +1027,15 @@ public class PlayerController2D : MonoBehaviour
 
     public bool IsOnWalkableSlope()
     {
-        // Dash uses the same slope result as normal movement so grounded dashes
-        // can follow the level surface instead of moving through or away from it.
+        // Exposing the existing slope result lets other gameplay systems use the
+        // same walkable-surface decision as the main movement controller.
         return isOnWalkableSlope;
     }
 
     public Vector2 GetSlopeDirection()
     {
-        // Exposing the already-calculated tangent keeps dash movement consistent
-        // with the direction used by ordinary slope movement.
+        // Exposing the calculated slope tangent keeps any external movement logic
+        // consistent with the direction used by ordinary slope movement.
         return slopeDirection;
     }
 
@@ -1458,13 +1376,6 @@ public class PlayerController2D : MonoBehaviour
         // Respawning should not carry old airtime into the new life because the
         // player may begin already touching the ground at the respawn point.
         currentAirTime = 0f;
-
-        if (playerDash != null)
-        {
-            // Respawning clears active dash and cooldown state so temporary
-            // movement information from the previous life cannot carry over.
-            playerDash.ResetDashState();
-        }
 
         if (rb != null)
         {
