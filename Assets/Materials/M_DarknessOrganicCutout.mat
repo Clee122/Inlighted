@@ -70,6 +70,7 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
+    - _BaseDensity: 0.82
     - _BeamEnabled: 0
     - _BeamLengthUV: 0
     - _BeamPushDistanceUV: 0
@@ -77,7 +78,15 @@ Material:
     - _EdgeDistortion: 0.1
     - _EdgeThickness: 0.22
     - _EnableExternalAlpha: 0
+    - _InternalMinAlpha: 0
+    - _NoiseScaleA: 1.8
+    - _NoiseScaleB: 4
+    - _NoiseScaleC: 7.5
+    - _NoiseStrength: 0.18
     - _OrganicNoiseScale: 2.6
+    - _RedCoverage: 0.6
+    - _RedIntensity: 0.6
+    - _RedNoiseScale: 3
     - _ZWrite: 0
     m_Colors:
     - White: {r: 1, g: 1, b: 1, a: 1}
@@ -88,6 +97,11 @@ Material:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _DarknessColour: {r: 0, g: 0, b: 0, a: 1}
     - _FlowSpeed: {r: 0.03, g: 0.015, b: 0, a: 0}
+    - _NoiseSpeedA: {r: 0.015, g: 0.008, b: 0, a: 0}
+    - _NoiseSpeedB: {r: -0.01, g: 0.018, b: 0, a: 0}
+    - _NoiseSpeedC: {r: 0.008, g: -0.012, b: 0, a: 0}
+    - _RedColour: {r: 1, g: 0.004716992, b: 0.004716992, a: 1}
+    - _RedFlowSpeed: {r: 0.02, g: 0.01, b: 0, a: 0}
     - _RendererColor: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
