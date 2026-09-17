@@ -12,6 +12,8 @@ public class Parallax : MonoBehaviour
 
     //still to do: endpoint where they hide/disappear, startpoint where they appear
 
+    //since tied to camera, moves up and down when player jumps, need to fix
+
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -36,5 +38,20 @@ public class Parallax : MonoBehaviour
         {
             startpos -= length;
         }
+
     }
+
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        //if collision tag = hideparallax
+        //  {
+        //      disable this object
+        //  }
+
+        //if collision tag = revealparallax
+        //  {
+        //      enable this object
+        //  }
+    }
+
 }
