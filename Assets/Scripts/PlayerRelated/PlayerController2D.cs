@@ -126,6 +126,12 @@ public class PlayerController2D : MonoBehaviour
     // jump height through gravity rather than abruptly cutting vertical velocity.
     private bool jumpHeld;
 
+    // A successful jump temporarily prevents slope movement from reclaiming the
+    // Rigidbody while the GroundCheck is still overlapping the take-off surface.
+    // This stops slope movement from overwriting the upward jump velocity during
+    // the short period before CatMoth has physically separated from the ground.
+    private bool isLeavingGroundFromJump;
+
     // The coyote timer remembers how recently CatMoth was grounded.
     // While this value remains above zero, a jump can still be accepted even
     // if the player has only just moved beyond the edge of a platform.
@@ -301,6 +307,11 @@ public class PlayerController2D : MonoBehaviour
 
         if (!isGrounded)
         {
+            // Once CatMoth has physically separated from the take-off surface,
+            // normal airborne movement can take over and the temporary slope
+            // protection used during jump take-off is no longer needed.
+            isLeavingGroundFromJump = false;
+
             // Airtime accumulates only while CatMoth is genuinely detected as airborne.
             // Very short losses of contact on slopes or collider seams will normally
             // remain below the landing-audio threshold and therefore stay silent.
@@ -313,6 +324,10 @@ public class PlayerController2D : MonoBehaviour
             !wasGroundedLastFrame
         )
         {
+            // Landing always ends any temporary jump-detachment state so the next
+            // grounded movement frame can use normal slope handling again.
+            isLeavingGroundFromJump = false;
+
             // Landing audio only plays after enough actual airtime has passed.
             // This prevents the initial spawn and tiny slope/contact interruptions
             // from being treated as meaningful landings.
@@ -517,7 +532,8 @@ public class PlayerController2D : MonoBehaviour
 
         if (
             isGrounded &&
-            isOnWalkableSlope
+            isOnWalkableSlope &&
+            !isLeavingGroundFromJump
         )
         {
             ApplySlopeMovement(
@@ -864,6 +880,11 @@ public class PlayerController2D : MonoBehaviour
                     jumpForce
                 );
 
+            // The GroundCheck can remain inside the take-off surface for a physics
+            // frame after jumping. Preventing slope movement from taking control
+            // during that overlap protects the new upward jump velocity.
+            isLeavingGroundFromJump = true;
+
             // A successful jump consumes both forgiveness windows immediately.
             // This prevents either timer from accidentally causing another jump
             // from the same button press.
@@ -1086,6 +1107,7 @@ public class PlayerController2D : MonoBehaviour
         jumpQueued = false;
         jumpBufferCounter = 0f;
         jumpHeld = false;
+        isLeavingGroundFromJump = false;
         isInPlayerControlledJump = false;
 
         if (rb != null)
@@ -1362,6 +1384,7 @@ public class PlayerController2D : MonoBehaviour
         moveInput = 0f;
         jumpQueued = false;
         jumpHeld = false;
+        isLeavingGroundFromJump = false;
         isChannelingLocked = false;
         isInPlayerControlledJump = false;
 
