@@ -133,7 +133,6 @@ public class LightBurstController : MonoBehaviour
     private PlayerAbilityUnlocks abilityUnlocks;
     private PlayerLightResource playerLightResource;
     private PlayerLightChannel playerLightChannel;
-    private PlayerDash playerDash;
 
     // Animation is triggered only after the ability has successfully activated so
     // failed inputs never play CatMoth's Burst animation.
@@ -160,10 +159,6 @@ public class LightBurstController : MonoBehaviour
         // Channeling and Light Burst remain mutually exclusive.
         playerLightChannel =
             GetComponent<PlayerLightChannel>();
-
-        // Burst cannot begin during an active dash.
-        playerDash =
-            GetComponent<PlayerDash>();
 
         // Animation remains separate from Burst gameplay and is notified only
         // once the cast has passed every activation requirement.
@@ -316,18 +311,6 @@ public class LightBurstController : MonoBehaviour
         {
             Debug.Log(
                 "Light Burst was blocked because the player is channeling."
-            );
-
-            return;
-        }
-
-        if (
-            playerDash != null &&
-            playerDash.IsDashing()
-        )
-        {
-            Debug.Log(
-                "Light Burst activation was blocked because the player is dashing."
             );
 
             return;

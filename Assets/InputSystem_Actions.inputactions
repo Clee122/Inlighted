@@ -142,15 +142,6 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "Dash",
-                    "type": "Button",
-                    "id": "fcff2c05-565a-4660-b9bb-06faad276392",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
                     "name": "BeamShoot",
                     "type": "Button",
                     "id": "afef2904-aad8-45f3-811c-b591e15e0065",
@@ -673,17 +664,6 @@
                     "processors": "",
                     "groups": ";Gamepad",
                     "action": "Channel",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "8b7e4fdd-a664-4f1b-a0af-df4b7ea87d5a",
-                    "path": "<Keyboard>/shift",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "Dash",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },

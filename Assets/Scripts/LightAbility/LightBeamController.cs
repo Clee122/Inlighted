@@ -128,10 +128,6 @@ public class LightBeamController : MonoBehaviour
     private PlayerLightResource playerLightResource;
     private PlayerLightChannel playerLightChannel;
 
-    // Beam aiming remains available during dash, but this reference lets the
-    // actual firing action wait until dash movement has finished.
-    private PlayerDash playerDash;
-
     /*
      * This remembers which input method started the current aiming session.
      * It prevents a connected Gamepad from taking control of aiming when the
@@ -152,11 +148,6 @@ public class LightBeamController : MonoBehaviour
         // Beam aiming must be blocked before a preview begins while channeling.
         playerLightChannel =
             GetComponent<PlayerLightChannel>();
-
-        // Dash does not block aiming, but firing checks this state so the player
-        // can prepare their shot while moving and commit after the dash finishes.
-        playerDash =
-            GetComponent<PlayerDash>();
 
         if (playerLightResource == null)
         {
@@ -256,8 +247,8 @@ public class LightBeamController : MonoBehaviour
             return;
         }
 
-        // The aiming preview is recalculated only while aiming. This also means
-        // the indicator keeps following the player while they perform a dash.
+        // The aiming preview is recalculated only while aiming so the indicator
+        // keeps following the player and responding to the current aim direction.
         UpdateBeamPreview(
             beamIndicatorVisual
         );
@@ -511,20 +502,6 @@ public class LightBeamController : MonoBehaviour
         {
             Debug.Log(
                 "Light Beam could not fire because the player was not aiming."
-            );
-
-            return;
-        }
-
-        if (
-            playerDash != null &&
-            playerDash.IsDashing()
-        )
-        {
-            // The aiming preview remains active while dashing. Only the committed
-            // shot is blocked so the player can fire as soon as dash finishes.
-            Debug.Log(
-                "Light Beam firing was blocked because the player is dashing."
             );
 
             return;
