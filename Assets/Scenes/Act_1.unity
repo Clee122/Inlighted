@@ -152135,7 +152135,7 @@ Tilemap:
       m_TileObjectToInstantiateIndex: 65535
       dummyAlignment: 0
       m_AllTileFlags: 1073741825
-  - first: {x: 251, y: -26, z: 0}
+  - first: {x: 253, y: -26, z: 0}
     second:
       serializedVersion: 2
       m_TileIndex: 66
@@ -287947,7 +287947,6 @@ Transform:
   m_Children:
   - {fileID: 1394540507}
   - {fileID: 1259166065}
-  - {fileID: 1470005557}
   - {fileID: 816334888}
   - {fileID: 1923400787}
   - {fileID: 506470624}
@@ -347289,11 +347288,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3246170758399234806, guid: b3d35ebfe6aa6e140a0bff64f47e94da, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 11.57
+      value: 12.56
       objectReference: {fileID: 0}
     - target: {fileID: 3246170758399234806, guid: b3d35ebfe6aa6e140a0bff64f47e94da, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -38.37
+      value: -38.68
       objectReference: {fileID: 0}
     - target: {fileID: 3246170758399234806, guid: b3d35ebfe6aa6e140a0bff64f47e94da, type: 3}
       propertyPath: m_LocalPosition.z
@@ -350496,75 +350495,6 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
---- !u!1001 &1282672489
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 759227442}
-    m_Modifications:
-    - target: {fileID: 608718917254149247, guid: b3d35ebfe6aa6e140a0bff64f47e94da, type: 3}
-      propertyPath: m_TagString
-      value: BurstPassThrough
-      objectReference: {fileID: 0}
-    - target: {fileID: 3246170758399234806, guid: b3d35ebfe6aa6e140a0bff64f47e94da, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 23.03
-      objectReference: {fileID: 0}
-    - target: {fileID: 3246170758399234806, guid: b3d35ebfe6aa6e140a0bff64f47e94da, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: -38.11
-      objectReference: {fileID: 0}
-    - target: {fileID: 3246170758399234806, guid: b3d35ebfe6aa6e140a0bff64f47e94da, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3246170758399234806, guid: b3d35ebfe6aa6e140a0bff64f47e94da, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 3246170758399234806, guid: b3d35ebfe6aa6e140a0bff64f47e94da, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3246170758399234806, guid: b3d35ebfe6aa6e140a0bff64f47e94da, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3246170758399234806, guid: b3d35ebfe6aa6e140a0bff64f47e94da, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3246170758399234806, guid: b3d35ebfe6aa6e140a0bff64f47e94da, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3246170758399234806, guid: b3d35ebfe6aa6e140a0bff64f47e94da, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3246170758399234806, guid: b3d35ebfe6aa6e140a0bff64f47e94da, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6562861593229217606, guid: b3d35ebfe6aa6e140a0bff64f47e94da, type: 3}
-      propertyPath: m_TagString
-      value: BurstPassThrough
-      objectReference: {fileID: 0}
-    - target: {fileID: 8341534555285397389, guid: b3d35ebfe6aa6e140a0bff64f47e94da, type: 3}
-      propertyPath: m_Name
-      value: FlowerPlatforms_lightburst (17)
-      objectReference: {fileID: 0}
-    - target: {fileID: 8341534555285397389, guid: b3d35ebfe6aa6e140a0bff64f47e94da, type: 3}
-      propertyPath: m_TagString
-      value: BurstPassThrough
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: b3d35ebfe6aa6e140a0bff64f47e94da, type: 3}
 --- !u!1001 &1282708347
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -371770,11 +371700,6 @@ PrefabInstance:
 Transform:
   m_CorrespondingSourceObject: {fileID: 8585825438444348274, guid: 1e2c25fe400cc284bbbf92de97362c14, type: 3}
   m_PrefabInstance: {fileID: 1469739262}
-  m_PrefabAsset: {fileID: 0}
---- !u!4 &1470005557 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 3246170758399234806, guid: b3d35ebfe6aa6e140a0bff64f47e94da, type: 3}
-  m_PrefabInstance: {fileID: 1282672489}
   m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1470596670
 PrefabInstance:
