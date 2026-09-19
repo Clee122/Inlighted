@@ -259266,7 +259266,7 @@ Transform:
   m_GameObject: {fileID: 519420028}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -52.23713, y: -7.13587, z: -10}
+  m_LocalPosition: {x: -57.525234, y: -7.0944996, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -388130,8 +388130,8 @@ MonoBehaviour:
   musicSource: {fileID: 1618914259}
   sfxSource: {fileID: 1618914258}
   loopingSfxSource: {fileID: 1618914257}
-  sceneMusic: {fileID: 8300000, guid: 5a5b712a5428c43db815206df3f0b2af, type: 3}
-  musicVolume: 1
+  sceneMusic: {fileID: 8300000, guid: 2449d90a3130cf840bbbd2afda448d95, type: 3}
+  musicVolume: 0.3
   sfxVolume: 1
   showAudioDebugLogs: 0
 --- !u!4 &1618914261
@@ -454392,6 +454392,7 @@ SceneRoots:
   m_Roots:
   - {fileID: 519420032}
   - {fileID: 619394802}
+  - {fileID: 1618914261}
   - {fileID: 436820429}
   - {fileID: 1568078734}
   - {fileID: 525513835}
@@ -454433,7 +454434,6 @@ SceneRoots:
   - {fileID: 1559004329}
   - {fileID: 1262676486}
   - {fileID: 301135676}
-  - {fileID: 1618914261}
   - {fileID: 126697132}
   - {fileID: 1620632043}
   - {fileID: 759227442}
