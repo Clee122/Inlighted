@@ -6,14 +6,13 @@ public class Parallax : MonoBehaviour
     public float length;
     public float startpos;
     public GameObject cam;
+    public float lockedYPosition;
 
     //closer objects have lower numbers
     public float parallaxEffect;
 
-    //still to do: endpoint where they hide/disappear, startpoint where they appear
-
-    //since tied to camera, moves up and down when player jumps, need to fix
-
+    public GameObject hitboxDisableParallax;
+    public GameObject hitboxEnableParallax;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -28,7 +27,7 @@ public class Parallax : MonoBehaviour
 
         float dist = (cam.transform.position.x * parallaxEffect);
 
-        transform.position = new Vector3(startpos + dist, transform.position.y, transform.position.z);
+        transform.position = new Vector3(startpos + dist, lockedYPosition, transform.position.z);
 
         if (temp > startpos + length)
         {
@@ -43,15 +42,19 @@ public class Parallax : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        //if collision tag = hideparallax
-        //  {
-        //      disable this object
-        //  }
+        print("collided with something");
 
-        //if collision tag = revealparallax
-        //  {
-        //      enable this object
-        //  }
+        if (collision == hitboxDisableParallax)
+        {
+            print("set disabled");
+            gameObject.SetActive(false);
+        }
+
+        if (collision == hitboxEnableParallax)
+        {
+            print("set enabled");
+            gameObject.SetActive(true);
+        }
     }
 
 }
