@@ -15,12 +15,15 @@ public class cameramanage : MonoBehaviour
     public float targetOrtho;
     public float normalOrtho = 4f;
     public float maxOrtho = 17f;
-
+    private float cameraStayTime = 3f;
+    private float cameraTimer;
+    public PlayerController2D playerController;
+    public Rigidbody2D playerRb;
     public CinemachineVirtualCamera vcam;
 
     private bool movingToCameraSpace = false;
     private bool movingBack = false;
-
+  
     // The intro keeps the camera anchored to a designed opening composition
     // while CatMoth falls into view instead of following the player immediately.
     private bool holdingIntroPosition = false;
@@ -40,6 +43,9 @@ public class cameramanage : MonoBehaviour
     {
         GameObject playerObject =
             GameObject.FindGameObjectWithTag("Player");
+        
+        playerRb =
+            playerObject.GetComponent<Rigidbody2D>();
 
         if (playerObject == null)
         {
@@ -172,6 +178,10 @@ public class cameramanage : MonoBehaviour
 
         if (movingToCameraSpace)
         {
+             if (playerController  != null)
+            {
+                playerController.enabled = false;
+            }
             camerapplace.position =
                 Vector3.MoveTowards(
                     camerapplace.position,
@@ -179,9 +189,31 @@ public class cameramanage : MonoBehaviour
                     speed * Time.deltaTime
                 );
 
+            if (
+                Vector3.Distance(
+                camerapplace.position,
+                target.position
+                ) < 0.1f
+                )
+
+              cameraTimer -=
+                Time.deltaTime;
+
+            Debug.Log(
+                "Camera waiting: "
+            );
+
+            if (cameraTimer <= 0f)
+            {
+                Movecamback();
+
             return;
         }
 
+    }
+        
+        
+    {
         if (movingBack)
         {
             camerapplace.position =
@@ -190,6 +222,8 @@ public class cameramanage : MonoBehaviour
                     player.position,
                     speed * Time.deltaTime
                 );
+
+        Debug.Log("Camera returning to player");
 
             if (
                 Vector3.Distance(
@@ -203,9 +237,21 @@ public class cameramanage : MonoBehaviour
 
                 movingBack =
                     false;
+            
+            if (playerController != null)
+            {
+                playerController.enabled = true;
+            }
+               Debug.Log(
+                "Camera fully back"
+                );
             }
         }
+
     }
+
+        return;
+}
 
     public void ZoomCam()
     {
@@ -222,7 +268,7 @@ public class cameramanage : MonoBehaviour
                 Time.deltaTime
             );
     }
-
+    
     public void Movetocameraspace(
         Transform cameraspace
     )
@@ -231,6 +277,16 @@ public class cameramanage : MonoBehaviour
         {
             return;
         }
+
+            if (playerRb != null)
+    {
+        playerRb.linearVelocity =
+            Vector2.zero;
+    }
+
+        cameraTimer =
+        cameraStayTime;
+
 
         target =
             cameraspace;
@@ -246,6 +302,7 @@ public class cameramanage : MonoBehaviour
 
         movingBack =
             false;
+
     }
 
     public void ZoomOut(
@@ -277,35 +334,6 @@ public class cameramanage : MonoBehaviour
             normalOrtho;
     }
 
-    public void Movecambackdie()
-    {
-        target =
-            player;
-
-        holdingIntroPosition =
-            false;
-
-        blendingBackFromIntro =
-            false;
-
-        movingToCameraSpace =
-            false;
-
-        movingBack =
-            false;
-
-        camerapplace.position =
-            player.position;
-
-        targetOrtho =
-            normalOrtho;
-
-        vcam.m_Lens.OrthographicSize =
-            normalOrtho;
-
-        vcam.PreviousStateIsValid =
-            false;
-    }
 
     public void HoldIntroCamera(
         Transform introCameraPosition
@@ -379,5 +407,17 @@ public class cameramanage : MonoBehaviour
 
         targetOrtho =
             normalOrtho;
+    }
+    public bool CamerTimer()
+    {
+        if (cameraStayTime > 0)
+        {
+            cameraStayTime -= Time.deltaTime;
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 }

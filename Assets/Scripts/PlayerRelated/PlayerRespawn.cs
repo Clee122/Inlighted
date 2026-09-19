@@ -137,10 +137,6 @@ public class PlayerRespawn : MonoBehaviour
             transform.position = respawnPoint.position;
 
             Physics2D.SyncTransforms();
-            if (cameraManager != null)
-            {
-                cameraManager.Movecambackdie();
-            }
 
 
             // Respawn audio is tied to the successful teleport rather than the start
