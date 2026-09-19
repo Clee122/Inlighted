@@ -11,6 +11,29 @@ public class PlayerController2D : MonoBehaviour
     [SerializeField] private float deceleration = 70f;
     [SerializeField] private float turnAcceleration = 100f;
 
+    [Header("Air Control")]
+
+    // Air movement has its own speed multiplier so CatMoth can keep strong
+    // horizontal steering without forcing grounded movement to use the same feel.
+    [SerializeField] private float airMoveSpeedMultiplier = 1f;
+
+    // Separate airborne acceleration allows CatMoth to respond more quickly to
+    // directional input in the air while leaving grounded acceleration unchanged.
+    [SerializeField] private float airAcceleration = 65f;
+
+    // Air deceleration controls how strongly CatMoth can correct an overshoot
+    // after the player releases horizontal input during a jump or fall.
+    [SerializeField] private float airDeceleration = 55f;
+
+    // Air turning is intentionally tuneable separately because reversing direction
+    // is one of the most important ways the player can correct a landing in mid-air.
+    [SerializeField] private float airTurnAcceleration = 110f;
+
+    // Near the top of a jump the player has the most time to judge the landing.
+    // A small control boost here makes fine corrections easier without increasing
+    // CatMoth's maximum horizontal speed.
+    [SerializeField] private float apexAirControlMultiplier = 1.2f;
+
     [Header("Slope Movement")]
     [SerializeField] private float slopeCheckDistance = 0.5f;
     [SerializeField] private float maximumSlopeAngle = 50f;
@@ -42,12 +65,30 @@ public class PlayerController2D : MonoBehaviour
     // consecutive platform jumps feel more responsive and forgiving.
     [SerializeField] private float jumpBufferTime = 0.12f;
 
-    [Header("Fall")]
+    [Header("Air Gravity")]
 
-    // Stronger gravity is applied only while CatMoth is moving downward.
-    // This makes the second half of a jump feel less floaty while leaving the
-    // upward jump unchanged and preserving the existing jump height.
-    [SerializeField] private float fallGravityMultiplier = 1.3f;
+    // Rising gravity stays close to the Rigidbody's normal gravity so the jump
+    // still has a clear upward arc instead of feeling like CatMoth is flying.
+    [SerializeField] private float riseGravityMultiplier = 1f;
+
+    // Gravity becomes lighter close to zero vertical velocity so CatMoth spends
+    // slightly longer around the top of the jump. This creates controllable hang
+    // time without artificially freezing the Rigidbody at the apex.
+    [SerializeField] private float apexGravityMultiplier = 0.55f;
+
+    // This threshold defines how close CatMoth must be to zero vertical velocity
+    // before the softer apex gravity and extra apex steering are used.
+    [SerializeField] private float apexVelocityThreshold = 1.5f;
+
+    // Falling gravity is deliberately below the default value for the current
+    // light-and-airy direction. This replaces the previous heavier fall multiplier
+    // so CatMoth descends more slowly and gives the player longer to correct a landing.
+    [SerializeField] private float fallGravityMultiplier = 0.7f;
+
+    // Releasing jump early applies somewhat stronger upward gravity so the player
+    // can still choose a shorter jump. It is intentionally gentle so variable jump
+    // height does not undermine the floaty movement direction.
+    [SerializeField] private float releasedJumpGravityMultiplier = 1.35f;
 
     // Maximum fall speed prevents gravity from accelerating CatMoth indefinitely
     // during long drops. Keeping the downward speed predictable also makes it
@@ -80,6 +121,16 @@ public class PlayerController2D : MonoBehaviour
     private bool isGrounded;
     private bool isOnWalkableSlope;
     private bool jumpQueued;
+
+    // Tracking whether jump is still held lets the controller support variable
+    // jump height through gravity rather than abruptly cutting vertical velocity.
+    private bool jumpHeld;
+
+    // A successful jump temporarily prevents slope movement from reclaiming the
+    // Rigidbody while the GroundCheck is still overlapping the take-off surface.
+    // This stops slope movement from overwriting the upward jump velocity during
+    // the short period before CatMoth has physically separated from the ground.
+    private bool isLeavingGroundFromJump;
 
     // The coyote timer remembers how recently CatMoth was grounded.
     // While this value remains above zero, a jump can still be accepted even
@@ -118,10 +169,6 @@ public class PlayerController2D : MonoBehaviour
     // The movement controller checks the Beam state so movement and jumping are
     // disabled while the fired Beam is active.
     private LightBeamController lightBeamController;
-
-    // The dash temporarily takes direct control of the Rigidbody, so normal
-    // movement must stop applying velocity until dash movement has finished.
-    private PlayerDash playerDash;
 
     private bool isChannelingLocked;
 
@@ -173,11 +220,6 @@ public class PlayerController2D : MonoBehaviour
         lightBeamController =
             GetComponent<LightBeamController>();
 
-        // Dash is kept in its own component because its movement has different
-        // timing and collision requirements from normal running and jumping.
-        playerDash =
-            GetComponent<PlayerDash>();
-
         if (showMovementDebugLogs)
         {
             Debug.Log(
@@ -201,9 +243,9 @@ public class PlayerController2D : MonoBehaviour
         DetectSlope();
         ApplyMovement();
 
-        // Falling gravity is applied before the final fall-speed clamp so CatMoth
-        // can accelerate downward more quickly without exceeding the chosen cap.
-        ApplyFallGravity();
+        // Air gravity is chosen from rising, apex and falling phases before the
+        // final fall-speed clamp so CatMoth's jump arc remains predictable.
+        ApplyAirGravity();
 
         // Fall speed is limited after gravity has updated the Rigidbody.
         // This keeps long falls controlled without changing upward jump velocity.
@@ -265,6 +307,11 @@ public class PlayerController2D : MonoBehaviour
 
         if (!isGrounded)
         {
+            // Once CatMoth has physically separated from the take-off surface,
+            // normal airborne movement can take over and the temporary slope
+            // protection used during jump take-off is no longer needed.
+            isLeavingGroundFromJump = false;
+
             // Airtime accumulates only while CatMoth is genuinely detected as airborne.
             // Very short losses of contact on slopes or collider seams will normally
             // remain below the landing-audio threshold and therefore stay silent.
@@ -277,6 +324,10 @@ public class PlayerController2D : MonoBehaviour
             !wasGroundedLastFrame
         )
         {
+            // Landing always ends any temporary jump-detachment state so the next
+            // grounded movement frame can use normal slope handling again.
+            isLeavingGroundFromJump = false;
+
             // Landing audio only plays after enough actual airtime has passed.
             // This prevents the initial spawn and tiny slope/contact interruptions
             // from being treated as meaningful landings.
@@ -376,16 +427,6 @@ public class PlayerController2D : MonoBehaviour
             shouldPlayWalkingAudio = false;
         }
 
-        if (
-            playerDash != null &&
-            playerDash.IsDashing()
-        )
-        {
-            // Dash remains experimental and is not treated as normal walking.
-            // Preventing footsteps here avoids giving dash unintended audio.
-            shouldPlayWalkingAudio = false;
-        }
-
         if (shouldPlayWalkingAudio)
         {
             AudioManager.Instance.StartLoopingSFX(
@@ -471,16 +512,6 @@ public class PlayerController2D : MonoBehaviour
         }
 
         if (
-            playerDash != null &&
-            playerDash.IsDashing()
-        )
-        {
-            // PlayerDash owns Rigidbody position, velocity and gravity for the
-            // short dash period. Normal movement must not fight against it.
-            return;
-        }
-
-        if (
             lightBeamController != null &&
             lightBeamController.IsBeamActive()
         )
@@ -501,7 +532,8 @@ public class PlayerController2D : MonoBehaviour
 
         if (
             isGrounded &&
-            isOnWalkableSlope
+            isOnWalkableSlope &&
+            !isLeavingGroundFromJump
         )
         {
             ApplySlopeMovement(
@@ -525,6 +557,18 @@ public class PlayerController2D : MonoBehaviour
     {
         rb.gravityScale =
             defaultGravityScale;
+
+        // Airborne target speed can be tuned independently from grounded speed.
+        // Keeping the default multiplier at 1 preserves full horizontal reach while
+        // still allowing playtesting to make CatMoth more or less mobile in the air.
+        if (!isGrounded)
+        {
+            targetSpeed *=
+                Mathf.Max(
+                    0f,
+                    airMoveSpeedMultiplier
+                );
+        }
 
         float currentHorizontalSpeed =
             rb.linearVelocity.x;
@@ -595,6 +639,55 @@ public class PlayerController2D : MonoBehaviour
         bool hasMovementInput
     )
     {
+        if (!isGrounded)
+        {
+            float airborneMovementRate;
+
+            if (!hasMovementInput)
+            {
+                // Air deceleration gives the player a way to reduce horizontal
+                // drift before landing instead of being committed to the take-off speed.
+                airborneMovementRate =
+                    airDeceleration;
+            }
+            else if (
+                Mathf.Abs(currentSpeed) > 0.01f &&
+                Mathf.Sign(moveInput) !=
+                Mathf.Sign(currentSpeed)
+            )
+            {
+                // Reversing direction uses a dedicated, stronger rate because
+                // landing correction often requires changing an existing trajectory.
+                airborneMovementRate =
+                    airTurnAcceleration;
+            }
+            else
+            {
+                airborneMovementRate =
+                    airAcceleration;
+            }
+
+            if (
+                rb != null &&
+                Mathf.Abs(rb.linearVelocity.y) <=
+                Mathf.Max(
+                    0f,
+                    apexVelocityThreshold
+                )
+            )
+            {
+                // Extra steering near the apex takes advantage of the longer hang
+                // time and gives the player finer control over where CatMoth descends.
+                airborneMovementRate *=
+                    Mathf.Max(
+                        0f,
+                        apexAirControlMultiplier
+                    );
+            }
+
+            return airborneMovementRate;
+        }
+
         if (!hasMovementInput)
         {
             return deceleration;
@@ -612,20 +705,10 @@ public class PlayerController2D : MonoBehaviour
         return acceleration;
     }
 
-    private void ApplyFallGravity()
+    private void ApplyAirGravity()
     {
         if (rb == null)
         {
-            return;
-        }
-
-        if (
-            playerDash != null &&
-            playerDash.IsDashing()
-        )
-        {
-            // Dash owns Rigidbody movement and gravity while active, so normal
-            // falling behaviour must not interfere with the dash trajectory.
             return;
         }
 
@@ -634,8 +717,8 @@ public class PlayerController2D : MonoBehaviour
             lightBeamController.IsBeamActive()
         )
         {
-            // Beam intentionally freezes CatMoth in place, so fall gravity must
-            // remain disabled for the full duration of the active Beam.
+            // Beam intentionally freezes CatMoth in place, so airborne gravity
+            // must remain disabled for the full duration of the active Beam.
             return;
         }
 
@@ -649,41 +732,76 @@ public class PlayerController2D : MonoBehaviour
             return;
         }
 
-        if (rb.linearVelocity.y < 0f)
+        if (isGrounded)
         {
-            // Gravity scale is increased only after CatMoth begins descending.
-            // The upward half of the jump therefore continues using the original
-            // Rigidbody gravity and keeps the same jump height and launch feel.
+            // Flat ground should always restore the Rigidbody's normal gravity.
+            // This prevents an airborne gravity multiplier from carrying into
+            // grounded movement before the next jump begins.
+            rb.gravityScale =
+                defaultGravityScale;
+
+            return;
+        }
+
+        float verticalSpeed =
+            rb.linearVelocity.y;
+
+        float safeApexThreshold =
+            Mathf.Max(
+                0f,
+                apexVelocityThreshold
+            );
+
+        if (
+            Mathf.Abs(verticalSpeed) <=
+            safeApexThreshold
+        )
+        {
+            // Softer gravity around the apex creates extra hang time naturally.
+            // The Rigidbody still moves continuously, so the jump never hard-stops.
             rb.gravityScale =
                 defaultGravityScale *
                 Mathf.Max(
                     0f,
-                    fallGravityMultiplier
+                    apexGravityMultiplier
                 );
+
+            return;
         }
-        else
+
+        if (verticalSpeed > 0f)
         {
-            // Returning to the default gravity while rising or grounded prevents
-            // the fall multiplier from carrying into the next jump.
+            float activeRiseMultiplier =
+                jumpHeld
+                    ? riseGravityMultiplier
+                    : releasedJumpGravityMultiplier;
+
+            // Holding jump keeps the normal airy rise, while releasing it early
+            // increases gravity enough to create a shorter controllable jump.
             rb.gravityScale =
-                defaultGravityScale;
+                defaultGravityScale *
+                Mathf.Max(
+                    0f,
+                    activeRiseMultiplier
+                );
+
+            return;
         }
+
+        // Falling uses deliberately reduced gravity so CatMoth descends slowly
+        // and the player has more time to steer towards the intended landing.
+        rb.gravityScale =
+            defaultGravityScale *
+            Mathf.Max(
+                0f,
+                fallGravityMultiplier
+            );
     }
 
     private void ApplyMaximumFallSpeed()
     {
         if (rb == null)
         {
-            return;
-        }
-
-        if (
-            playerDash != null &&
-            playerDash.IsDashing()
-        )
-        {
-            // Dash owns the Rigidbody while active, so the normal fall-speed
-            // limiter must not alter any vertical velocity used by the dash.
             return;
         }
 
@@ -734,18 +852,6 @@ public class PlayerController2D : MonoBehaviour
         }
 
         if (
-            playerDash != null &&
-            playerDash.IsDashing()
-        )
-        {
-            // Jump cannot execute while dash owns movement. Clearing both the
-            // queue and buffer prevents a delayed jump from firing after dash.
-            jumpQueued = false;
-            jumpBufferCounter = 0f;
-            return;
-        }
-
-        if (
             lightBeamController != null &&
             lightBeamController.IsBeamActive()
         )
@@ -773,6 +879,11 @@ public class PlayerController2D : MonoBehaviour
                     rb.linearVelocity.x,
                     jumpForce
                 );
+
+            // The GroundCheck can remain inside the take-off surface for a physics
+            // frame after jumping. Preventing slope movement from taking control
+            // during that overlap protects the new upward jump velocity.
+            isLeavingGroundFromJump = true;
 
             // A successful jump consumes both forgiveness windows immediately.
             // This prevents either timer from accidentally causing another jump
@@ -831,8 +942,8 @@ public class PlayerController2D : MonoBehaviour
             return;
         }
 
-        // Movement input continues being recorded during Beam and dash locks.
-        // This lets held input resume immediately once normal movement returns.
+        // Movement input remains recorded while temporary ability locks are active
+        // so held input can resume immediately once normal movement returns.
         moveInput = input.x;
     }
 
@@ -840,10 +951,20 @@ public class PlayerController2D : MonoBehaviour
         InputAction.CallbackContext context
     )
     {
+        if (context.canceled)
+        {
+            // Releasing jump does not cut velocity instantly. The airborne gravity
+            // code instead increases rising gravity so shorter jumps remain smooth.
+            jumpHeld = false;
+            return;
+        }
+
         if (!context.performed)
         {
             return;
         }
+
+        jumpHeld = true;
 
         if (
             playerLightChannel != null &&
@@ -854,31 +975,12 @@ public class PlayerController2D : MonoBehaviour
             // player to remain grounded and committed to the channel action.
             jumpQueued = false;
             jumpBufferCounter = 0f;
+            jumpHeld = false;
 
             if (showMovementDebugLogs)
             {
                 Debug.Log(
                     "Jump input was blocked because the player is channeling."
-                );
-            }
-
-            return;
-        }
-
-        if (
-            playerDash != null &&
-            playerDash.IsDashing()
-        )
-        {
-            // Dash is a committed movement action, so jumping is ignored until
-            // normal player movement has returned.
-            jumpQueued = false;
-            jumpBufferCounter = 0f;
-
-            if (showMovementDebugLogs)
-            {
-                Debug.Log(
-                    "Jump input was blocked because the player is dashing."
                 );
             }
 
@@ -893,6 +995,7 @@ public class PlayerController2D : MonoBehaviour
             // Jump input is ignored for the duration of the fired Beam.
             jumpQueued = false;
             jumpBufferCounter = 0f;
+            jumpHeld = false;
 
             if (showMovementDebugLogs)
             {
@@ -928,8 +1031,8 @@ public class PlayerController2D : MonoBehaviour
 
     public float GetHorizontalMovementInput()
     {
-        // Dash needs the actual left/right input value so it can choose direction
-        // without duplicating movement-input handling in another component.
+        // Exposing the current horizontal input allows other movement-related
+        // systems to read player intent without duplicating input handling.
         return moveInput;
     }
 
@@ -945,15 +1048,15 @@ public class PlayerController2D : MonoBehaviour
 
     public bool IsOnWalkableSlope()
     {
-        // Dash uses the same slope result as normal movement so grounded dashes
-        // can follow the level surface instead of moving through or away from it.
+        // Exposing the existing slope result lets other gameplay systems use the
+        // same walkable-surface decision as the main movement controller.
         return isOnWalkableSlope;
     }
 
     public Vector2 GetSlopeDirection()
     {
-        // Exposing the already-calculated tangent keeps dash movement consistent
-        // with the direction used by ordinary slope movement.
+        // Exposing the calculated slope tangent keeps any external movement logic
+        // consistent with the direction used by ordinary slope movement.
         return slopeDirection;
     }
 
@@ -1003,6 +1106,8 @@ public class PlayerController2D : MonoBehaviour
         moveInput = 0f;
         jumpQueued = false;
         jumpBufferCounter = 0f;
+        jumpHeld = false;
+        isLeavingGroundFromJump = false;
         isInPlayerControlledJump = false;
 
         if (rb != null)
@@ -1278,6 +1383,8 @@ public class PlayerController2D : MonoBehaviour
     {
         moveInput = 0f;
         jumpQueued = false;
+        jumpHeld = false;
+        isLeavingGroundFromJump = false;
         isChannelingLocked = false;
         isInPlayerControlledJump = false;
 
@@ -1292,13 +1399,6 @@ public class PlayerController2D : MonoBehaviour
         // Respawning should not carry old airtime into the new life because the
         // player may begin already touching the ground at the respawn point.
         currentAirTime = 0f;
-
-        if (playerDash != null)
-        {
-            // Respawning clears active dash and cooldown state so temporary
-            // movement information from the previous life cannot carry over.
-            playerDash.ResetDashState();
-        }
 
         if (rb != null)
         {

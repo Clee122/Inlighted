@@ -6,15 +6,15 @@ public class LightBurstController : MonoBehaviour
 {
     private enum BurstEffectPhase
     {
-        Expanding,
+        Active,
         Holding,
         Reforming
     }
 
     /*
-     * Each cast keeps its own environmental state after the visible Burst ends.
-     * This allows several Burst openings to linger/reform independently instead
-     * of forcing the darkness system to own the ability's lifetime.
+     * Each Burst keeps its own darkness deformation after the visible ability
+     * ends. This lets an old opening hold and reform independently while the
+     * player is already able to create another Burst elsewhere.
      */
     private class BurstEffectData
     {
@@ -31,19 +31,24 @@ public class LightBurstController : MonoBehaviour
 
     [Header("Burst Settings")]
 
-    // Cooldown remains separate from the environmental lifetime so another Burst
-    // can become available without forcing an older darkness opening to disappear.
+    // The visible Burst lasts long enough to provide a readable temporary safe
+    // area rather than disappearing immediately after its expansion.
+    [SerializeField] private float burstDuration = 2f;
+
+    // The radius reaches maximum size during the first second, restoring the
+    // older Light Burst timing rather than the newer near-instant expansion.
+    [SerializeField] private float burstExpansionDuration = 1f;
+
+    // Cooldown begins when the Burst is cast and remains independent from the
+    // lingering darkness deformation that continues after the visible ability.
     [SerializeField] private float burstCooldownDuration = 2f;
 
-    // Burst expands quickly so activation feels immediate while still retaining
-    // visible outward growth for the VFX and darkness response.
-    [SerializeField] private float burstExpansionDuration = 0.2f;
-
-    // The Burst begins close to the player instead of instantly affecting the
-    // entire maximum radius.
+    // The Burst begins close to the player so the expansion can be seen instead
+    // of immediately appearing at the complete darkness-clearing radius.
     [SerializeField] private float startingBurstRadius = 0.2f;
 
-    // This curve controls how quickly the gameplay radius reaches maximum size.
+    // The original easing curve is retained so only the overall expansion timing
+    // changes rather than altering the shape and feel of the expansion itself.
     [SerializeField]
     private AnimationCurve burstExpansionCurve =
         new AnimationCurve(
@@ -54,14 +59,24 @@ public class LightBurstController : MonoBehaviour
             new Keyframe(1f, 1f)
         );
 
+    [Header("Burst Expiry Warning")]
+
+    // The visible Burst flashes near the end so players receive a warning before
+    // their active protection disappears.
+    [SerializeField] private float flickerWarningDuration = 0.5f;
+
+    // Only the renderers blink. Gameplay and the darkness cut-out remain active
+    // continuously until the full Burst duration has finished.
+    [SerializeField] private float flickerInterval = 0.1f;
+
     [Header("Burst Persistence")]
 
-    // After the visible Burst finishes, the environmental effect stays at full
-    // radius so the player has time to move through the cleared darkness.
+    // Once the visible Burst ends, the darkness opening remains at full radius
+    // for a short period so the environment keeps the deformation created by it.
     [SerializeField] private float burstHoldDuration = 2.5f;
 
-    // After holding, the environmental effect shrinks so darkness can reform
-    // gradually rather than snapping back immediately.
+    // After holding, the saved opening gradually shrinks so darkness reforms
+    // naturally instead of snapping back around the player.
     [SerializeField] private float burstReformDuration = 1.5f;
 
     [Header("Light Resource Cost")]
@@ -69,16 +84,15 @@ public class LightBurstController : MonoBehaviour
 
     [Header("Audio")]
 
-    // Burst audio is assigned independently from the VFX so the final sound
-    // can change without affecting gameplay timing.
+    // Burst audio remains separate from its gameplay timing so sound changes do
+    // not require altering how the ability or darkness deformation behaves.
     [SerializeField] private AudioClip burstSound;
 
     [Header("Burst Visual")]
     [SerializeField] private GameObject burstVisual;
 
-    // This generated radial visual remains active only during the short cast.
-    // It deliberately ignores level geometry so Burst can visibly pass through
-    // normal walls, floors and platforms.
+    // This generated radial visual is allowed to pass through normal level
+    // geometry, matching the radial darkness and platform behaviour.
     [SerializeField] private GameObject burstWallVisual;
 
     [Header("Reveal Mask")]
@@ -96,51 +110,58 @@ public class LightBurstController : MonoBehaviour
     private bool isBurstActive = false;
     private bool isOnCooldown = false;
 
-    // This value represents only the currently expanding cast. Lingering Burst
-    // effects keep their own radii inside activeBurstEffects.
+    /*
+     * This radius represents the currently visible Burst only. Older darkness
+     * openings keep their own radii inside activeBurstEffects.
+     */
     private float currentBurstRadius = 0f;
 
     private Coroutine burstCoroutine;
     private Coroutine cooldownCoroutine;
 
     /*
-     * The ability owns every lingering Burst effect. Darkness visuals and safe
-     * area gameplay read this list indirectly through the public getter methods.
+     * DarknessCutoutController reads these saved effects so the deformation can
+     * continue after the actual Light Burst ability has visually disappeared.
      */
     private readonly List<BurstEffectData> activeBurstEffects =
         new List<BurstEffectData>();
 
+    // This identifies the Burst currently attached to the visible cast. Once the
+    // cast finishes, the same data remains in the list for its hold/reform stages.
     private BurstEffectData liveBurstEffect;
 
     private PlayerAbilityUnlocks abilityUnlocks;
     private PlayerLightResource playerLightResource;
     private PlayerLightChannel playerLightChannel;
-    private PlayerDash playerDash;
 
-    // Light Burst tells the animation controller only after the cast has actually
-    // succeeded so blocked inputs never play the ability animation by mistake.
+    // Animation is triggered only after the ability has successfully activated so
+    // failed inputs never play CatMoth's Burst animation.
     private PlayerAnimationController playerAnimationController;
+
+    /*
+     * Renderers are cached because expiry flickering should hide only graphics.
+     * The Burst GameObjects stay active so gameplay and particle state are not
+     * repeatedly restarted while the warning flashes.
+     */
+    private Renderer[] burstVisualRenderers;
+    private Renderer[] burstWallVisualRenderers;
 
     private void Awake()
     {
-        // The unlock system controls whether Light Burst has been earned.
+        // The unlock component decides whether Light Burst has been earned.
         abilityUnlocks =
             GetComponent<PlayerAbilityUnlocks>();
 
-        // All Burst costs come from the shared light resource.
+        // Burst spends light through the shared player resource.
         playerLightResource =
             GetComponent<PlayerLightResource>();
 
-        // Channeling and Burst remain mutually exclusive.
+        // Channeling and Light Burst remain mutually exclusive.
         playerLightChannel =
             GetComponent<PlayerLightChannel>();
 
-        // Burst cannot begin during an active dash.
-        playerDash =
-            GetComponent<PlayerDash>();
-
-        // Animation remains separate from Burst gameplay so this controller only
-        // needs to notify it when a successful ability cast should be shown.
+        // Animation remains separate from Burst gameplay and is notified only
+        // once the cast has passed every activation requirement.
         playerAnimationController =
             GetComponent<PlayerAnimationController>();
 
@@ -155,11 +176,21 @@ public class LightBurstController : MonoBehaviour
 
         if (burstVisual != null)
         {
+            burstVisualRenderers =
+                burstVisual.GetComponentsInChildren<Renderer>(
+                    true
+                );
+
             burstVisual.SetActive(false);
         }
 
         if (burstWallVisual != null)
         {
+            burstWallVisualRenderers =
+                burstWallVisual.GetComponentsInChildren<Renderer>(
+                    true
+                );
+
             burstWallVisual.SetActive(false);
         }
 
@@ -177,9 +208,9 @@ public class LightBurstController : MonoBehaviour
     private void Update()
     {
         /*
-         * Lingering effects continue updating after the visible Burst coroutine
-         * ends. Keeping this outside BurstRoutine also lets several older casts
-         * reform independently while a newer Burst is fired.
+         * Lingering darkness openings continue updating even after their visible
+         * Burst has ended. Keeping this separate lets several old openings hold
+         * and reform independently.
          */
         UpdateBurstEffectLifetimes();
 
@@ -194,8 +225,11 @@ public class LightBurstController : MonoBehaviour
 
     public bool IsBurstActive()
     {
-        // This remains expansion-only so existing systems can still distinguish
-        // the actual cast from the longer environmental consequence.
+        /*
+         * This reports only the actual two-second ability. A darkness deformation
+         * may still exist afterwards without the player counting as actively
+         * using Light Burst.
+         */
         return isBurstActive;
     }
 
@@ -206,8 +240,8 @@ public class LightBurstController : MonoBehaviour
 
     public int GetActiveBurstEffectCount()
     {
-        // Darkness systems use the count rather than receiving the mutable list,
-        // preventing outside scripts from accidentally modifying ability state.
+        // DarknessCutoutController uses this count to read every active opening
+        // without receiving direct access to the mutable internal list.
         return activeBurstEffects.Count;
     }
 
@@ -248,8 +282,8 @@ public class LightBurstController : MonoBehaviour
     )
     {
         /*
-         * Other gameplay systems can query the same ability-owned areas that
-         * drive the darkness cut-out, keeping safety and visuals consistent.
+         * The same saved openings used by the darkness visuals are also available
+         * to gameplay systems so visual safety and gameplay safety can agree.
          */
         foreach (BurstEffectData effect in activeBurstEffects)
         {
@@ -277,18 +311,6 @@ public class LightBurstController : MonoBehaviour
         {
             Debug.Log(
                 "Light Burst was blocked because the player is channeling."
-            );
-
-            return;
-        }
-
-        if (
-            playerDash != null &&
-            playerDash.IsDashing()
-        )
-        {
-            Debug.Log(
-                "Light Burst activation was blocked because the player is dashing."
             );
 
             return;
@@ -347,8 +369,8 @@ public class LightBurstController : MonoBehaviour
             return;
         }
 
-        // The animation is triggered only after every gameplay requirement has
-        // succeeded so CatMoth never plays the Burst reaction for a failed cast.
+        // CatMoth's Burst animation begins only after every gameplay requirement
+        // succeeds so blocked casts never trigger misleading animation feedback.
         if (playerAnimationController != null)
         {
             playerAnimationController.PlayLightBurstAnimation();
@@ -403,14 +425,14 @@ public class LightBurstController : MonoBehaviour
             startingBurstRadius;
 
         /*
-         * A new environmental effect is created immediately so the darkness can
-         * follow the same expanding radius as the visible Burst from frame one.
+         * The darkness opening is created immediately. During the visible Burst,
+         * it follows exactly the same origin and radius as the gameplay effect.
          */
         liveBurstEffect =
             new BurstEffectData
             {
                 phase =
-                    BurstEffectPhase.Expanding,
+                    BurstEffectPhase.Active,
 
                 originWorld =
                     transform.position,
@@ -427,6 +449,12 @@ public class LightBurstController : MonoBehaviour
 
         activeBurstEffects.Add(
             liveBurstEffect
+        );
+
+        // Restore renderer visibility in case the previous Burst ended during the
+        // hidden part of its flicker warning.
+        SetBurstRenderersVisible(
+            true
         );
 
         if (burstVisual != null)
@@ -449,13 +477,27 @@ public class LightBurstController : MonoBehaviour
         float dispelCheckInterval = 0.05f;
         float dispelCheckTimer = 0f;
 
-        while (timer < burstExpansionDuration)
+        float flickerTimer = 0f;
+        bool visualsVisible = true;
+
+        while (timer < burstDuration)
         {
             timer +=
                 Time.deltaTime;
 
             dispelCheckTimer +=
                 Time.deltaTime;
+
+            /*
+             * During the visible Burst, the effect continues following CatMoth.
+             * Once the cast ends, its last position becomes the fixed location
+             * where the darkness deformation remains.
+             */
+            if (liveBurstEffect != null)
+            {
+                liveBurstEffect.originWorld =
+                    transform.position;
+            }
 
             float normalisedExpansionTime =
                 burstExpansionDuration > 0f
@@ -479,15 +521,10 @@ public class LightBurstController : MonoBehaviour
                     expansionAmount
                 );
 
-            /*
-             * Only the currently casting Burst follows the player. Once expansion
-             * finishes, its lingering area stays fixed at the cast location.
-             */
+            // The saved darkness cut-out expands with exactly the same radius as
+            // the visible ability so there is no mismatch during the active cast.
             if (liveBurstEffect != null)
             {
-                liveBurstEffect.originWorld =
-                    transform.position;
-
                 liveBurstEffect.currentRadius =
                     currentBurstRadius;
             }
@@ -503,6 +540,39 @@ public class LightBurstController : MonoBehaviour
                 dispelCheckTimer = 0f;
             }
 
+            float remainingBurstTime =
+                burstDuration -
+                timer;
+
+            /*
+             * Only the visible renderers flash. Darkness remains continuously
+             * cleared throughout this warning period so the safe area does not
+             * rapidly appear and disappear with the flicker.
+             */
+            if (
+                remainingBurstTime <=
+                flickerWarningDuration
+            )
+            {
+                flickerTimer +=
+                    Time.deltaTime;
+
+                if (
+                    flickerTimer >=
+                    flickerInterval
+                )
+                {
+                    visualsVisible =
+                        !visualsVisible;
+
+                    SetBurstRenderersVisible(
+                        visualsVisible
+                    );
+
+                    flickerTimer = 0f;
+                }
+            }
+
             yield return null;
         }
 
@@ -515,21 +585,28 @@ public class LightBurstController : MonoBehaviour
                 burstDispelRadius;
 
             /*
-             * The visible cast has finished, but the ability itself now owns the
-             * full-radius lingering period before darkness is allowed to reform.
+             * The visible ability has ended, but its final position and full
+             * radius remain stored so DarknessCutoutController keeps the opening.
              */
             liveBurstEffect.phase =
                 BurstEffectPhase.Holding;
 
-            liveBurstEffect.holdTimer = 0f;
+            liveBurstEffect.holdTimer =
+                0f;
         }
 
+        // Run one final radial interaction at complete size before the visible
+        // ability disappears.
         DispelDarknessInRadius();
         CheckLightPlatformInBurst();
 
+        SetBurstRenderersVisible(
+            true
+        );
+
         /*
-         * The casting/VFX state ends here. The environmental Burst remains in
-         * activeBurstEffects and continues independently.
+         * The player is no longer actively using Burst from this point onwards.
+         * Only the environmental deformation continues.
          */
         isBurstActive = false;
 
@@ -552,15 +629,15 @@ public class LightBurstController : MonoBehaviour
         burstCoroutine = null;
 
         Debug.Log(
-            "Light burst expansion completed. Environmental effect is lingering."
+            "Light burst ended. Darkness deformation is now lingering."
         );
     }
 
     private void UpdateBurstEffectLifetimes()
     {
         /*
-         * Each Burst owns its own timers so newer casts never cancel an older
-         * opening that is still holding or reforming elsewhere in the level.
+         * Each saved opening has independent timers so casting another Burst does
+         * not cancel an older deformation that is still holding or reforming.
          */
         for (
             int i = activeBurstEffects.Count - 1;
@@ -571,10 +648,11 @@ public class LightBurstController : MonoBehaviour
             BurstEffectData effect =
                 activeBurstEffects[i];
 
-            // Expansion is controlled directly by BurstRoutine.
+            // The visible cast directly controls radius and position while active,
+            // so this method should not advance that effect's lifetime yet.
             if (
                 effect.phase ==
-                BurstEffectPhase.Expanding
+                BurstEffectPhase.Active
             )
             {
                 continue;
@@ -596,7 +674,8 @@ public class LightBurstController : MonoBehaviour
                     effect.phase =
                         BurstEffectPhase.Reforming;
 
-                    effect.reformTimer = 0f;
+                    effect.reformTimer =
+                        0f;
                 }
 
                 continue;
@@ -614,8 +693,9 @@ public class LightBurstController : MonoBehaviour
                     : 1f;
 
             /*
-             * Reform shrinks the ability-owned radius itself. Darkness and safe
-             * area systems therefore automatically see the same closing opening.
+             * Shrinking the stored radius makes DarknessCutoutController naturally
+             * rebuild increasingly smaller openings rather than needing separate
+             * reform logic inside the darkness script.
              */
             effect.currentRadius =
                 Mathf.Lerp(
@@ -633,12 +713,50 @@ public class LightBurstController : MonoBehaviour
         }
     }
 
+    private void SetBurstRenderersVisible(
+        bool shouldBeVisible
+    )
+    {
+        /*
+         * Renderer.enabled is used rather than disabling the GameObjects because
+         * the Burst remains logically active while the warning flashes.
+         */
+        if (burstVisualRenderers != null)
+        {
+            foreach (
+                Renderer burstRenderer
+                in burstVisualRenderers
+            )
+            {
+                if (burstRenderer != null)
+                {
+                    burstRenderer.enabled =
+                        shouldBeVisible;
+                }
+            }
+        }
+
+        if (burstWallVisualRenderers != null)
+        {
+            foreach (
+                Renderer burstRenderer
+                in burstWallVisualRenderers
+            )
+            {
+                if (burstRenderer != null)
+                {
+                    burstRenderer.enabled =
+                        shouldBeVisible;
+                }
+            }
+        }
+    }
+
     private void DispelDarknessInRadius()
     {
         /*
-         * Burst now behaves as a true radial ability. Every darkness object
-         * inside the current radius can be affected regardless of walls,
-         * floors or platforms between the player and the darkness.
+         * Burst remains a true radial ability. Walls, floors and platforms do not
+         * block darkness objects from being affected inside the current radius.
          */
         Collider2D[] hits =
             Physics2D.OverlapCircleAll(
@@ -661,8 +779,6 @@ public class LightBurstController : MonoBehaviour
             }
         }
 
-        // This temporary log now reports only successful radial interactions
-        // because Burst no longer performs wall-obstruction checks.
         Debug.Log(
             "Light Burst darkness check. Dispelled: " +
             dispelledCount
@@ -671,7 +787,11 @@ public class LightBurstController : MonoBehaviour
 
     private IEnumerator CooldownRoutine()
     {
-        // Cooldown remains independent from the visual and lingering durations.
+        /*
+         * Cooldown does not wait for the old darkness opening to finish reforming.
+         * This lets the player create another Burst while a previous deformation
+         * still exists elsewhere.
+         */
         isOnCooldown = true;
 
         Debug.Log(
@@ -692,7 +812,7 @@ public class LightBurstController : MonoBehaviour
 
     private void OnDrawGizmosSelected()
     {
-        // The yellow circle represents the complete radial area Burst can affect.
+        // Yellow shows the complete radial range Burst can eventually affect.
         Gizmos.color =
             Color.yellow;
 
@@ -701,7 +821,7 @@ public class LightBurstController : MonoBehaviour
             burstDispelRadius
         );
 
-        // The cyan circle represents the currently expanding gameplay radius.
+        // Cyan shows the currently expanding gameplay radius while testing.
         Gizmos.color =
             Color.cyan;
 
@@ -796,9 +916,8 @@ public class LightBurstController : MonoBehaviour
     private void CheckLightPlatformInBurst()
     {
         /*
-         * Burst platforms now respond solely to radial distance. Walls and
-         * ordinary platforms no longer block the activation, allowing hidden
-         * platforms on the opposite side of geometry to be revealed.
+         * Hidden Burst platforms continue responding solely to radial distance.
+         * Ordinary level geometry therefore does not block platform activation.
          */
         Collider2D[] hits =
             Physics2D.OverlapCircleAll(

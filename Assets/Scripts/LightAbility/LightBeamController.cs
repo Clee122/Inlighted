@@ -128,14 +128,12 @@ public class LightBeamController : MonoBehaviour
     private PlayerLightResource playerLightResource;
     private PlayerLightChannel playerLightChannel;
 
-    // Beam aiming remains available during dash, but this reference lets the
-    // actual firing action wait until dash movement has finished.
-    private PlayerDash playerDash;
-
-    private Boolean keyboardActivatedBeam;
-    private Vector2 mouseScreenPosition;
-    private Boolean ePressed;
-    private Boolean ePressedReset;
+    /*
+     * This remembers which input method started the current aiming session.
+     * It prevents a connected Gamepad from taking control of aiming when the
+     * player actually pressed E and intends to aim with the mouse.
+     */
+    private bool keyboardActivatedBeam = false;
 
     private void Awake()
     {
@@ -150,11 +148,6 @@ public class LightBeamController : MonoBehaviour
         // Beam aiming must be blocked before a preview begins while channeling.
         playerLightChannel =
             GetComponent<PlayerLightChannel>();
-
-        // Dash does not block aiming, but firing checks this state so the player
-        // can prepare their shot while moving and commit after the dash finishes.
-        playerDash =
-            GetComponent<PlayerDash>();
 
         if (playerLightResource == null)
         {
@@ -249,66 +242,66 @@ public class LightBeamController : MonoBehaviour
 
     private void Update()
     {
-        if (UnityEngine.InputSystem.Keyboard.current.eKey.wasPressedThisFrame 
-            && ePressedReset)
-        {
-            ePressed = true;
-            ePressedReset = false;
-        }
-        else if (ePressedReset)
-        {
-            ePressed = false;
-        }
-
         if (!isAiming)
         {
             return;
         }
 
-        // The aiming preview is recalculated only while aiming. This also means
-        // the indicator keeps following the player while they perform a dash.
+        // The aiming preview is recalculated only while aiming so the indicator
+        // keeps following the player and responding to the current aim direction.
         UpdateBeamPreview(
             beamIndicatorVisual
         );
 
-        if (
-            UnityEngine.InputSystem.Mouse.current ==
-            null
-        )
-        {
-            return;
-        }
+        /*
+         * Mouse firing is checked only when a mouse actually exists. This allows
+         * controller-only play without attempting to read a missing Mouse device.
+         */
+        bool mouseFirePressed =
+            Mouse.current != null &&
+            Mouse.current.leftButton.wasPressedThisFrame;
+
+        /*
+         * Gamepad firing is checked only when a controller exists. The previous
+         * code accessed Gamepad.current directly and caused a NullReferenceException
+         * whenever the player used keyboard and mouse without a controller connected.
+         */
+        bool gamepadFirePressed =
+            Gamepad.current != null &&
+            Gamepad.current.rightTrigger.wasPressedThisFrame;
 
         if (
-            UnityEngine.InputSystem.Mouse.current
-                .leftButton
-                .wasPressedThisFrame
-            )
+            keyboardActivatedBeam &&
+            mouseFirePressed
+        )
         {
-            ePressedReset = true;
             ConfirmFireBeam();
         }
         else if (
-            UnityEngine.InputSystem.Gamepad.current
-                .rightTrigger
-                .wasPressedThisFrame
-            )
-        {
-            ePressedReset = true;
-            ConfirmFireBeam();
-        }
-        //can put right trigger here for controller
-
-        if (
-            UnityEngine.InputSystem.Mouse.current
-                .rightButton
-                .wasPressedThisFrame ||
-            UnityEngine.InputSystem.Gamepad.current
-                .leftShoulder
-                .wasPressedThisFrame
+            !keyboardActivatedBeam &&
+            gamepadFirePressed
         )
         {
-            ePressedReset = true;
+            ConfirmFireBeam();
+        }
+
+        /*
+         * Cancellation checks each device independently because either the mouse
+         * or Gamepad may not exist during a particular play session.
+         */
+        bool mouseCancelPressed =
+            Mouse.current != null &&
+            Mouse.current.rightButton.wasPressedThisFrame;
+
+        bool gamepadCancelPressed =
+            Gamepad.current != null &&
+            Gamepad.current.leftShoulder.wasPressedThisFrame;
+
+        if (
+            mouseCancelPressed ||
+            gamepadCancelPressed
+        )
+        {
             CancelBeamAim();
         }
     }
@@ -377,11 +370,29 @@ public class LightBeamController : MonoBehaviour
             Debug.Log(
                 "Light Beam aiming was blocked because the player is channeling."
             );
-            ePressedReset = true;
+
             return;
         }
-        
-            BeginBeamAim();
+
+        /*
+         * Detect whether E is currently responsible for this FireBeam callback.
+         * The value is stored for the whole aiming session so releasing E does
+         * not suddenly switch aiming from mouse to controller.
+         *
+         * If no Gamepad exists, mouse aiming is also selected automatically.
+         */
+        bool keyboardPressedE =
+            Keyboard.current != null &&
+            (
+                Keyboard.current.eKey.isPressed ||
+                Keyboard.current.eKey.wasPressedThisFrame
+            );
+
+        keyboardActivatedBeam =
+            keyboardPressedE ||
+            Gamepad.current == null;
+
+        BeginBeamAim();
     }
 
     public void BeginBeamAim()
@@ -396,7 +407,7 @@ public class LightBeamController : MonoBehaviour
             Debug.Log(
                 "Light Beam aiming was blocked because the player is channeling."
             );
-            ePressedReset = true;
+
             return;
         }
 
@@ -408,7 +419,7 @@ public class LightBeamController : MonoBehaviour
             Debug.Log(
                 "Light Beam is locked"
             );
-            ePressedReset = true;
+
             return;
         }
 
@@ -417,7 +428,7 @@ public class LightBeamController : MonoBehaviour
             Debug.Log(
                 "Light Beam aiming could not begin because the ability is on cooldown."
             );
-            ePressedReset = true;
+
             return;
         }
 
@@ -426,7 +437,7 @@ public class LightBeamController : MonoBehaviour
             Debug.Log(
                 "Light Beam aiming could not begin because the beam is already active."
             );
-            ePressedReset = true;
+
             return;
         }
 
@@ -474,6 +485,12 @@ public class LightBeamController : MonoBehaviour
             beamIndicatorVisual.SetActive(false);
         }
 
+        /*
+         * Reset the remembered input source after cancelling so the next Beam
+         * activation can correctly determine whether mouse or controller started it.
+         */
+        keyboardActivatedBeam = false;
+
         Debug.Log(
             "Light beam aiming cancelled. No light was spent."
         );
@@ -485,20 +502,6 @@ public class LightBeamController : MonoBehaviour
         {
             Debug.Log(
                 "Light Beam could not fire because the player was not aiming."
-            );
-
-            return;
-        }
-
-        if (
-            playerDash != null &&
-            playerDash.IsDashing()
-        )
-        {
-            // The aiming preview remains active while dashing. Only the committed
-            // shot is blocked so the player can fire as soon as dash finishes.
-            Debug.Log(
-                "Light Beam firing was blocked because the player is dashing."
             );
 
             return;
@@ -737,10 +740,15 @@ public class LightBeamController : MonoBehaviour
 
         beamCoroutine = null;
 
+        /*
+         * The current shot is complete, so the next activation is free to decide
+         * independently whether keyboard/mouse or controller should handle aiming.
+         */
+        keyboardActivatedBeam = false;
+
         Debug.Log(
             "Light beam ended."
         );
-        ePressedReset = true;
     }
 
     private void UpdateBeamPreview(
@@ -986,28 +994,35 @@ public class LightBeamController : MonoBehaviour
         Vector2 originPosition
     )
     {
+        // Camera.main can change between scenes, so recover the reference if the
+        // original camera was destroyed or had not yet been available in Awake.
         if (mainCamera == null)
         {
             mainCamera = Camera.main;
         }
 
+        Vector2 direction =
+            lastBeamDirection;
+
+        /*
+         * Keyboard-started aiming uses the mouse. Mouse aiming also becomes the
+         * automatic fallback when no Gamepad exists, which prevents the previous
+         * null reference when playing with only keyboard and mouse.
+         */
+        bool shouldUseMouse =
+            keyboardActivatedBeam ||
+            Gamepad.current == null;
+
         if (
-            mainCamera == null ||
-            UnityEngine.InputSystem.Mouse.current ==
-            null
+            shouldUseMouse &&
+            Mouse.current != null &&
+            mainCamera != null
         )
         {
-            return lastBeamDirection;
-        }
-
-        Vector2 direction;
-
-        if (ePressed == true)
-        {
             Vector2 mouseScreenPosition =
-            UnityEngine.InputSystem.Mouse.current
-                .position
-                .ReadValue();
+                Mouse.current
+                    .position
+                    .ReadValue();
 
             Vector3 mouseWorldPosition =
                 mainCamera.ScreenToWorldPoint(
@@ -1021,22 +1036,30 @@ public class LightBeamController : MonoBehaviour
                     (Vector2)mouseWorldPosition -
                     originPosition
                 ).normalized;
-
         }
-        else
+        else if (
+            Gamepad.current != null
+        )
         {
-            direction = UnityEngine.InputSystem.Gamepad.current.rightStick.ReadValue();
-            //Debug.Log("gamepad aiming");
-            //Debug.Log(direction);
+            /*
+             * The right stick is read only when a controller actually exists.
+             * The original script attempted this unconditionally and caused the
+             * NullReferenceException seen in the Console.
+             */
+            direction =
+                Gamepad.current
+                    .rightStick
+                    .ReadValue();
         }
 
-
+        // Preserve the previous valid direction if the mouse sits directly over
+        // the origin or the controller stick returns to its neutral position.
         if (direction.sqrMagnitude <= 0.001f)
         {
             return lastBeamDirection;
         }
 
-        return direction;
+        return direction.normalized;
     }
 
     private float GetBeamRangeBeforeWall(
@@ -1295,8 +1318,7 @@ public class LightBeamController : MonoBehaviour
     }
 
     public void OnMoveForBeam(
-        UnityEngine.InputSystem.InputAction
-            .CallbackContext context
+        InputAction.CallbackContext context
     )
     {
         // No longer needed for mouse aiming, but kept so existing Player Input
