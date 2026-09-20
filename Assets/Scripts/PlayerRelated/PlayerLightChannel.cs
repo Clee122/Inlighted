@@ -5,14 +5,12 @@ using UnityEngine.InputSystem;
 public class PlayerLightChannel : MonoBehaviour
 {
     [Header("Channel Healing")]
-    [SerializeField] private float secondsPerLife = 1.5f;
 
-    // Each completed heal consumes this exact amount. The drain rate is derived
-    // from this cost and the configured healing time.
+    // Each completed Heal animation consumes this amount of light before the
+    // configured healing frame is reached.
     [SerializeField] private float lightCostPerLife = 25f;
 
-    // A brief pause after each restored life makes each healing step readable
-    // and prevents multiple lives from blending into one continuous drain.
+    // A short pause separates consecutive Heal cycles while Q remains held.
     [SerializeField] private float delayBetweenLives = 0.5f;
 
     [SerializeField] private bool requireGrounded = true;
@@ -21,9 +19,8 @@ public class PlayerLightChannel : MonoBehaviour
     [SerializeField] private float refundDelay = 0.5f;
 
     [Header("Audio")]
-    // Channel audio loops for the full duration of a valid channel attempt.
-    // Keeping the clip assignable means the final sound can be added later
-    // without changing any healing or input behaviour.
+
+    // Channel audio loops for the duration of a valid healing attempt.
     [SerializeField] private AudioClip channelSound;
 
     [Header("Debug")]
@@ -34,13 +31,19 @@ public class PlayerLightChannel : MonoBehaviour
     private PlayerController2D playerController;
     private LightBurstController lightBurstController;
     private LightBeamController lightBeamController;
+    private PlayerAnimationController playerAnimationController;
 
     private bool isChanneling;
     private bool isWaitingBetweenLives;
+    private bool channelInputHeld;
+
+    // Once one cycle reaches its healing point, this prevents it from restoring
+    // more than one life before a new animation cycle begins.
+    private bool healAppliedThisCycle;
+
     private float delayBetweenLivesTimer;
 
-    // This stores only the light spent towards the current unfinished heal.
-    // Completed healing costs are cleared and can no longer be refunded.
+    // Only light spent during the current unfinished animation can be refunded.
     private float lightSpentThisAttempt;
 
     private float pendingRefund;
@@ -48,41 +51,43 @@ public class PlayerLightChannel : MonoBehaviour
 
     private void Awake()
     {
-        // Channeling coordinates the existing health, light, movement and ability
-        // systems instead of duplicating their stored values.
-        playerLifeSystem = GetComponent<PlayerLifeSystem>();
-        playerLightResource = GetComponent<PlayerLightResource>();
-        playerController = GetComponent<PlayerController2D>();
-        lightBurstController = GetComponent<LightBurstController>();
-        lightBeamController = GetComponent<LightBeamController>();
+        // Channeling coordinates existing systems instead of duplicating health,
+        // movement, light and ability state inside this script.
+        playerLifeSystem =
+            GetComponent<PlayerLifeSystem>();
 
-        // Safe minimum values prevent division by zero, instant accidental healing,
-        // or invalid delays from producing unpredictable channel behaviour.
-        secondsPerLife = Mathf.Max(0.1f, secondsPerLife);
-        lightCostPerLife = Mathf.Max(0.1f, lightCostPerLife);
-        delayBetweenLives = Mathf.Max(0f, delayBetweenLives);
-        refundDelay = Mathf.Max(0f, refundDelay);
+        playerLightResource =
+            GetComponent<PlayerLightResource>();
 
-        if (playerLifeSystem == null)
-        {
-            Debug.LogError(
-                "PlayerLightChannel could not find PlayerLifeSystem."
+        playerController =
+            GetComponent<PlayerController2D>();
+
+        lightBurstController =
+            GetComponent<LightBurstController>();
+
+        lightBeamController =
+            GetComponent<LightBeamController>();
+
+        playerAnimationController =
+            GetComponent<PlayerAnimationController>();
+
+        lightCostPerLife =
+            Mathf.Max(
+                0.1f,
+                lightCostPerLife
             );
-        }
 
-        if (playerLightResource == null)
-        {
-            Debug.LogError(
-                "PlayerLightChannel could not find PlayerLightResource."
+        delayBetweenLives =
+            Mathf.Max(
+                0f,
+                delayBetweenLives
             );
-        }
 
-        if (playerController == null)
-        {
-            Debug.LogError(
-                "PlayerLightChannel could not find PlayerController2D."
+        refundDelay =
+            Mathf.Max(
+                0f,
+                refundDelay
             );
-        }
     }
 
     private void Update()
@@ -95,16 +100,26 @@ public class PlayerLightChannel : MonoBehaviour
         ContinueChanneling();
     }
 
-    public void OnChannel(InputAction.CallbackContext context)
+    public void OnChannel(
+        InputAction.CallbackContext context
+    )
     {
-        // Pressing begins the channel immediately, while releasing voluntarily
-        // cancels the current unfinished healing attempt.
         if (context.started)
         {
+            channelInputHeld = true;
             TryStartChanneling();
         }
         else if (context.canceled)
         {
+            channelInputHeld = false;
+
+            // Once a successful life restoration has already happened, the
+            // current animation is allowed to finish before the channel stops.
+            if (healAppliedThisCycle)
+            {
+                return;
+            }
+
             CancelVoluntarily(
                 "Channel button released"
             );
@@ -118,8 +133,6 @@ public class PlayerLightChannel : MonoBehaviour
             return;
         }
 
-        // A previous delayed refund is completed before another attempt begins.
-        // This prevents refunds from overlapping or being counted twice.
         CompletePendingRefundImmediately();
 
         if (
@@ -128,10 +141,6 @@ public class PlayerLightChannel : MonoBehaviour
             playerController == null
         )
         {
-            Debug.LogError(
-                "Channeling could not begin because a required player component is missing."
-            );
-
             return;
         }
 
@@ -165,7 +174,10 @@ public class PlayerLightChannel : MonoBehaviour
             return;
         }
 
-        if (playerLightResource.GetCurrentLight() <= 0f)
+        if (
+            playerLightResource.GetCurrentLight() <=
+            0f
+        )
         {
             PrintBlockedReason(
                 "the player has no light"
@@ -203,22 +215,33 @@ public class PlayerLightChannel : MonoBehaviour
 
         isChanneling = true;
         isWaitingBetweenLives = false;
+        healAppliedThisCycle = false;
         delayBetweenLivesTimer = 0f;
         lightSpentThisAttempt = 0f;
 
-        // Movement is locked while channeling so restoring health requires the
-        // player to remain stationary and commit to the action.
-        playerController.SetChannelingLocked(true);
+        // Healing is a committed stationary action, so movement remains locked
+        // while the channel is active.
+        playerController.SetChannelingLocked(
+            true
+        );
 
-        // Channel audio begins only after every gameplay requirement has passed.
-        // Rejected channel attempts therefore cannot start the healing loop.
+        if (playerAnimationController != null)
+        {
+            // The Bool marks the gameplay channel as active, while the explicit
+            // restart guarantees the first Heal begins from frame 0.
+            playerAnimationController.SetChannelingAnimation(
+                true
+            );
+
+            playerAnimationController.RestartHealAnimation();
+        }
+
         StartChannelAudio();
 
         if (showDebugLogs)
         {
             Debug.Log(
-                "Light channeling started. Cost per restored life: " +
-                lightCostPerLife.ToString("0.0")
+                "Light channeling started. Heal animation restarted from frame 0."
             );
         }
     }
@@ -236,19 +259,8 @@ public class PlayerLightChannel : MonoBehaviour
             !playerController.IsGrounded()
         )
         {
-            // Accidentally losing the ground counts as voluntary cancellation
-            // rather than permanently destroying an unfinished healing cost.
             CancelVoluntarily(
                 "Player left the ground"
-            );
-
-            return;
-        }
-
-        if (playerLifeSystem.IsAtFullLives())
-        {
-            StopWithoutRefund(
-                "Channeling stopped because health is full."
             );
 
             return;
@@ -257,96 +269,114 @@ public class PlayerLightChannel : MonoBehaviour
         if (isWaitingBetweenLives)
         {
             HandleDelayBetweenLives();
-            return;
-        }
-
-        DrainLightTowardsNextLife();
-    }
-
-    private void HandleDelayBetweenLives()
-    {
-        // No light is removed during this pause. The player remains movement-locked,
-        // and continuing to hold the input begins the next heal after the timer.
-        delayBetweenLivesTimer -= Time.deltaTime;
-
-        if (delayBetweenLivesTimer > 0f)
-        {
-            return;
-        }
-
-        isWaitingBetweenLives = false;
-        delayBetweenLivesTimer = 0f;
-
-        if (playerLightResource.GetCurrentLight() <= 0.001f)
-        {
-            StopWithoutRefund(
-                "Channeling stopped after the healing delay because no light remains."
-            );
-
-            return;
-        }
-
-        if (showDebugLogs)
-        {
-            Debug.Log(
-                "Healing delay ended. Light spending has resumed."
-            );
         }
     }
 
-    private void DrainLightTowardsNextLife()
+    public void UpdateChannelFromHealAnimation(
+        float animationProgress,
+        float healApplyNormalisedTime
+    )
     {
-        // The drain rate is calculated from the exact cost and required time.
-        // At 25 light over 1.5 seconds, each successful life always costs 25.
-        float lightDrainPerSecond =
-            lightCostPerLife / secondsPerLife;
+        if (
+            !isChanneling ||
+            isWaitingBetweenLives ||
+            healAppliedThisCycle
+        )
+        {
+            return;
+        }
 
-        float remainingCost =
-            lightCostPerLife - lightSpentThisAttempt;
+        float safeHealPoint =
+            Mathf.Clamp(
+                healApplyNormalisedTime,
+                0.01f,
+                1f
+            );
 
-        // The frame drain is capped at the remaining cost so frame-rate differences
-        // cannot cause a completed heal to spend more than the intended value.
-        float requestedDrain = Mathf.Min(
-            lightDrainPerSecond * Time.deltaTime,
-            remainingCost
-        );
+        float channelProgress =
+            Mathf.Clamp01(
+                animationProgress /
+                safeHealPoint
+            );
+
+        float targetLightSpent =
+            lightCostPerLife *
+            channelProgress;
+
+        float lightStillToSpend =
+            targetLightSpent -
+            lightSpentThisAttempt;
+
+        if (lightStillToSpend <= 0.001f)
+        {
+            return;
+        }
 
         float lightRemoved =
             playerLightResource.RemoveLightUpTo(
-                requestedDrain,
+                lightStillToSpend,
                 "Health channeling",
                 false
             );
 
-        lightSpentThisAttempt += lightRemoved;
+        lightSpentThisAttempt +=
+            lightRemoved;
 
+        // Running out of light before reaching the healing point cancels the
+        // unfinished attempt rather than granting a partially paid heal.
         if (
-            lightSpentThisAttempt >=
-            lightCostPerLife - 0.001f
-        )
-        {
-            lightSpentThisAttempt =
-                lightCostPerLife;
-
-            CompleteHeal();
-            return;
-        }
-
-        if (
+            lightRemoved <
+            lightStillToSpend - 0.001f &&
             playerLightResource.GetCurrentLight() <=
             0.001f
         )
         {
-            // No life was restored, so an attempt that runs out of light is treated
-            // as incomplete and its spent light is returned after the refund delay.
             CancelVoluntarily(
                 "Channeling stopped because there was not enough light to complete the heal"
             );
         }
     }
 
-    private void CompleteHeal()
+    public void ApplyPendingHealFromAnimation()
     {
+        if (
+            !isChanneling ||
+            isWaitingBetweenLives ||
+            healAppliedThisCycle
+        )
+        {
+            return;
+        }
+
+        float remainingCost =
+            lightCostPerLife -
+            lightSpentThisAttempt;
+
+        if (remainingCost > 0.001f)
+        {
+            float finalLightRemoved =
+                playerLightResource.RemoveLightUpTo(
+                    remainingCost,
+                    "Health channeling",
+                    false
+                );
+
+            lightSpentThisAttempt +=
+                finalLightRemoved;
+        }
+
+        if (
+            lightSpentThisAttempt <
+            lightCostPerLife - 0.001f
+        )
+        {
+            CancelVoluntarily(
+                "Channeling stopped because there was not enough light to complete the heal"
+            );
+
+            return;
+        }
+
         bool restoredLife =
             playerLifeSystem.RestoreOneLife(
                 "Light channeling"
@@ -354,8 +384,6 @@ public class PlayerLightChannel : MonoBehaviour
 
         if (!restoredLife)
         {
-            // If health cannot be restored, the current unfinished transaction is
-            // returned instead of permanently charging the player.
             CancelVoluntarily(
                 "Health could not be restored"
             );
@@ -363,18 +391,53 @@ public class PlayerLightChannel : MonoBehaviour
             return;
         }
 
+        healAppliedThisCycle = true;
+
+        // A completed light cost has become health, so it cannot be refunded by
+        // later cancellation of the remaining animation frames.
+        lightSpentThisAttempt = 0f;
+
         if (showDebugLogs)
         {
             Debug.Log(
-                "Channeling restored one life after spending exactly " +
-                lightCostPerLife.ToString("0.0") +
-                " light."
+                "Combined Heal animation restored one life."
+            );
+        }
+    }
+
+    public void FinishHealAnimation()
+    {
+        if (
+            !isChanneling ||
+            isWaitingBetweenLives
+        )
+        {
+            return;
+        }
+
+        // The Animator Bool is cleared between healing cycles so the current
+        // completed Heal can return to normal locomotion before the next restart.
+        if (playerAnimationController != null)
+        {
+            playerAnimationController.SetChannelingAnimation(
+                false
             );
         }
 
-        // The completed cost has successfully been converted into health and must
-        // no longer be available to voluntary cancellation refunds.
-        lightSpentThisAttempt = 0f;
+        if (!healAppliedThisCycle)
+        {
+            ApplyPendingHealFromAnimation();
+        }
+
+        if (!isChanneling)
+        {
+            return;
+        }
+
+        if (!healAppliedThisCycle)
+        {
+            return;
+        }
 
         if (playerLifeSystem.IsAtFullLives())
         {
@@ -397,44 +460,116 @@ public class PlayerLightChannel : MonoBehaviour
             return;
         }
 
+        if (!channelInputHeld)
+        {
+            StopWithoutRefund(
+                "Channeling ended after the Heal animation because the channel button was released."
+            );
+
+            return;
+        }
+
         BeginDelayBetweenLives();
     }
 
     private void BeginDelayBetweenLives()
     {
+        healAppliedThisCycle = false;
+        lightSpentThisAttempt = 0f;
+
         if (delayBetweenLives <= 0f)
         {
             isWaitingBetweenLives = false;
             delayBetweenLivesTimer = 0f;
+
+            BeginNextHealCycle();
             return;
         }
 
         isWaitingBetweenLives = true;
-        delayBetweenLivesTimer = delayBetweenLives;
+
+        delayBetweenLivesTimer =
+            delayBetweenLives;
+    }
+
+    private void HandleDelayBetweenLives()
+    {
+        delayBetweenLivesTimer -=
+            Time.deltaTime;
+
+        if (delayBetweenLivesTimer > 0f)
+        {
+            return;
+        }
+
+        isWaitingBetweenLives = false;
+        delayBetweenLivesTimer = 0f;
+
+        if (!channelInputHeld)
+        {
+            StopWithoutRefund(
+                "Channeling ended because the channel button was released."
+            );
+
+            return;
+        }
+
+        if (
+            playerLightResource.GetCurrentLight() <=
+            0.001f
+        )
+        {
+            StopWithoutRefund(
+                "Channeling stopped because no light remains."
+            );
+
+            return;
+        }
+
+        BeginNextHealCycle();
+    }
+
+    private void BeginNextHealCycle()
+    {
+        healAppliedThisCycle = false;
+        lightSpentThisAttempt = 0f;
+
+        if (playerAnimationController != null)
+        {
+            // Each consecutive heal explicitly restarts the completed non-looping
+            // state so the next cycle begins from animation frame 0.
+            playerAnimationController.SetChannelingAnimation(
+                true
+            );
+
+            playerAnimationController.RestartHealAnimation();
+        }
 
         if (showDebugLogs)
         {
             Debug.Log(
-                "One life was restored. Light spending paused for " +
-                delayBetweenLives.ToString("0.00") +
-                " seconds."
+                "Next combined Heal cycle restarted from frame 0."
             );
         }
     }
 
-    public void CancelForPlayerAction(string actionName)
+    public void CancelForPlayerAction(
+        string actionName
+    )
     {
-        // This remains available for future interactions that should deliberately
-        // cancel channeling, although movement and abilities currently ignore input.
         if (!isChanneling)
         {
             return;
         }
 
-        CancelVoluntarily(actionName);
+        CancelVoluntarily(
+            actionName
+        );
     }
 
-    private void CancelVoluntarily(string reason)
+    private void CancelVoluntarily(
+        string reason
+    )
     {
         if (!isChanneling)
         {
@@ -443,15 +578,23 @@ public class PlayerLightChannel : MonoBehaviour
 
         isChanneling = false;
         isWaitingBetweenLives = false;
+        healAppliedThisCycle = false;
         delayBetweenLivesTimer = 0f;
 
-        // The loop must stop at the same moment the channel state ends so audio
-        // cannot continue during the delayed refund period.
+        if (playerAnimationController != null)
+        {
+            playerAnimationController.SetChannelingAnimation(
+                false
+            );
+        }
+
         StopChannelAudio();
 
         if (playerController != null)
         {
-            playerController.SetChannelingLocked(false);
+            playerController.SetChannelingLocked(
+                false
+            );
         }
 
         float amountToRefund =
@@ -461,16 +604,20 @@ public class PlayerLightChannel : MonoBehaviour
 
         if (amountToRefund > 0.001f)
         {
-            pendingRefund += amountToRefund;
+            pendingRefund +=
+                amountToRefund;
 
             if (refundCoroutine != null)
             {
-                StopCoroutine(refundCoroutine);
+                StopCoroutine(
+                    refundCoroutine
+                );
             }
 
-            refundCoroutine = StartCoroutine(
-                RefundAfterDelay()
-            );
+            refundCoroutine =
+                StartCoroutine(
+                    RefundAfterDelay()
+                );
         }
 
         if (showDebugLogs)
@@ -485,8 +632,6 @@ public class PlayerLightChannel : MonoBehaviour
 
     public void InterruptByDamage()
     {
-        // Valid damage permanently removes the light spent towards the current heal
-        // and also destroys any refund that was still waiting to be returned.
         CancelPendingRefund();
 
         if (!isChanneling)
@@ -494,107 +639,116 @@ public class PlayerLightChannel : MonoBehaviour
             return;
         }
 
-        float lostLight =
-            lightSpentThisAttempt;
-
         isChanneling = false;
         isWaitingBetweenLives = false;
+        healAppliedThisCycle = false;
         delayBetweenLivesTimer = 0f;
         lightSpentThisAttempt = 0f;
 
-        // Damage ends the channel immediately, so its audio must also stop
-        // before normal movement or hurt behaviour resumes.
+        if (playerAnimationController != null)
+        {
+            playerAnimationController.SetChannelingAnimation(
+                false
+            );
+        }
+
         StopChannelAudio();
 
         if (playerController != null)
         {
-            playerController.SetChannelingLocked(false);
-        }
-
-        if (showDebugLogs)
-        {
-            Debug.Log(
-                "Channeling was interrupted by damage. Lost unfinished light: " +
-                lostLight.ToString("0.000")
+            playerController.SetChannelingLocked(
+                false
             );
         }
     }
 
     public void InterruptByDeath()
     {
-        // Death clears channel progress and pending refunds because respawning
-        // restores the player's health and light separately.
         CancelPendingRefund();
 
         isChanneling = false;
         isWaitingBetweenLives = false;
+        healAppliedThisCycle = false;
+        channelInputHeld = false;
         delayBetweenLivesTimer = 0f;
         lightSpentThisAttempt = 0f;
 
-        // Death must always clear the channel loop even if the channel state
-        // changes before the respawn sequence begins.
+        if (playerAnimationController != null)
+        {
+            playerAnimationController.SetChannelingAnimation(
+                false
+            );
+        }
+
         StopChannelAudio();
 
         if (playerController != null)
         {
-            playerController.SetChannelingLocked(false);
-        }
-
-        if (showDebugLogs)
-        {
-            Debug.Log(
-                "Channeling was cleared because the player died."
+            playerController.SetChannelingLocked(
+                false
             );
         }
     }
 
     public void ResetForRespawn()
     {
-        // Respawning must not preserve an old healing attempt, healing delay, or
-        // refund because the respawn system restores the player completely.
         CancelPendingRefund();
 
         isChanneling = false;
         isWaitingBetweenLives = false;
+        healAppliedThisCycle = false;
+        channelInputHeld = false;
         delayBetweenLivesTimer = 0f;
         lightSpentThisAttempt = 0f;
 
-        // Respawn is another safety boundary for the loop. Stopping it here
-        // guarantees an interrupted death sequence cannot leave channel audio active.
+        if (playerAnimationController != null)
+        {
+            playerAnimationController.SetChannelingAnimation(
+                false
+            );
+        }
+
         StopChannelAudio();
 
         if (playerController != null)
         {
-            playerController.SetChannelingLocked(false);
+            playerController.SetChannelingLocked(
+                false
+            );
+        }
+    }
+
+    private void StopWithoutRefund(
+        string reason
+    )
+    {
+        isChanneling = false;
+        isWaitingBetweenLives = false;
+        healAppliedThisCycle = false;
+        delayBetweenLivesTimer = 0f;
+        lightSpentThisAttempt = 0f;
+
+        if (playerAnimationController != null)
+        {
+            playerAnimationController.SetChannelingAnimation(
+                false
+            );
+        }
+
+        StopChannelAudio();
+
+        if (playerController != null)
+        {
+            playerController.SetChannelingLocked(
+                false
+            );
         }
 
         if (showDebugLogs)
         {
             Debug.Log(
-                "Channeling state was reset for respawn."
+                reason
             );
-        }
-    }
-
-    private void StopWithoutRefund(string reason)
-    {
-        isChanneling = false;
-        isWaitingBetweenLives = false;
-        delayBetweenLivesTimer = 0f;
-        lightSpentThisAttempt = 0f;
-
-        // Natural completion, full health and exhausted light all end the active
-        // channel, so the loop should stop without waiting for input release.
-        StopChannelAudio();
-
-        if (playerController != null)
-        {
-            playerController.SetChannelingLocked(false);
-        }
-
-        if (showDebugLogs)
-        {
-            Debug.Log(reason);
         }
     }
 
@@ -608,8 +762,6 @@ public class PlayerLightChannel : MonoBehaviour
             return;
         }
 
-        // The AudioManager protects against restarting an identical active loop,
-        // allowing this method to stay safe if channel-start logic changes later.
         AudioManager.Instance.StartLoopingSFX(
             channelSound
         );
@@ -625,8 +777,6 @@ public class PlayerLightChannel : MonoBehaviour
             return;
         }
 
-        // Passing the channel clip means this script only stops its own loop.
-        // It cannot accidentally stop another looping sound owned by a different system.
         AudioManager.Instance.StopLoopingSFX(
             channelSound
         );
@@ -634,7 +784,9 @@ public class PlayerLightChannel : MonoBehaviour
 
     private IEnumerator RefundAfterDelay()
     {
-        yield return new WaitForSeconds(refundDelay);
+        yield return new WaitForSeconds(
+            refundDelay
+        );
 
         refundCoroutine = null;
 
@@ -656,15 +808,6 @@ public class PlayerLightChannel : MonoBehaviour
             refundAmount,
             "Cancelled channel refund"
         );
-
-        if (showDebugLogs)
-        {
-            Debug.Log(
-                "Cancelled channel refunded " +
-                refundAmount.ToString("0.000") +
-                " light."
-            );
-        }
     }
 
     private void CompletePendingRefundImmediately()
@@ -677,7 +820,10 @@ public class PlayerLightChannel : MonoBehaviour
 
         if (refundCoroutine != null)
         {
-            StopCoroutine(refundCoroutine);
+            StopCoroutine(
+                refundCoroutine
+            );
+
             refundCoroutine = null;
         }
 
@@ -699,25 +845,19 @@ public class PlayerLightChannel : MonoBehaviour
     {
         if (refundCoroutine != null)
         {
-            StopCoroutine(refundCoroutine);
-            refundCoroutine = null;
-        }
-
-        if (
-            pendingRefund > 0.001f &&
-            showDebugLogs
-        )
-        {
-            Debug.Log(
-                "Pending channel refund was cancelled. Lost light: " +
-                pendingRefund.ToString("0.000")
+            StopCoroutine(
+                refundCoroutine
             );
+
+            refundCoroutine = null;
         }
 
         pendingRefund = 0f;
     }
 
-    private void PrintBlockedReason(string reason)
+    private void PrintBlockedReason(
+        string reason
+    )
     {
         if (showDebugLogs)
         {
@@ -736,23 +876,25 @@ public class PlayerLightChannel : MonoBehaviour
 
     public bool IsWaitingBetweenLives()
     {
-        // Animation or visual feedback can later use this to distinguish active
-        // light draining from the short pause after a successful heal.
         return isWaitingBetweenLives;
     }
 
     public bool IsRefundPending()
     {
-        // Movement regeneration must remain paused while unfinished channel light
-        // is waiting to be returned, otherwise regeneration and refund can stack.
-        return pendingRefund > 0.001f ||
-               refundCoroutine != null;
+        return
+            pendingRefund > 0.001f ||
+            refundCoroutine != null;
     }
 
     private void OnDisable()
     {
-        // Disabling the component or Player should never leave its looping
-        // channel sound active after the gameplay system has stopped running.
         StopChannelAudio();
+
+        if (playerAnimationController != null)
+        {
+            playerAnimationController.SetChannelingAnimation(
+                false
+            );
+        }
     }
 }

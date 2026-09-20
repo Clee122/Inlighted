@@ -9,6 +9,17 @@ public class PlayerAnimationController : MonoBehaviour
     [Header("Light Beam Origin")]
     [SerializeField] private Transform beamOrigin;
 
+    [Header("Heal Animation Timing")]
+
+    // The combined Heal animation contains both the channel build-up and the
+    // successful healing reaction, so this state controls one complete heal cycle.
+    [SerializeField] private string healAnimationStateName = "CatMoth_Heal";
+
+    // This defines where in the combined animation the actual life restoration
+    // happens. Everything before this point visually represents channel build-up.
+    [SerializeField, Range(0.01f, 1f)]
+    private float healApplyNormalisedTime = 0.7f;
+
     [Header("Hurt Visual Priority")]
     [SerializeField] private string hurtSortingLayerName = "DeathPlayer";
     [SerializeField] private int hurtOrderInLayer = 50;
@@ -30,9 +41,21 @@ public class PlayerAnimationController : MonoBehaviour
     [SerializeField] private bool showDebugLogs = false;
 
     private PlayerLifeSystem playerLifeSystem;
+    private PlayerLightChannel playerLightChannel;
 
     private int originalOrderInLayer;
     private int originalSortingLayerID;
+
+    // This prevents one Heal animation from restoring more than one life.
+    private bool healAppliedForCurrentAnimation;
+
+    // This prevents the same Heal cycle from reporting completion every frame
+    // while the non-looping animation remains sitting on its final frame.
+    private bool healFinishedForCurrentAnimation;
+
+    // Tracking entry into Heal lets each new animation cycle reset its one-shot
+    // healing and completion flags.
+    private bool wasInHealAnimation;
 
     // The original Beam Origin position is kept so only the horizontal side
     // changes when CatMoth turns around.
@@ -44,6 +67,11 @@ public class PlayerAnimationController : MonoBehaviour
         // need to tell it when hurt protection can safely finish.
         playerLifeSystem =
             GetComponent<PlayerLifeSystem>();
+
+        // The channel system receives Heal animation progress so resource spending
+        // and life restoration stay synchronised with the visible animation.
+        playerLightChannel =
+            GetComponent<PlayerLightChannel>();
 
         // The Rigidbody2D is expected to be on the parent Player object.
         // This fallback keeps the script working if its Inspector reference is lost.
@@ -156,6 +184,10 @@ public class PlayerAnimationController : MonoBehaviour
             isDead
         );
 
+        // The combined Heal animation drives channel progress, light spending
+        // and the exact moment at which the life is restored.
+        UpdateHealAnimationTiming();
+
         if (showDebugLogs)
         {
             Debug.Log(
@@ -237,6 +269,103 @@ public class PlayerAnimationController : MonoBehaviour
 
         beamOrigin.localPosition =
             targetPosition;
+    }
+
+    private void UpdateHealAnimationTiming()
+    {
+        if (
+            catMothAnimator == null ||
+            playerLightChannel == null
+        )
+        {
+            return;
+        }
+
+        AnimatorStateInfo currentState =
+            catMothAnimator.GetCurrentAnimatorStateInfo(
+                0
+            );
+
+        bool isCurrentlyInHealAnimation =
+            currentState.IsName(
+                healAnimationStateName
+            );
+
+        if (!isCurrentlyInHealAnimation)
+        {
+            // Leaving Heal prepares the controller for the next complete cycle.
+            // Completion itself is detected at the end of the Heal clip so the
+            // channel does not depend on Unity leaving the state first.
+            wasInHealAnimation = false;
+
+            return;
+        }
+
+        if (!wasInHealAnimation)
+        {
+            // Every newly started Heal cycle must be allowed to spend light,
+            // restore one life and report completion independently.
+            healAppliedForCurrentAnimation = false;
+            healFinishedForCurrentAnimation = false;
+            wasInHealAnimation = true;
+        }
+
+        float animationProgress =
+            currentState.normalizedTime;
+
+        float clampedAnimationProgress =
+            Mathf.Clamp01(
+                animationProgress
+            );
+
+        // Resource spending follows the visible build-up section of the animation
+        // so the gameplay cost remains synchronised with the combined Heal clip.
+        playerLightChannel.UpdateChannelFromHealAnimation(
+            clampedAnimationProgress,
+            healApplyNormalisedTime
+        );
+
+        if (
+            !healAppliedForCurrentAnimation &&
+            animationProgress >=
+            healApplyNormalisedTime
+        )
+        {
+            healAppliedForCurrentAnimation = true;
+
+            // The life is restored only when the animation reaches its configured
+            // visual healing moment.
+            playerLightChannel.ApplyPendingHealFromAnimation();
+
+            if (showDebugLogs)
+            {
+                Debug.Log(
+                    "ANIM CHECK: Combined Heal animation reached health restoration point."
+                );
+            }
+        }
+
+        if (
+            !healFinishedForCurrentAnimation &&
+            animationProgress >= 1f
+        )
+        {
+            healFinishedForCurrentAnimation = true;
+
+            /*
+             * Completion is reported directly from the final Heal frame.
+             * Waiting for the Animator to leave the state previously created
+             * situations where the channel and Animator waited on each other.
+             */
+            playerLightChannel.FinishHealAnimation();
+
+            if (showDebugLogs)
+            {
+                Debug.Log(
+                    "ANIM CHECK: Combined Heal animation reached its final frame and reported completion."
+                );
+            }
+        }
     }
 
     public int GetFacingDirection()
@@ -346,6 +475,95 @@ public class PlayerAnimationController : MonoBehaviour
         Debug.Log(
             "ANIM CHECK: Light Burst animation trigger sent."
         );
+    }
+
+    public void PlayLightBeamAnimation()
+    {
+        if (catMothAnimator == null)
+        {
+            Debug.LogWarning(
+                "ANIM CHECK FAILED: Cannot play Light Beam animation because CatMoth Animator is missing."
+            );
+
+            return;
+        }
+
+        // Light Beam is triggered only once the shot has successfully committed,
+        // keeping aiming and cancelled Beam attempts separate from the firing animation.
+        catMothAnimator.ResetTrigger("lightBeam");
+        catMothAnimator.SetTrigger("lightBeam");
+
+        Debug.Log(
+            "ANIM CHECK: Light Beam animation trigger sent."
+        );
+    }
+
+    public void SetChannelingAnimation(
+        bool isChanneling
+    )
+    {
+        if (catMothAnimator == null)
+        {
+            Debug.LogWarning(
+                "ANIM CHECK FAILED: Cannot update channeling animation because CatMoth Animator is missing."
+            );
+
+            return;
+        }
+
+        // The Bool still represents whether the gameplay channel is active.
+        // Explicit Heal restarts handle consecutive non-looping animation cycles.
+        catMothAnimator.SetBool(
+            "isChannelling",
+            isChanneling
+        );
+
+        if (showDebugLogs)
+        {
+            Debug.Log(
+                "ANIM CHECK: isChannelling set to " +
+                isChanneling +
+                "."
+            );
+        }
+    }
+
+    public void RestartHealAnimation()
+    {
+        if (catMothAnimator == null)
+        {
+            Debug.LogWarning(
+                "ANIM CHECK FAILED: Cannot restart Heal animation because CatMoth Animator is missing."
+            );
+
+            return;
+        }
+
+        // Consecutive healing explicitly restarts the non-looping Heal state.
+        // Without this, Unity can leave the state sitting at normalized time 1,
+        // causing the next cycle to consume light against the finished animation.
+        healAppliedForCurrentAnimation = false;
+        healFinishedForCurrentAnimation = false;
+        wasInHealAnimation = false;
+
+        catMothAnimator.Play(
+            healAnimationStateName,
+            0,
+            0f
+        );
+
+        // Updating immediately ensures the Animator processes the forced restart
+        // before this frame can continue reading the previous completed state.
+        catMothAnimator.Update(
+            0f
+        );
+
+        if (showDebugLogs)
+        {
+            Debug.Log(
+                "ANIM CHECK: Heal animation explicitly restarted from frame 0."
+            );
+        }
     }
 
     public void SetHurtVisualPriority()
