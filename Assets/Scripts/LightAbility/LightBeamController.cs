@@ -128,6 +128,10 @@ public class LightBeamController : MonoBehaviour
     private PlayerLightResource playerLightResource;
     private PlayerLightChannel playerLightChannel;
 
+    // The animation controller is referenced once so a successfully fired Beam
+    // can trigger CatMoth's firing animation without duplicating Animator logic.
+    private PlayerAnimationController playerAnimationController;
+
     /*
      * This remembers which input method started the current aiming session.
      * It prevents a connected Gamepad from taking control of aiming when the
@@ -148,6 +152,11 @@ public class LightBeamController : MonoBehaviour
         // Beam aiming must be blocked before a preview begins while channeling.
         playerLightChannel =
             GetComponent<PlayerLightChannel>();
+
+        // Animation is kept in PlayerAnimationController so the Beam only needs
+        // to request the firing reaction after gameplay has accepted the shot.
+        playerAnimationController =
+            GetComponent<PlayerAnimationController>();
 
         if (playerLightResource == null)
         {
@@ -253,19 +262,10 @@ public class LightBeamController : MonoBehaviour
             beamIndicatorVisual
         );
 
-        /*
-         * Mouse firing is checked only when a mouse actually exists. This allows
-         * controller-only play without attempting to read a missing Mouse device.
-         */
         bool mouseFirePressed =
             Mouse.current != null &&
             Mouse.current.leftButton.wasPressedThisFrame;
 
-        /*
-         * Gamepad firing is checked only when a controller exists. The previous
-         * code accessed Gamepad.current directly and caused a NullReferenceException
-         * whenever the player used keyboard and mouse without a controller connected.
-         */
         bool gamepadFirePressed =
             Gamepad.current != null &&
             Gamepad.current.rightTrigger.wasPressedThisFrame;
@@ -285,10 +285,6 @@ public class LightBeamController : MonoBehaviour
             ConfirmFireBeam();
         }
 
-        /*
-         * Cancellation checks each device independently because either the mouse
-         * or Gamepad may not exist during a particular play session.
-         */
         bool mouseCancelPressed =
             Mouse.current != null &&
             Mouse.current.rightButton.wasPressedThisFrame;
@@ -318,46 +314,29 @@ public class LightBeamController : MonoBehaviour
 
     public float GetLockedBeamLength()
     {
-        /*
-         * Darkness reads the exact distance captured when the player committed
-         * the shot. Sharing this value prevents the darkness cut-out from using
-         * a separate range that could stop before or continue beyond the Beam.
-         */
         return lockedBeamSize.x;
     }
 
     public float GetDarknessCutoutHalfWidth()
     {
-        /*
-         * The Inspector exposes the complete darkness opening width because that
-         * is easier to tune visually. DarknessCutoutController calculates the
-         * distance from the Beam centre line, so it needs half of that width.
-         */
         return darknessCutoutWidth * 0.5f;
     }
 
     public float GetDarknessCutoutExpansionDuration()
     {
-        // The darkness controller performs the visual expansion, but the Beam
-        // owns how quickly its clearing effect reaches its configured full width.
         return darknessCutoutExpansionDuration;
     }
 
     public float GetDarknessCutoutHoldDuration()
     {
-        // Each fired Beam stores this value with its own corridor so previous
-        // openings can continue holding independently of later Beam shots.
         return darknessCutoutHoldDuration;
     }
 
     public float GetDarknessCutoutReformDuration()
     {
-        // The Beam determines how long its darkness effect takes to disappear
-        // while DarknessCutoutController performs the gradual closing effect.
         return darknessCutoutReformDuration;
     }
 
-    // Called by the Beam input.
     public void FireBeam()
     {
         if (
@@ -365,8 +344,6 @@ public class LightBeamController : MonoBehaviour
             playerLightChannel.IsChanneling()
         )
         {
-            // Beam input is ignored rather than cancelling channeling, ensuring
-            // channeling and ability use remain mutually exclusive.
             Debug.Log(
                 "Light Beam aiming was blocked because the player is channeling."
             );
@@ -374,13 +351,6 @@ public class LightBeamController : MonoBehaviour
             return;
         }
 
-        /*
-         * Detect whether E is currently responsible for this FireBeam callback.
-         * The value is stored for the whole aiming session so releasing E does
-         * not suddenly switch aiming from mouse to controller.
-         *
-         * If no Gamepad exists, mouse aiming is also selected automatically.
-         */
         bool keyboardPressedE =
             Keyboard.current != null &&
             (
@@ -397,8 +367,6 @@ public class LightBeamController : MonoBehaviour
 
     public void BeginBeamAim()
     {
-        // This second channel check protects against another script directly
-        // calling BeginBeamAim instead of going through FireBeam.
         if (
             playerLightChannel != null &&
             playerLightChannel.IsChanneling()
@@ -485,10 +453,6 @@ public class LightBeamController : MonoBehaviour
             beamIndicatorVisual.SetActive(false);
         }
 
-        /*
-         * Reset the remembered input source after cancelling so the next Beam
-         * activation can correctly determine whether mouse or controller started it.
-         */
         keyboardActivatedBeam = false;
 
         Debug.Log(
@@ -575,6 +539,14 @@ public class LightBeamController : MonoBehaviour
             );
         }
 
+        // The firing animation starts only after the shot has passed every
+        // validation check and successfully spent light, preventing cancelled
+        // or unsuccessful Beam attempts from playing the animation.
+        if (playerAnimationController != null)
+        {
+            playerAnimationController.PlayLightBeamAnimation();
+        }
+
         // The final aiming result already contains the exact distance to the
         // nearest wall or Bloom Receiver. Locking it here gives the fired Beam
         // and the darkness system one shared endpoint.
@@ -641,14 +613,9 @@ public class LightBeamController : MonoBehaviour
         if (beamVisual != null)
         {
             beamVisual.SetActive(true);
-
-            // The fired Beam is positioned once using the locked aiming result.
-            // Its length then grows without following later mouse movement.
             PrepareLockedBeamVisual();
         }
 
-        // Expansion is capped by the full Beam duration so changing either
-        // value in the Inspector cannot make the growth outlive the ability.
         float actualExpansionDuration =
             Mathf.Clamp(
                 beamExpansionDuration,
@@ -680,13 +647,10 @@ public class LightBeamController : MonoBehaviour
                     expansionProgress
                 );
 
-            // Grow the visible line from the player towards the locked end point.
             UpdateBeamLineLength(
                 currentBeamLength
             );
 
-            // Gameplay uses the same growing length so it does not get ahead
-            // of the visible Beam.
             ApplyCurrentBeamCollisionValues(
                 currentBeamLength
             );
@@ -698,10 +662,6 @@ public class LightBeamController : MonoBehaviour
             {
                 DispelDarknessInBeam();
                 CheckLightGateInBeam();
-
-                // Bloom Receivers use the same expanding collision region as
-                // Darkness and gates so they only react once the visible Beam
-                // has actually travelled far enough to reach them.
                 CheckBloomReceiverInBeam();
 
                 gameplayCheckTimer =
@@ -717,7 +677,6 @@ public class LightBeamController : MonoBehaviour
             timer +=
                 Time.deltaTime;
 
-            // Update every frame so the outward movement stays smooth.
             yield return null;
         }
 
@@ -725,7 +684,6 @@ public class LightBeamController : MonoBehaviour
 
         if (beamParticles != null)
         {
-            // Clear particles between shots so the next Beam starts cleanly.
             beamParticles.Stop(
                 true,
                 ParticleSystemStopBehavior
@@ -740,10 +698,6 @@ public class LightBeamController : MonoBehaviour
 
         beamCoroutine = null;
 
-        /*
-         * The current shot is complete, so the next activation is free to decide
-         * independently whether keyboard/mouse or controller should handle aiming.
-         */
         keyboardActivatedBeam = false;
 
         Debug.Log(
@@ -813,8 +767,6 @@ public class LightBeamController : MonoBehaviour
                     1f
                 );
 
-            // The indicator uses a centred sprite, so it is moved halfway along
-            // the calculated range to begin at the player and end at the wall.
             visualObject.transform.Translate(
                 Vector3.right *
                 (actualRange * 0.5f),
@@ -830,8 +782,6 @@ public class LightBeamController : MonoBehaviour
             return;
         }
 
-        // Rotate the visual offset with the shot so the same adjustment works
-        // when aiming horizontally, vertically or diagonally.
         Vector2 rotatedVisualOffset =
             Quaternion.Euler(
                 0f,
@@ -840,8 +790,6 @@ public class LightBeamController : MonoBehaviour
             ) *
             beamVisualOffset;
 
-        // The fired visual keeps the exact locked origin and angle from the
-        // final aiming preview, with only the visual alignment offset added.
         beamVisual.transform.position =
             lockedBeamOrigin +
             rotatedVisualOffset;
@@ -853,15 +801,11 @@ public class LightBeamController : MonoBehaviour
                 lockedBeamAngle
             );
 
-        // Keep the root at normal scale so changing Beam length does not stretch
-        // the particle effect.
         beamVisual.transform.localScale =
             Vector3.one;
 
         if (beamLineRenderer != null)
         {
-            // Keep visual thickness separate from the gameplay Beam width so it
-            // can be matched to the aiming indicator without changing collision.
             float visualWidth =
                 beamWidth *
                 beamVisualWidthMultiplier;
@@ -873,7 +817,6 @@ public class LightBeamController : MonoBehaviour
                 visualWidth;
         }
 
-        // Start each shot at zero length so it visibly travels out from the player.
         UpdateBeamLineLength(
             0f
         );
@@ -883,7 +826,6 @@ public class LightBeamController : MonoBehaviour
             ParticleSystem.MainModule main =
                 beamParticles.main;
 
-            // Speed the particle effect up or down to follow Beam Active Duration.
             main.simulationSpeed =
                 originalParticleLifetime /
                 Mathf.Max(
@@ -891,7 +833,6 @@ public class LightBeamController : MonoBehaviour
                     beamActiveDuration
                 );
 
-            // Restart the effect from the beginning for every shot.
             beamParticles.Stop(
                 true,
                 ParticleSystemStopBehavior
@@ -920,8 +861,6 @@ public class LightBeamController : MonoBehaviour
             beamLineStartLocalPosition
         );
 
-        // The Beam root already carries the locked rotation, so the line only
-        // needs to extend along its local X axis.
         beamLineRenderer.SetPosition(
             1,
             beamLineStartLocalPosition +
@@ -937,8 +876,6 @@ public class LightBeamController : MonoBehaviour
         float currentLength
     )
     {
-        // Darkness, gate and Bloom Receiver checks use the same growing length
-        // as the visual Beam so gameplay remains lined up with the effect.
         lastBeamCenter =
             lockedBeamOrigin +
             lockedBeamDirection *
@@ -967,8 +904,6 @@ public class LightBeamController : MonoBehaviour
         ParticleSystem.CollisionModule collision =
             beamParticles.collision;
 
-        // Use the same wall layer as the Beam raycast so particles stop on the
-        // same surfaces that stop the ability.
         collision.enabled = true;
 
         collision.type =
@@ -977,14 +912,10 @@ public class LightBeamController : MonoBehaviour
         collision.mode =
             ParticleSystemCollisionMode.Collision2D;
 
-        // Beam particles should stop at the same walls and Bloom Receivers
-        // that stop the gameplay Beam so the visual effect does not pass through.
         collision.collidesWith =
             wallLayer |
             bloomReceiverLayer;
 
-        // Remove particles when they hit a wall instead of allowing them to
-        // bounce or continue through it.
         collision.lifetimeLoss = 1f;
         collision.bounce = 0f;
         collision.dampen = 1f;
@@ -994,8 +925,6 @@ public class LightBeamController : MonoBehaviour
         Vector2 originPosition
     )
     {
-        // Camera.main can change between scenes, so recover the reference if the
-        // original camera was destroyed or had not yet been available in Awake.
         if (mainCamera == null)
         {
             mainCamera = Camera.main;
@@ -1004,11 +933,6 @@ public class LightBeamController : MonoBehaviour
         Vector2 direction =
             lastBeamDirection;
 
-        /*
-         * Keyboard-started aiming uses the mouse. Mouse aiming also becomes the
-         * automatic fallback when no Gamepad exists, which prevents the previous
-         * null reference when playing with only keyboard and mouse.
-         */
         bool shouldUseMouse =
             keyboardActivatedBeam ||
             Gamepad.current == null;
@@ -1041,19 +965,12 @@ public class LightBeamController : MonoBehaviour
             Gamepad.current != null
         )
         {
-            /*
-             * The right stick is read only when a controller actually exists.
-             * The original script attempted this unconditionally and caused the
-             * NullReferenceException seen in the Console.
-             */
             direction =
                 Gamepad.current
                     .rightStick
                     .ReadValue();
         }
 
-        // Preserve the previous valid direction if the mouse sits directly over
-        // the origin or the controller stick returns to its neutral position.
         if (direction.sqrMagnitude <= 0.001f)
         {
             return lastBeamDirection;
@@ -1067,11 +984,6 @@ public class LightBeamController : MonoBehaviour
         Vector2 direction
     )
     {
-        /*
-         * Walls and Bloom Receivers remain physical endpoints for the Beam.
-         * The raycast searches forward without the old six-unit restriction so
-         * the shot can travel until actual level geometry blocks it.
-         */
         LayerMask beamStoppingLayers =
             wallLayer |
             bloomReceiverLayer;
@@ -1089,10 +1001,6 @@ public class LightBeamController : MonoBehaviour
             return blockingHit.distance;
         }
 
-        /*
-         * Visuals and gameplay still need a finite distance when nothing exists
-         * ahead of the shot. Beam Range therefore acts only as a safe fallback.
-         */
         return beamRange;
     }
 
@@ -1135,8 +1043,6 @@ public class LightBeamController : MonoBehaviour
 
         foreach (Collider2D hit in hits)
         {
-            // The receiver script may be placed on the same object as its
-            // collider or on a parent containing separate visual/collision children.
             BloomReceiver bloomReceiver =
                 hit.GetComponentInParent<BloomReceiver>();
 
@@ -1145,8 +1051,6 @@ public class LightBeamController : MonoBehaviour
                 continue;
             }
 
-            // The receiver determines which exact flowers belong to it.
-            // Flowers that are already active ignore the repeated Beam checks.
             bloomReceiver.ActivateReceiver();
         }
     }

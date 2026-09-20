@@ -96,6 +96,7 @@ GameObject:
   - component: {fileID: 375302773824281081}
   - component: {fileID: 4124388559237253108}
   - component: {fileID: 1337893546978931891}
+  - component: {fileID: 4827553954049224642}
   m_Layer: 0
   m_Name: LaserPointer
   m_TagString: Untagged
@@ -197,6 +198,8 @@ MonoBehaviour:
   MPReceiver: {fileID: 0}
   Player: {fileID: 0}
   interactionDistance: 1.5
+  laserPointerAnimator: {fileID: 4827553954049224642}
+  activationTriggerName: activate
   interactionOutline: {fileID: 0}
   solvedShutoffDelay: 3
 --- !u!114 &1337893546978931891
@@ -215,3 +218,25 @@ MonoBehaviour:
   outlineColour: {r: 1, g: 0.9019608, b: 0.42745098, a: 1}
   outlineThickness: 0.06
   sortingOrderOffset: -1
+--- !u!95 &4827553954049224642
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8158877820484968693}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 99666addcc6dcc84c87d549c2b30cc46, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0

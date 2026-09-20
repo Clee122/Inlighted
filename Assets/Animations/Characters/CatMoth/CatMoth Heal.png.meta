@@ -1,0 +1,403 @@
+fileFormatVersion: 2
+guid: 8a223d25f76849a44b1edefdf5246ec3
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 2231322756438019951
+    second: CatMoth Heal_0
+  - first:
+      213: -2241352142091722041
+    second: CatMoth Heal_1
+  - first:
+      213: -1964336386729094851
+    second: CatMoth Heal_2
+  - first:
+      213: 4681938283951884262
+    second: CatMoth Heal_3
+  - first:
+      213: -7634515712755496852
+    second: CatMoth Heal_4
+  - first:
+      213: -3513766470362593776
+    second: CatMoth Heal_5
+  - first:
+      213: -852884273043173496
+    second: CatMoth Heal_6
+  - first:
+      213: -1019898537992022337
+    second: CatMoth Heal_7
+  - first:
+      213: 2663030818464767217
+    second: CatMoth Heal_8
+  - first:
+      213: 6795973078021072209
+    second: CatMoth Heal_9
+  - first:
+      213: 2733276650063367450
+    second: CatMoth Heal_10
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 800
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: CatMoth Heal_0
+      rect:
+        serializedVersion: 2
+        x: 139
+        y: 3397
+        width: 1523
+        height: 587
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f6fcbb4993047fe10800000000000000
+      internalID: 2231322756438019951
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CatMoth Heal_1
+      rect:
+        serializedVersion: 2
+        x: 1989
+        y: 3396
+        width: 1539
+        height: 595
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7c2ef0a1a1e15e0e0800000000000000
+      internalID: -2241352142091722041
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CatMoth Heal_2
+      rect:
+        serializedVersion: 2
+        x: 3843
+        y: 3398
+        width: 1537
+        height: 646
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d3153a9b6764db4e0800000000000000
+      internalID: -1964336386729094851
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CatMoth Heal_3
+      rect:
+        serializedVersion: 2
+        x: 46
+        y: 2317
+        width: 1696
+        height: 771
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6e70143301699f040800000000000000
+      internalID: 4681938283951884262
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CatMoth Heal_4
+      rect:
+        serializedVersion: 2
+        x: 1901
+        y: 2310
+        width: 1693
+        height: 758
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c68021d9860cc0690800000000000000
+      internalID: -7634515712755496852
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CatMoth Heal_5
+      rect:
+        serializedVersion: 2
+        x: 3757
+        y: 2295
+        width: 1693
+        height: 743
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0160c5e03089c3fc0800000000000000
+      internalID: -3513766470362593776
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CatMoth Heal_6
+      rect:
+        serializedVersion: 2
+        x: 60
+        y: 1198
+        width: 1673
+        height: 665
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 88f8ebeb542f924f0800000000000000
+      internalID: -852884273043173496
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CatMoth Heal_7
+      rect:
+        serializedVersion: 2
+        x: 1923
+        y: 1224
+        width: 1651
+        height: 642
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fb69b00fea798d1f0800000000000000
+      internalID: -1019898537992022337
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CatMoth Heal_8
+      rect:
+        serializedVersion: 2
+        x: 3808
+        y: 1242
+        width: 1600
+        height: 662
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1fc92888b6cf4f420800000000000000
+      internalID: 2663030818464767217
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CatMoth Heal_9
+      rect:
+        serializedVersion: 2
+        x: 117
+        y: 162
+        width: 1595
+        height: 724
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 15560920285205e50800000000000000
+      internalID: 6795973078021072209
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CatMoth Heal_10
+      rect:
+        serializedVersion: 2
+        x: 1986
+        y: 162
+        width: 1546
+        height: 754
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a1d85e7b1ac8ee520800000000000000
+      internalID: 2733276650063367450
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      CatMoth Heal_0: 2231322756438019951
+      CatMoth Heal_1: -2241352142091722041
+      CatMoth Heal_10: 2733276650063367450
+      CatMoth Heal_2: -1964336386729094851
+      CatMoth Heal_3: 4681938283951884262
+      CatMoth Heal_4: -7634515712755496852
+      CatMoth Heal_5: -3513766470362593776
+      CatMoth Heal_6: -852884273043173496
+      CatMoth Heal_7: -1019898537992022337
+      CatMoth Heal_8: 2663030818464767217
+      CatMoth Heal_9: 6795973078021072209
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

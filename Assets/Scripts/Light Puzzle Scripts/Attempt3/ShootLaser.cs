@@ -32,6 +32,16 @@ public class ShootLaser : MonoBehaviour
     // The player only needs to be near the LaserPointer to activate it.
     [SerializeField] private float interactionDistance = 1.5f;
 
+    [Header("Animation")]
+
+    // The Laser Pointer owns its own activation animation, so the environmental
+    // puzzle piece controls its Animator directly instead of involving CatMoth's Animator.
+    [SerializeField] private Animator laserPointerAnimator;
+
+    // Keeping the trigger name exposed makes the script easier to reuse if the
+    // Animator parameter is renamed later without requiring another code change.
+    [SerializeField] private string activationTriggerName = "activate";
+
     [Header("Interaction Visual Feedback")]
 
     // The same outline component used by mirrors makes all environmental
@@ -72,6 +82,14 @@ public class ShootLaser : MonoBehaviour
             // with MirrorRotate while still allowing a manual reference.
             interactionOutline =
                 GetComponent<PuzzleInteractableOutline>();
+        }
+
+        if (laserPointerAnimator == null)
+        {
+            // The Animator normally belongs to the Laser Pointer itself or one
+            // of its visual children, so this fallback reduces prefab setup mistakes.
+            laserPointerAnimator =
+                GetComponentInChildren<Animator>();
         }
 
         if (Player == null)
@@ -259,6 +277,10 @@ public class ShootLaser : MonoBehaviour
             return;
         }
 
+        // The animation is triggered only after activation has successfully reached
+        // this point, so a failed laser setup cannot play a misleading visual response.
+        PlayActivationAnimation();
+
         // Activating the source starts a persistent laser so the player can
         // experiment with mirror angles without needing to race against a timer.
         isLaserActive = true;
@@ -275,6 +297,41 @@ public class ShootLaser : MonoBehaviour
         Debug.Log(
             gameObject.name +
             " activated. The laser will remain on until the puzzle is solved."
+        );
+    }
+
+    private void PlayActivationAnimation()
+    {
+        if (laserPointerAnimator == null)
+        {
+            // The puzzle itself can still function without animation, so a missing
+            // Animator should warn rather than prevent the laser from activating.
+            Debug.LogWarning(
+                "ShootLaser could not play the Laser Pointer activation animation because no Animator was found.",
+                this
+            );
+
+            return;
+        }
+
+        if (string.IsNullOrEmpty(activationTriggerName))
+        {
+            Debug.LogWarning(
+                "ShootLaser activation trigger name is empty.",
+                this
+            );
+
+            return;
+        }
+
+        // The Laser Pointer activation is a one-shot reaction to the player's C
+        // interaction, so a Trigger is appropriate instead of a persistent Bool.
+        laserPointerAnimator.ResetTrigger(
+            activationTriggerName
+        );
+
+        laserPointerAnimator.SetTrigger(
+            activationTriggerName
         );
     }
 

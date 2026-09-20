@@ -210,8 +210,8 @@ public class PlayerController2D : MonoBehaviour
         Pauser =
             FindFirstObjectByType<PauseManager>();
 
-        // Movement and jump inputs check the channel state so they can be ignored
-        // instead of ending the channel and moving the player on the same frame.
+        // Movement and jump inputs can interrupt an active heal so player intent
+        // immediately returns CatMoth to normal movement instead of being discarded.
         playerLightChannel =
             GetComponent<PlayerLightChannel>();
 
@@ -393,9 +393,6 @@ public class PlayerController2D : MonoBehaviour
 
     private void UpdateWalkingAudio()
     {
-        // Leaving this empty is valid while the final audio assets are pending.
-        // Returning here also prevents an unassigned walking sound from interfering
-        // with another looping sound such as Light Channel.
         if (
             walkingSound == null ||
             rb == null ||
@@ -405,8 +402,6 @@ public class PlayerController2D : MonoBehaviour
             return;
         }
 
-        // Actual Rigidbody movement is checked alongside movement input so holding
-        // a direction against a wall does not incorrectly produce walking audio.
         bool isActuallyMoving =
             rb.linearVelocity.magnitude >
             walkingAudioSpeedThreshold;
@@ -422,8 +417,6 @@ public class PlayerController2D : MonoBehaviour
             lightBeamController.IsBeamActive()
         )
         {
-            // A fired Beam completely freezes the player, so footsteps must stop
-            // even when the movement key remains held for movement afterwards.
             shouldPlayWalkingAudio = false;
         }
 
@@ -516,8 +509,6 @@ public class PlayerController2D : MonoBehaviour
             lightBeamController.IsBeamActive()
         )
         {
-            // The player stays completely still while the Beam is active so the
-            // fired Beam remains lined up with the position where it was fired.
             rb.gravityScale = 0f;
             rb.linearVelocity = Vector2.zero;
 
@@ -558,9 +549,6 @@ public class PlayerController2D : MonoBehaviour
         rb.gravityScale =
             defaultGravityScale;
 
-        // Airborne target speed can be tuned independently from grounded speed.
-        // Keeping the default multiplier at 1 preserves full horizontal reach while
-        // still allowing playtesting to make CatMoth more or less mobile in the air.
         if (!isGrounded)
         {
             targetSpeed *=
@@ -645,8 +633,6 @@ public class PlayerController2D : MonoBehaviour
 
             if (!hasMovementInput)
             {
-                // Air deceleration gives the player a way to reduce horizontal
-                // drift before landing instead of being committed to the take-off speed.
                 airborneMovementRate =
                     airDeceleration;
             }
@@ -656,8 +642,6 @@ public class PlayerController2D : MonoBehaviour
                 Mathf.Sign(currentSpeed)
             )
             {
-                // Reversing direction uses a dedicated, stronger rate because
-                // landing correction often requires changing an existing trajectory.
                 airborneMovementRate =
                     airTurnAcceleration;
             }
@@ -676,8 +660,6 @@ public class PlayerController2D : MonoBehaviour
                 )
             )
             {
-                // Extra steering near the apex takes advantage of the longer hang
-                // time and gives the player finer control over where CatMoth descends.
                 airborneMovementRate *=
                     Mathf.Max(
                         0f,
@@ -717,8 +699,6 @@ public class PlayerController2D : MonoBehaviour
             lightBeamController.IsBeamActive()
         )
         {
-            // Beam intentionally freezes CatMoth in place, so airborne gravity
-            // must remain disabled for the full duration of the active Beam.
             return;
         }
 
@@ -727,16 +707,11 @@ public class PlayerController2D : MonoBehaviour
             isOnWalkableSlope
         )
         {
-            // Slope movement deliberately disables gravity so CatMoth stays
-            // attached to the surface instead of sliding or fighting the slope.
             return;
         }
 
         if (isGrounded)
         {
-            // Flat ground should always restore the Rigidbody's normal gravity.
-            // This prevents an airborne gravity multiplier from carrying into
-            // grounded movement before the next jump begins.
             rb.gravityScale =
                 defaultGravityScale;
 
@@ -757,8 +732,6 @@ public class PlayerController2D : MonoBehaviour
             safeApexThreshold
         )
         {
-            // Softer gravity around the apex creates extra hang time naturally.
-            // The Rigidbody still moves continuously, so the jump never hard-stops.
             rb.gravityScale =
                 defaultGravityScale *
                 Mathf.Max(
@@ -776,8 +749,6 @@ public class PlayerController2D : MonoBehaviour
                     ? riseGravityMultiplier
                     : releasedJumpGravityMultiplier;
 
-            // Holding jump keeps the normal airy rise, while releasing it early
-            // increases gravity enough to create a shorter controllable jump.
             rb.gravityScale =
                 defaultGravityScale *
                 Mathf.Max(
@@ -788,8 +759,6 @@ public class PlayerController2D : MonoBehaviour
             return;
         }
 
-        // Falling uses deliberately reduced gravity so CatMoth descends slowly
-        // and the player has more time to steer towards the intended landing.
         rb.gravityScale =
             defaultGravityScale *
             Mathf.Max(
@@ -810,16 +779,11 @@ public class PlayerController2D : MonoBehaviour
             lightBeamController.IsBeamActive()
         )
         {
-            // Beam intentionally freezes the Rigidbody completely, so there is
-            // no falling velocity for the normal movement system to control.
             return;
         }
 
         if (rb.linearVelocity.y >= 0f)
         {
-            // The limiter only affects downward movement. Upward jump velocity
-            // remains untouched so jump height and coyote-time jumps behave
-            // exactly as they did before maximum fall speed was introduced.
             return;
         }
 
@@ -834,8 +798,6 @@ public class PlayerController2D : MonoBehaviour
             -allowedFallSpeed
         )
         {
-            // Only the downward velocity is clamped. Horizontal speed remains
-            // unchanged so CatMoth can still steer normally during long falls.
             rb.linearVelocity =
                 new Vector2(
                     rb.linearVelocity.x,
@@ -856,8 +818,6 @@ public class PlayerController2D : MonoBehaviour
             lightBeamController.IsBeamActive()
         )
         {
-            // Clear buffered jump input when the Beam fires so an input stored
-            // before the movement lock cannot unexpectedly execute afterwards.
             jumpQueued = false;
             jumpBufferCounter = 0f;
             return;
@@ -880,23 +840,14 @@ public class PlayerController2D : MonoBehaviour
                     jumpForce
                 );
 
-            // The GroundCheck can remain inside the take-off surface for a physics
-            // frame after jumping. Preventing slope movement from taking control
-            // during that overlap protects the new upward jump velocity.
             isLeavingGroundFromJump = true;
 
-            // A successful jump consumes both forgiveness windows immediately.
-            // This prevents either timer from accidentally causing another jump
-            // from the same button press.
             coyoteTimeCounter = 0f;
             jumpBufferCounter = 0f;
             jumpQueued = false;
 
             isInPlayerControlledJump = true;
 
-            // Jump audio happens only once the gameplay jump has successfully
-            // applied upward velocity. Invalid or blocked jump input therefore
-            // cannot produce a sound when CatMoth did not actually jump.
             if (
                 jumpSound != null &&
                 AudioManager.Instance != null
@@ -915,9 +866,6 @@ public class PlayerController2D : MonoBehaviour
             return;
         }
 
-        // Unlike the old grounded-only jump queue, an airborne input is deliberately
-        // left queued while its buffer timer remains active. This allows landing
-        // shortly afterwards to convert that stored input into a valid jump.
         if (jumpBufferCounter <= 0f)
         {
             jumpQueued = false;
@@ -933,18 +881,22 @@ public class PlayerController2D : MonoBehaviour
 
         if (
             playerLightChannel != null &&
-            playerLightChannel.IsChanneling()
+            playerLightChannel.IsChanneling() &&
+            Mathf.Abs(input.x) > 0.01f
         )
         {
-            // Movement input is discarded while channeling rather than cancelling
-            // the channel and allowing movement on the same frame.
-            moveInput = 0f;
-            return;
+            // Horizontal movement is treated as an intentional interruption of
+            // healing. Cancelling first releases the channel movement lock so the
+            // same input can immediately continue into ordinary movement.
+            playerLightChannel.CancelForPlayerAction(
+                "Movement input"
+            );
         }
 
-        // Movement input remains recorded while temporary ability locks are active
-        // so held input can resume immediately once normal movement returns.
-        moveInput = input.x;
+        // The movement input is recorded even when it has just cancelled healing.
+        // This prevents the player from needing to release and press the key again.
+        moveInput =
+            input.x;
     }
 
     public void OnJump(
@@ -971,20 +923,12 @@ public class PlayerController2D : MonoBehaviour
             playerLightChannel.IsChanneling()
         )
         {
-            // Jump input is ignored while channeling because healing requires the
-            // player to remain grounded and committed to the channel action.
-            jumpQueued = false;
-            jumpBufferCounter = 0f;
-            jumpHeld = false;
-
-            if (showMovementDebugLogs)
-            {
-                Debug.Log(
-                    "Jump input was blocked because the player is channeling."
-                );
-            }
-
-            return;
+            // Jump input intentionally interrupts healing instead of being discarded.
+            // Cancelling first releases the movement lock so this same input can
+            // proceed into the existing jump buffer and coyote-time logic below.
+            playerLightChannel.CancelForPlayerAction(
+                "Jump input"
+            );
         }
 
         if (
@@ -992,7 +936,7 @@ public class PlayerController2D : MonoBehaviour
             lightBeamController.IsBeamActive()
         )
         {
-            // Jump input is ignored for the duration of the fired Beam.
+            // Beam remains a hard movement lock, so jumping cannot interrupt it.
             jumpQueued = false;
             jumpBufferCounter = 0f;
             jumpHeld = false;
@@ -1008,9 +952,7 @@ public class PlayerController2D : MonoBehaviour
         }
 
         // Every valid jump press is briefly stored instead of requiring CatMoth
-        // to already be grounded on the exact input frame. Grounded jumps and
-        // coyote-time jumps still execute immediately, while slightly early
-        // airborne presses can wait for an upcoming landing.
+        // to already be grounded on the exact input frame.
         jumpQueued = true;
         jumpBufferCounter = jumpBufferTime;
 
@@ -1031,8 +973,6 @@ public class PlayerController2D : MonoBehaviour
 
     public float GetHorizontalMovementInput()
     {
-        // Exposing the current horizontal input allows other movement-related
-        // systems to read player intent without duplicating input handling.
         return moveInput;
     }
 
@@ -1048,15 +988,11 @@ public class PlayerController2D : MonoBehaviour
 
     public bool IsOnWalkableSlope()
     {
-        // Exposing the existing slope result lets other gameplay systems use the
-        // same walkable-surface decision as the main movement controller.
         return isOnWalkableSlope;
     }
 
     public Vector2 GetSlopeDirection()
     {
-        // Exposing the calculated slope tangent keeps any external movement logic
-        // consistent with the direction used by ordinary slope movement.
         return slopeDirection;
     }
 
@@ -1072,7 +1008,6 @@ public class PlayerController2D : MonoBehaviour
             lightBeamController.IsBeamActive()
         )
         {
-            // Ability use does not count as movement for light regeneration.
             return false;
         }
 
@@ -1146,9 +1081,6 @@ public class PlayerController2D : MonoBehaviour
 
         float targetSlopeAngle = 0f;
 
-        // Normal movement can continue using the centre slope check, but the
-        // CatMoth visual only rotates when both sides detect a stable slope.
-        // This prevents platform lips from being mistaken for real inclines.
         if (
             isGrounded &&
             TryGetStableVisualSlopeAngle(
@@ -1204,9 +1136,6 @@ public class PlayerController2D : MonoBehaviour
             Vector2.right *
             slopeVisualProbeHalfWidth;
 
-        // Both sides of CatMoth must find ground before the visual can rotate.
-        // At a platform edge one probe should normally lose contact, preventing
-        // CatMoth from adopting the angle of the collider's corner.
         RaycastHit2D leftHit =
             Physics2D.Raycast(
                 leftProbeOrigin,
@@ -1243,9 +1172,6 @@ public class PlayerController2D : MonoBehaviour
                 Vector2.up
             );
 
-        // A large difference between the two normals usually means the probes
-        // are sitting across a corner or collider boundary rather than one
-        // continuous slope.
         if (
             Mathf.Abs(
                 leftSlopeAngle -
@@ -1269,8 +1195,6 @@ public class PlayerController2D : MonoBehaviour
                 Vector2.up
             );
 
-        // Flat surfaces keep the character upright, while surfaces steeper
-        // than the movement limit should not visually behave like walkable slopes.
         if (
             averagedSlopeAngle <= 0.1f ||
             averagedSlopeAngle > maximumSlopeAngle
@@ -1313,7 +1237,6 @@ public class PlayerController2D : MonoBehaviour
         Gizmos.color =
             Color.cyan;
 
-        // The centre ray remains the slope probe used by normal movement.
         Gizmos.DrawLine(
             groundCheck.position,
             groundCheck.position +
@@ -1331,8 +1254,6 @@ public class PlayerController2D : MonoBehaviour
             Vector3.right *
             slopeVisualProbeHalfWidth;
 
-        // The two additional rays verify that the visual is standing over one
-        // continuous slope rather than only touching a platform corner.
         Gizmos.DrawLine(
             leftProbeOrigin,
             leftProbeOrigin +
@@ -1388,16 +1309,8 @@ public class PlayerController2D : MonoBehaviour
         isChannelingLocked = false;
         isInPlayerControlledJump = false;
 
-        // Coyote time belongs to the previous movement state, so respawning must
-        // clear it to prevent a stale grace period from allowing an unintended jump.
         coyoteTimeCounter = 0f;
-
-        // Buffered jump input also belongs to the previous life, so clearing it
-        // prevents a jump pressed before death from executing after respawning.
         jumpBufferCounter = 0f;
-
-        // Respawning should not carry old airtime into the new life because the
-        // player may begin already touching the ground at the respawn point.
         currentAirTime = 0f;
 
         if (rb != null)
@@ -1417,8 +1330,6 @@ public class PlayerController2D : MonoBehaviour
                 slopeVisualBaseRotation;
         }
 
-        // Respawning clears movement, so any active footstep loop should also
-        // stop rather than carrying audio from the previous life into respawn.
         if (
             walkingSound != null &&
             AudioManager.Instance != null
