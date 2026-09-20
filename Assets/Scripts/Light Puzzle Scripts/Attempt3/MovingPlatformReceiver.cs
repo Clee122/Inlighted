@@ -20,9 +20,14 @@ public class MovingPlatformReceiver : MonoBehaviour
     // The end goal remains editable because this is the destination the level
     // designer intentionally chooses for this particular platform.
     public Vector3 MP_EndGoal;
+    
+    public float Speed = 0.5f;
+    
+    public cameramanage CameraManager;
+    public float maxOrtho;
+    public Transform CameraSpace;
 
-    public float Speed = 2f;
-
+    private bool cameraShown = false;
     private Vector3 MP_Target;
 
     private void Start()
@@ -71,6 +76,22 @@ public class MovingPlatformReceiver : MonoBehaviour
 
     public void Activate()
     {
+        {
+        if (
+        !cameraShown &&
+        CameraManager != null &&
+        CameraSpace != null
+        )
+
+        {
+            cameraShown = true;
+
+            CameraManager.Movetocameraspace(
+                CameraSpace
+            );
+        }
+
+        }
         if (MovingPlatform != null)
         {
             // The receiver changes the destination only when the laser actually
@@ -78,6 +99,7 @@ public class MovingPlatformReceiver : MonoBehaviour
             MP_Target =
                 MP_EndGoal;
         }
+
 
         if (
             completesPuzzleOnActivate &&
