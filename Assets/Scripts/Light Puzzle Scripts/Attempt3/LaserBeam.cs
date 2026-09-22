@@ -20,7 +20,8 @@ public class LaserBeam
         Material material,
         AppearingPlatformReceiver receiver,
         MovingPlatformReceiver Mreceiver,
-        int sortingOrder)
+        int sortingOrder,
+        float laserWidth)
     {
         this.APReceiver = receiver;
         this.MPReceiver = Mreceiver;
@@ -33,8 +34,17 @@ public class LaserBeam
         this.laser =
             this.laserObj.AddComponent(typeof(LineRenderer)) as LineRenderer;
 
-        this.laser.startWidth = 0.2f;
-        this.laser.endWidth = 0.2f;
+        // The width is supplied by ShootLaser so the environmental laser can
+        // be visually tuned from the Inspector without changing this class.
+        float safeLaserWidth =
+            Mathf.Max(
+                0.01f,
+                laserWidth
+            );
+
+        this.laser.startWidth = safeLaserWidth;
+        this.laser.endWidth = safeLaserWidth;
+
         this.laser.material = material;
         this.laser.startColor = Color.cyan;
         this.laser.endColor = Color.cyan;

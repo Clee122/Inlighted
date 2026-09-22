@@ -224,8 +224,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ShootLaser
   puzzleController: {fileID: 0}
-  material: {fileID: 2100000, guid: d621da402ed75764bbb2576848bde070, type: 2}
+  material: {fileID: 2100000, guid: 168f7902e0a1002458ccd285ae6c801b, type: 2}
   laserSortingOrder: 0
+  laserWidth: 0.5
   laserOrigin: {fileID: 7061135746236588143}
   APReceiver: {fileID: 0}
   MPReceiver: {fileID: 0}

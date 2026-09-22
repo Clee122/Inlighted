@@ -18,16 +18,15 @@ public class ShootLaser : MonoBehaviour
     // easy to keep the beam visible over environment artwork.
     [SerializeField] private int laserSortingOrder = 5;
 
+    // The beam is created at runtime, so exposing its width here allows the
+    // laser thickness to be adjusted directly for each LaserPointer in the Inspector.
+    [SerializeField] private float laserWidth = 0.2f;
+
     // The laser uses a dedicated emitter Transform instead of this object's centre
     // because the LaserPointer visual can move during its activation animation.
     // Keeping the origin attached to the animated visual ensures the beam continues
     // to emerge from the correct physical point on the LaserPointer.
     [SerializeField] private Transform laserOrigin;
-
-    // Some LaserPointer instances are mirrored to suit their placement in the level.
-    // This reverses only the beam direction so the visual can remain flipped without
-    // requiring a separate script or changing how the animated LaserOrigin moves.
-    [SerializeField] private bool reverseLaserDirection;
 
     private LaserBeam beam;
 
@@ -85,6 +84,12 @@ public class ShootLaser : MonoBehaviour
             Mathf.Max(
                 0f,
                 solvedShutoffDelay
+            );
+
+        laserWidth =
+            Mathf.Max(
+                0.01f,
+                laserWidth
             );
 
         if (interactionOutline == null)
@@ -275,25 +280,20 @@ public class ShootLaser : MonoBehaviour
                 ? laserOrigin
                 : transform;
 
-        Vector3 laserDirection =
-            reverseLaserDirection
-                ? -origin.right
-                : origin.right;
-
         if (beam == null)
         {
-            // The sorting order is passed into LaserBeam because the beam creates
-            // its own LineRenderer at runtime rather than using this GameObject.
-            // The dedicated origin keeps the initial beam position aligned with
-            // the animated LaserPointer instead of the object's centre.
+            // The sorting order, width, and origin are supplied because the beam
+            // creates its own LineRenderer at runtime rather than using a component
+            // that can be configured directly on the LaserPointer.
             beam =
                 new LaserBeam(
                     origin.position,
-                    laserDirection,
+                    origin.right,
                     material,
                     APReceiver,
                     MPReceiver,
-                    laserSortingOrder
+                    laserSortingOrder,
+                    laserWidth
                 );
         }
 
@@ -384,24 +384,17 @@ public class ShootLaser : MonoBehaviour
         beam.laser.positionCount = 0;
         beam.laserIndices.Clear();
 
-        // The origin is read every frame because the activation animation can move
-        // the LaserPointer visual after the beam has already been switched on.
-        // This keeps the beam attached to the emitter throughout the animation.
+        // The origin is read every frame because the activation animation moves
+        // the LaserOrigin as the pointer opens. Reading its current transform keeps
+        // the beam attached to the emitter throughout the entire animation.
         Transform origin =
             laserOrigin != null
                 ? laserOrigin
                 : transform;
 
-        // The direction can be reversed per LaserPointer instance so mirrored
-        // level placements do not require changing the animation or child hierarchy.
-        Vector3 laserDirection =
-            reverseLaserDirection
-                ? -origin.right
-                : origin.right;
-
         beam.CastRay(
             origin.position,
-            laserDirection,
+            origin.right,
             beam.laser
         );
     }
