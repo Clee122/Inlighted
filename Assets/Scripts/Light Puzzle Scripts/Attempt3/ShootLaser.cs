@@ -18,6 +18,17 @@ public class ShootLaser : MonoBehaviour
     // easy to keep the beam visible over environment artwork.
     [SerializeField] private int laserSortingOrder = 5;
 
+    // The laser uses a dedicated emitter Transform instead of this object's centre
+    // because the LaserPointer visual can move during its activation animation.
+    // Keeping the origin attached to the animated visual ensures the beam continues
+    // to emerge from the correct physical point on the LaserPointer.
+    [SerializeField] private Transform laserOrigin;
+
+    // Some LaserPointer instances are mirrored to suit their placement in the level.
+    // This reverses only the beam direction so the visual can remain flipped without
+    // requiring a separate script or changing how the animated LaserOrigin moves.
+    [SerializeField] private bool reverseLaserDirection;
+
     private LaserBeam beam;
 
     public AppearingPlatformReceiver APReceiver;
@@ -90,6 +101,16 @@ public class ShootLaser : MonoBehaviour
             // of its visual children, so this fallback reduces prefab setup mistakes.
             laserPointerAnimator =
                 GetComponentInChildren<Animator>();
+        }
+
+        if (laserOrigin == null)
+        {
+            // Falling back to this Transform preserves the previous laser behaviour
+            // if the dedicated LaserOrigin has not been assigned yet.
+            Debug.LogWarning(
+                "ShootLaser does not have a Laser Origin assigned. Falling back to the LaserPointer transform.",
+                this
+            );
         }
 
         if (Player == null)
@@ -249,14 +270,26 @@ public class ShootLaser : MonoBehaviour
 
     private void ActivateLaser()
     {
+        Transform origin =
+            laserOrigin != null
+                ? laserOrigin
+                : transform;
+
+        Vector3 laserDirection =
+            reverseLaserDirection
+                ? -origin.right
+                : origin.right;
+
         if (beam == null)
         {
             // The sorting order is passed into LaserBeam because the beam creates
             // its own LineRenderer at runtime rather than using this GameObject.
+            // The dedicated origin keeps the initial beam position aligned with
+            // the animated LaserPointer instead of the object's centre.
             beam =
                 new LaserBeam(
-                    transform.position,
-                    transform.right,
+                    origin.position,
+                    laserDirection,
                     material,
                     APReceiver,
                     MPReceiver,
@@ -351,9 +384,24 @@ public class ShootLaser : MonoBehaviour
         beam.laser.positionCount = 0;
         beam.laserIndices.Clear();
 
+        // The origin is read every frame because the activation animation can move
+        // the LaserPointer visual after the beam has already been switched on.
+        // This keeps the beam attached to the emitter throughout the animation.
+        Transform origin =
+            laserOrigin != null
+                ? laserOrigin
+                : transform;
+
+        // The direction can be reversed per LaserPointer instance so mirrored
+        // level placements do not require changing the animation or child hierarchy.
+        Vector3 laserDirection =
+            reverseLaserDirection
+                ? -origin.right
+                : origin.right;
+
         beam.CastRay(
-            transform.position,
-            transform.right,
+            origin.position,
+            laserDirection,
             beam.laser
         );
     }

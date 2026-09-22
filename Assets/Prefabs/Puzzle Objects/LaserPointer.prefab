@@ -84,6 +84,37 @@ MonoBehaviour:
   promptObject: {fileID: 0}
   promptTarget: {fileID: 0}
   worldOffset: {x: 0, y: 1, z: 0}
+--- !u!1 &7304105038852975237
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7061135746236588143}
+  m_Layer: 0
+  m_Name: LaserOrigin
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7061135746236588143
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7304105038852975237}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 2.94, y: -1.33, z: 0}
+  m_LocalScale: {x: 3.8610394, y: 4.6597075, z: 3.8610394}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 827240800976777313}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &8158877820484968693
 GameObject:
   m_ObjectHideFlags: 0
@@ -118,6 +149,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 6457263377187028373}
+  - {fileID: 7061135746236588143}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &375302773824281081
@@ -167,9 +199,9 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 5
+  m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 8292566253280404753, guid: 74210b3c7558bf14f826cd1509146561, type: 3}
+  m_Sprite: {fileID: 8563681316653893026, guid: 4b82118777ce4154a8571cf467f90b9f, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -193,7 +225,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ShootLaser
   puzzleController: {fileID: 0}
   material: {fileID: 2100000, guid: d621da402ed75764bbb2576848bde070, type: 2}
-  laserSortingOrder: 5
+  laserSortingOrder: 0
+  laserOrigin: {fileID: 7061135746236588143}
   APReceiver: {fileID: 0}
   MPReceiver: {fileID: 0}
   Player: {fileID: 0}
