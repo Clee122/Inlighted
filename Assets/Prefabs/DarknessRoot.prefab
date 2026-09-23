@@ -64,6 +64,7 @@ GameObject:
   - component: {fileID: 6108597237056535099}
   - component: {fileID: 3159325944255589552}
   - component: {fileID: 7766361113351858081}
+  - component: {fileID: 3282822484088692013}
   m_Layer: 8
   m_Name: DarknessMass
   m_TagString: Untagged
@@ -189,6 +190,25 @@ MonoBehaviour:
   phaseOffset: 0
   positionAmplitude: {x: 0.03, y: 0.04}
   positionSpeed: {x: 0.45, y: 0.6}
+--- !u!114 &3282822484088692013
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3310907441799119650}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b1374fea05623e4085acc5b97ead03c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DarknessVisibilityOptimiser
+  targetCamera: {fileID: 0}
+  darknessRenderer: {fileID: 6108597237056535099}
+  darknessCutoutController: {fileID: 3159325944255589552}
+  sectionPulse: {fileID: 7766361113351858081}
+  cameraBuffer: 2
+  visibilityCheckInterval: 0.1
+  pauseSectionPulseOffScreen: 1
 --- !u!1 &3327158856795128805
 GameObject:
   m_ObjectHideFlags: 0

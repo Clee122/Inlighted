@@ -101,6 +101,13 @@ public class DarknessCutoutController : MonoBehaviour
 
     private float maskUpdateTimer = 0f;
 
+    /*
+     * Off-screen darkness still tracks Burst and Beam gameplay state, but its
+     * expensive CPU texture rebuild can safely wait until the camera returns.
+     * This flag only gates visual work; it never disables this component.
+     */
+    private bool visualMaskUpdatesEnabled = true;
+
     private Material darknessMaterial;
 
     /*
@@ -313,6 +320,15 @@ public class DarknessCutoutController : MonoBehaviour
         DetectBeam();
         UpdateBeamCutoutLifetimes();
 
+        /*
+         * Beam timers and cut-out safety calculations must keep running while
+         * off-screen, but we can skip rebuilding a texture nobody can see.
+         */
+        if (!visualMaskUpdatesEnabled)
+        {
+            return;
+        }
+
         maskUpdateTimer +=
             Time.deltaTime;
 
@@ -337,6 +353,40 @@ public class DarknessCutoutController : MonoBehaviour
 
             BuildDynamicMask();
         }
+    }
+
+    /*
+     * Called by the camera visibility optimiser. Re-enabling visual updates
+     * rebuilds the mask immediately, so light openings do not show stale data
+     * on the first frame that a darkness mass comes into view.
+     */
+    public void SetVisualMaskUpdatesEnabled(bool shouldUpdate)
+    {
+        if (visualMaskUpdatesEnabled == shouldUpdate)
+        {
+            return;
+        }
+
+        visualMaskUpdatesEnabled = shouldUpdate;
+        maskUpdateTimer = 0f;
+
+        // During component initialisation the mask may not exist yet.
+        if (
+            !shouldUpdate ||
+            cutoutMaskTexture == null ||
+            darknessRenderer == null ||
+            darknessRenderer.sprite == null
+        )
+        {
+            return;
+        }
+
+        /*
+         * Tendril particles use viewport-space mapping. Refresh their mapping
+         * and the CPU cut-out together before the zone becomes visible again.
+         */
+        UpdateParticleScreenMaskMapping();
+        BuildDynamicMask();
     }
 
     private void CreateMaskTexture()

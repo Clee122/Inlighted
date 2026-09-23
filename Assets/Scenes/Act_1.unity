@@ -35756,6 +35756,14 @@ PrefabInstance:
       propertyPath: lightBurstController
       value: 
       objectReference: {fileID: 723470347}
+    - target: {fileID: 3282822484088692013, guid: 79452087d14fa634b9615884f5e0ce25, type: 3}
+      propertyPath: cameraBuffer
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 3282822484088692013, guid: 79452087d14fa634b9615884f5e0ce25, type: 3}
+      propertyPath: targetCamera
+      value: 
+      objectReference: {fileID: 519420031}
     - target: {fileID: 5760282313066692967, guid: 79452087d14fa634b9615884f5e0ce25, type: 3}
       propertyPath: playerTransform
       value: 
@@ -259888,7 +259896,7 @@ Transform:
   m_GameObject: {fileID: 519420028}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -52.221474, y: -7.1359, z: -10}
+  m_LocalPosition: {x: -52.141438, y: -7.13591, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -287430,6 +287438,10 @@ PrefabInstance:
       propertyPath: lightBurstController
       value: 
       objectReference: {fileID: 723470347}
+    - target: {fileID: 3282822484088692013, guid: 79452087d14fa634b9615884f5e0ce25, type: 3}
+      propertyPath: targetCamera
+      value: 
+      objectReference: {fileID: 519420031}
     - target: {fileID: 5760282313066692967, guid: 79452087d14fa634b9615884f5e0ce25, type: 3}
       propertyPath: playerTransform
       value: 
@@ -386741,6 +386753,10 @@ PrefabInstance:
       propertyPath: lightBurstController
       value: 
       objectReference: {fileID: 723470347}
+    - target: {fileID: 3282822484088692013, guid: 79452087d14fa634b9615884f5e0ce25, type: 3}
+      propertyPath: targetCamera
+      value: 
+      objectReference: {fileID: 519420031}
     - target: {fileID: 5760282313066692967, guid: 79452087d14fa634b9615884f5e0ce25, type: 3}
       propertyPath: playerTransform
       value: 
