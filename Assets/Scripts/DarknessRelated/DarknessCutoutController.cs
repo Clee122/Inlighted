@@ -121,6 +121,18 @@ public class DarknessCutoutController : MonoBehaviour
         new List<SpriteRenderer>();
 
     /*
+     * Proximity-outline renderers are generated at runtime by
+     * DarknessMassSectionPulse, so they cannot be assigned through the Inspector
+     * before Play Mode. Keeping them in their own lists allows the pulse script
+     * to register them after creation without mixing them into the authored VFX.
+     */
+    private readonly List<SpriteRenderer> runtimeOutlineRenderers =
+        new List<SpriteRenderer>();
+
+    private readonly List<Material> runtimeOutlineMaterials =
+        new List<Material>();
+
+    /*
      * Particle systems also need independent runtime material instances so their
      * cut-out properties can be changed without modifying the original material
      * asset elsewhere in the project.
@@ -345,6 +357,13 @@ public class DarknessCutoutController : MonoBehaviour
             maskUpdateTimer = 0f;
 
             /*
+             * The proximity outline moves slightly around the DarknessMass.
+             * Refreshing its UV mapping alongside each mask update keeps Burst
+             * and Beam openings aligned with those shifted renderer copies.
+             */
+            UpdateRuntimeOutlineMaskMapping();
+
+            /*
              * Particle shaders need the darkness rectangle converted into
              * viewport coordinates because individual particle UVs cannot
              * represent one shared world-space cut-out.
@@ -352,6 +371,98 @@ public class DarknessCutoutController : MonoBehaviour
             UpdateParticleScreenMaskMapping();
 
             BuildDynamicMask();
+        }
+    }
+
+    /*
+     * DarknessMassSectionPulse calls this after creating each proximity-outline
+     * SpriteRenderer. Because those renderers do not exist until runtime, this
+     * registration replaces an Inspector array assignment.
+     */
+    public void RegisterRuntimeOutlineRenderer(
+        SpriteRenderer outlineRenderer
+    )
+    {
+        if (
+            outlineRenderer == null ||
+            runtimeOutlineRenderers.Contains(
+                outlineRenderer
+            )
+        )
+        {
+            return;
+        }
+
+        /*
+         * renderer.material intentionally creates an independent material
+         * instance. Each shifted outline copy needs its own UV offset, so sharing
+         * one material instance between all eight copies would make the last
+         * renderer overwrite the mapping used by the others.
+         */
+        Material runtimeMaterial =
+            outlineRenderer.material;
+
+        runtimeOutlineRenderers.Add(
+            outlineRenderer
+        );
+
+        runtimeOutlineMaterials.Add(
+            runtimeMaterial
+        );
+
+        /*
+         * Awake order between components is not guaranteed. If the mask already
+         * exists, initialise this renderer immediately. Otherwise CreateMaskTexture
+         * will finish setup once the controller has created the runtime texture.
+         */
+        if (
+            cutoutMaskTexture != null &&
+            darknessRenderer != null
+        )
+        {
+            AssignMaskToSpriteMaterial(
+                runtimeMaterial,
+                outlineRenderer.bounds,
+                outlineRenderer.name
+            );
+        }
+    }
+
+    /*
+     * This allows generated outline renderers to be safely removed if the pulse
+     * script is disabled or rebuilt later without leaving stale references here.
+     */
+    public void UnregisterRuntimeOutlineRenderer(
+        SpriteRenderer outlineRenderer
+    )
+    {
+        if (outlineRenderer == null)
+        {
+            return;
+        }
+
+        int rendererIndex =
+            runtimeOutlineRenderers.IndexOf(
+                outlineRenderer
+            );
+
+        if (rendererIndex < 0)
+        {
+            return;
+        }
+
+        runtimeOutlineRenderers.RemoveAt(
+            rendererIndex
+        );
+
+        if (
+            rendererIndex <
+            runtimeOutlineMaterials.Count
+        )
+        {
+            runtimeOutlineMaterials.RemoveAt(
+                rendererIndex
+            );
         }
     }
 
@@ -382,9 +493,11 @@ public class DarknessCutoutController : MonoBehaviour
         }
 
         /*
-         * Tendril particles use viewport-space mapping. Refresh their mapping
-         * and the CPU cut-out together before the zone becomes visible again.
+         * The outline and particles both depend on mappings derived from the
+         * current DarknessMass transform, so refresh those mappings before the
+         * newly visible mask is rebuilt.
          */
+        UpdateRuntimeOutlineMaskMapping();
         UpdateParticleScreenMaskMapping();
         BuildDynamicMask();
     }
@@ -436,6 +549,12 @@ public class DarknessCutoutController : MonoBehaviour
         AssignMaskToParticleVfx();
 
         /*
+         * Outline renderers may already have registered if
+         * DarknessMassSectionPulse.Awake ran first.
+         */
+        AssignMaskToRuntimeOutlines();
+
+        /*
          * Calculate the first particle mapping immediately so the tendrils have
          * valid screen-space coordinates before the first mask update occurs.
          */
@@ -475,6 +594,77 @@ public class DarknessCutoutController : MonoBehaviour
                 reactiveMaterial,
                 reactiveRenderer.bounds,
                 reactiveRenderer.name
+            );
+        }
+    }
+
+    private void AssignMaskToRuntimeOutlines()
+    {
+        /*
+         * All generated red outline copies use the same cut-out texture as the
+         * main darkness, but each has an independent UV offset because each copy
+         * is shifted slightly around the original renderer.
+         */
+        for (
+            int i = 0;
+            i < runtimeOutlineMaterials.Count;
+            i++
+        )
+        {
+            Material outlineMaterial =
+                runtimeOutlineMaterials[i];
+
+            SpriteRenderer outlineRenderer =
+                runtimeOutlineRenderers[i];
+
+            if (
+                outlineMaterial == null ||
+                outlineRenderer == null
+            )
+            {
+                continue;
+            }
+
+            AssignMaskToSpriteMaterial(
+                outlineMaterial,
+                outlineRenderer.bounds,
+                outlineRenderer.name
+            );
+        }
+    }
+
+    private void UpdateRuntimeOutlineMaskMapping()
+    {
+        /*
+         * DarknessMassSectionPulse continuously changes scale and position.
+         * Recalculating the mapping prevents the red outline's cut-out from
+         * drifting away from the opening in the main DarknessMass.
+         */
+        for (
+            int i = 0;
+            i < runtimeOutlineMaterials.Count;
+            i++
+        )
+        {
+            Material outlineMaterial =
+                runtimeOutlineMaterials[i];
+
+            SpriteRenderer outlineRenderer =
+                runtimeOutlineRenderers[i];
+
+            if (
+                outlineMaterial == null ||
+                outlineRenderer == null
+            )
+            {
+                continue;
+            }
+
+            AssignMaskToSpriteMaterial(
+                outlineMaterial,
+                outlineRenderer.bounds,
+                outlineRenderer.name,
+                false
             );
         }
     }
@@ -553,7 +743,8 @@ public class DarknessCutoutController : MonoBehaviour
     private void AssignMaskToSpriteMaterial(
         Material reactiveMaterial,
         Bounds reactiveBounds,
-        string rendererName
+        string rendererName,
+        bool logDiagnostics = true
     )
     {
         bool hasCutoutMask =
@@ -571,16 +762,23 @@ public class DarknessCutoutController : MonoBehaviour
                 MaskUVOffsetID
             );
 
-        Debug.Log(
-            "VFX DEBUG | " +
-            rendererName +
-            " | Has _CutoutMask: " +
-            hasCutoutMask +
-            " | Has _MaskUVScale: " +
-            hasUvScale +
-            " | Has _MaskUVOffset: " +
-            hasUvOffset
-        );
+        /*
+         * Runtime outline mappings are refreshed repeatedly, so diagnostics are
+         * optional here to avoid flooding the Console every mask update.
+         */
+        if (logDiagnostics)
+        {
+            Debug.Log(
+                "VFX DEBUG | " +
+                rendererName +
+                " | Has _CutoutMask: " +
+                hasCutoutMask +
+                " | Has _MaskUVScale: " +
+                hasUvScale +
+                " | Has _MaskUVOffset: " +
+                hasUvOffset
+            );
+        }
 
         /*
          * A renderer whose shader does not expose _CutoutMask cannot react to
@@ -589,11 +787,14 @@ public class DarknessCutoutController : MonoBehaviour
          */
         if (!hasCutoutMask)
         {
-            Debug.LogWarning(
-                "VFX DEBUG | " +
-                rendererName +
-                " cannot receive the cut-out because its shader does not expose _CutoutMask."
-            );
+            if (logDiagnostics)
+            {
+                Debug.LogWarning(
+                    "VFX DEBUG | " +
+                    rendererName +
+                    " cannot receive the cut-out because its shader does not expose _CutoutMask."
+                );
+            }
 
             return;
         }

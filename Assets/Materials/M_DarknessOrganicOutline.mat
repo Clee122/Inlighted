@@ -20,7 +20,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: M_DarknessOrganicCutout
+  m_Name: M_DarknessOrganicOutline
   m_Shader: {fileID: -6465566751694194690, guid: ec16d8e1c0fee3144a6144fbe8729a33, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
@@ -84,7 +84,7 @@ Material:
     - _NoiseScaleC: 7.5
     - _NoiseStrength: 0.18
     - _OrganicNoiseScale: 2.6
-    - _OutlineMode: 0
+    - _OutlineMode: 1
     - _RedCoverage: 0.6
     - _RedIntensity: 0.6
     - _RedNoiseScale: 3
