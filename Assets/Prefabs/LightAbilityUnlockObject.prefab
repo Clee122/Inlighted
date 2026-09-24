@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 1852412878395821119}
   - component: {fileID: 8141649418209553228}
   - component: {fileID: 2942761728511424725}
+  - component: {fileID: -53585148172262603}
   m_Layer: 0
   m_Name: LightAbilityUnlockObject
   m_TagString: Untagged
@@ -33,6 +34,7 @@ Transform:
   m_Children:
   - {fileID: 7699957321931396169}
   - {fileID: 3546867364643518286}
+  - {fileID: 5433061767486417944}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!61 &8141649418209553228
@@ -99,6 +101,19 @@ MonoBehaviour:
   unlockedVisual: {fileID: 8958881452328396166}
   disableAfterUnlock: 0
   unlockedColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+--- !u!114 &-53585148172262603
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2941586180050793022}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 249c921ba4bac46478c5751528286fdb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SFXTesting
+  audioSource: {fileID: 7215281547263602392}
 --- !u!1 &6266504858681482423
 GameObject:
   m_ObjectHideFlags: 0
