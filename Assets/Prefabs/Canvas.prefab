@@ -1003,10 +1003,18 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6043759333320338324, guid: 4602e09a199a24b4e8ca9785399ad74a, type: 3}
+      propertyPath: fullHealth
+      value: 
+      objectReference: {fileID: 6668140347723274347, guid: deee5b101632282498740dc5aed08df2, type: 3}
     - target: {fileID: 8618288709507149667, guid: 4602e09a199a24b4e8ca9785399ad74a, type: 3}
       propertyPath: m_Name
       value: Health HUD
       objectReference: {fileID: 0}
+    - target: {fileID: 8701265783030897369, guid: 4602e09a199a24b4e8ca9785399ad74a, type: 3}
+      propertyPath: fullHealth
+      value: 
+      objectReference: {fileID: 6668140347723274347, guid: deee5b101632282498740dc5aed08df2, type: 3}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects:
