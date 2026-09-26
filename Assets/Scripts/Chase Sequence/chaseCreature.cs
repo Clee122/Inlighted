@@ -1,3 +1,4 @@
+using Cinemachine;
 using System.Collections;
 using UnityEngine;
 
@@ -26,6 +27,13 @@ public class ChaseCreature : MonoBehaviour
     public UnityEngine.UI.Image flashImage;
     public float flashAlpha = 0.35f; //how opaque the flash is from 0-1 
     public float flashFadeTime = 0.2f;
+
+    [Header("Spawn with Juice")]
+    public SpriteRenderer visual;
+    public ParticleSystem slamParticles;
+    public Cinemachine.CinemachineImpulseSource impulseSource;
+    public float anticipationTime = 2f; //in seconds
+    public float shakeForce = 1f;
     
     
     [Header("Audio")]
@@ -44,14 +52,25 @@ public class ChaseCreature : MonoBehaviour
             despawnRoutine = null;
         }
 
+        if (catchRoutine != null)
+        {
+            StopCoroutine(catchRoutine);
+            catchRoutine = null;
+        }
+
         if (spawnPoint != null)
         {
             transform.position= spawnPoint.position;
         }
         gameObject.SetActive(true);
-        isMoving = true;
 
-        PlayClip(startChase);
+        if (visual != null)
+        {
+            visual.enabled = false; //hidden during anticipation, SpawnRoutine turns it back on
+        }
+
+        StartCoroutine(SpawnRoutine());
+        
     }
 
     public void StopMoving()
@@ -115,6 +134,28 @@ public class ChaseCreature : MonoBehaviour
         catchRoutine = null;
         StopMoving();
     }    
+
+    private IEnumerator SpawnRoutine()
+    {
+        yield return new WaitForSeconds(anticipationTime);
+
+        if (visual != null)
+        {
+            visual.enabled = true;
+        }
+        if (slamParticles != null)
+        {
+            slamParticles.Play();
+        }
+        if (impulseSource != null)
+        {
+            impulseSource.GenerateImpulse(shakeForce);
+        }
+
+        PlayClip(startChase);
+        isMoving = true;
+    }
+
 
     private IEnumerator FlashRedRoutine()
     {
