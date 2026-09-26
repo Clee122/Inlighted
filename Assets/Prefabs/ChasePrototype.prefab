@@ -49,6 +49,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::chaseCreature
   spawnPoint: {fileID: 7537497164226081396}
+  animator: {fileID: 0}
   speed: 4.25
   direction: {x: 1, y: 0}
   playerTag: Player
@@ -256,7 +257,7 @@ ParticleSystem:
   emitterVelocityMode: 1
   looping: 1
   prewarm: 0
-  playOnAwake: 1
+  playOnAwake: 0
   useUnscaledTime: 0
   autoRandomSeed: 1
   startDelay:
