@@ -98,18 +98,37 @@ public class DarknessMassSectionPulse : MonoBehaviour
         );
 
     /*
-     * Separate horizontal and vertical values allow the side and top/bottom
-     * borders to be balanced independently without reusing the old serialised
-     * single-float outlineThickness field.
+     * These values control the authored maximum outline thickness.
      *
-     * X controls the left/right border width.
-     * Y controls the top/bottom border width.
+     * X controls the horizontal outline thickness.
+     * Y controls the vertical outline thickness.
+     *
+     * Smaller Darkness Zones automatically scale both values down together so
+     * the shifted outline copies do not become visibly separated from the main
+     * DarknessMass.
      */
     [SerializeField]
     private Vector2 outlineThicknessXY =
         new Vector2(
-            0.06f,
+            0.08f,
             0.10f
+        );
+
+    [Header("Outline Size Scaling")]
+
+    /*
+     * These dimensions define when a Darkness Zone is large enough to use the
+     * full authored outlineThicknessXY values.
+     *
+     * Smaller zones reduce both outline axes proportionally rather than applying
+     * a hard cap. This keeps X and Y responsive while still preventing the
+     * overlapping-copy issue on compact Darkness Zones.
+     */
+    [SerializeField]
+    private Vector2 fullThicknessReferenceSize =
+        new Vector2(
+            8f,
+            4f
         );
 
     /*
@@ -449,36 +468,91 @@ public class DarknessMassSectionPulse : MonoBehaviour
         }
 
         /*
-         * Dividing each desired world-space thickness by the current lossy scale
-         * prevents the border becoming disproportionately thick or thin while the
-         * DarknessMass pulse changes its X and Y scale.
+         * The generated outline copies are children of DarknessMass, so their
+         * final world-space movement is affected by the current pulsing scale.
+         * The scale values are kept here so the desired world-space thickness
+         * can be converted correctly back into local-space offsets.
          */
         Vector3 lossyScale =
             targetRenderer.transform.lossyScale;
 
         float safeScaleX =
             Mathf.Max(
-                Mathf.Abs(lossyScale.x),
+                Mathf.Abs(
+                    lossyScale.x
+                ),
                 0.0001f
             );
 
         float safeScaleY =
             Mathf.Max(
-                Mathf.Abs(lossyScale.y),
+                Mathf.Abs(
+                    lossyScale.y
+                ),
+                0.0001f
+            );
+
+        Bounds darknessBounds =
+            targetRenderer.bounds;
+
+        /*
+         * Compare the current visible DarknessMass dimensions with the reference
+         * dimensions that are considered large enough to use the full outline.
+         */
+        float horizontalSizeFactor =
+            darknessBounds.size.x /
+            Mathf.Max(
+                fullThicknessReferenceSize.x,
+                0.0001f
+            );
+
+        float verticalSizeFactor =
+            darknessBounds.size.y /
+            Mathf.Max(
+                fullThicknessReferenceSize.y,
                 0.0001f
             );
 
         /*
-         * X controls the visible left/right outline width while Y independently
-         * controls the top/bottom width. This lets the organic silhouette be
-         * visually balanced even when equal offsets look different on screen.
+         * The smaller dimension controls the shared outline scale.
+         *
+         * This is important because a very narrow or very short Darkness Zone
+         * should not receive a large outline simply because its other dimension
+         * happens to be large. Both axes shrink together, preserving the authored
+         * X/Y thickness relationship.
+         */
+        float outlineScaleFactor =
+            Mathf.Clamp01(
+                Mathf.Min(
+                    horizontalSizeFactor,
+                    verticalSizeFactor
+                )
+            );
+
+        /*
+         * Scaling the authored values instead of hard-capping them keeps the
+         * Inspector controls responsive. Changing X or Y now always changes the
+         * visible outline while compact zones still receive a smaller overall
+         * border to avoid exposing the shifted renderer copies.
+         */
+        float horizontalWorldOffset =
+            outlineThicknessXY.x *
+            outlineScaleFactor;
+
+        float verticalWorldOffset =
+            outlineThicknessXY.y *
+            outlineScaleFactor;
+
+        /*
+         * Convert the adaptive world-space thickness back into local-space offsets
+         * because the generated outline copies are children of DarknessMass.
          */
         float localHorizontalOffset =
-            outlineThicknessXY.x /
+            horizontalWorldOffset /
             safeScaleX;
 
         float localVerticalOffset =
-            outlineThicknessXY.y /
+            verticalWorldOffset /
             safeScaleY;
 
         Vector3[] offsets =
@@ -694,6 +768,23 @@ public class DarknessMassSectionPulse : MonoBehaviour
                 Mathf.Max(
                     0f,
                     outlineThicknessXY.y
+                )
+            );
+
+        /*
+         * Reference dimensions must stay positive because they are used as
+         * divisors when calculating how much smaller compact Darkness Zones should
+         * make the outline.
+         */
+        fullThicknessReferenceSize =
+            new Vector2(
+                Mathf.Max(
+                    0.01f,
+                    fullThicknessReferenceSize.x
+                ),
+                Mathf.Max(
+                    0.01f,
+                    fullThicknessReferenceSize.y
                 )
             );
     }

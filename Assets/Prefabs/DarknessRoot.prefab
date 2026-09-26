@@ -194,7 +194,8 @@ MonoBehaviour:
   outlineActivationDistance: 32
   outlineCheckInterval: 0.1
   outlineColour: {r: 0.78431374, g: 0.078431375, b: 0.078431375, a: 1}
-  outlineThicknessXY: {x: 0.06, y: 0.7}
+  outlineThicknessXY: {x: 0.06, y: 0.2}
+  fullThicknessReferenceSize: {x: 8, y: 4}
   outlineSortingOrderOffset: 0
   outlineMaterial: {fileID: 2100000, guid: e45c78591af30c943a019453a5360819, type: 2}
 --- !u!114 &3282822484088692013
