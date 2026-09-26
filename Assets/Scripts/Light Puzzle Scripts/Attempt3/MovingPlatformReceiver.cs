@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class MovingPlatformReceiver : MonoBehaviour
@@ -91,22 +92,10 @@ public class MovingPlatformReceiver : MonoBehaviour
             );
         }
 
-        }
-        if (MovingPlatform != null)
-        {
-            // The receiver changes the destination only when the laser actually
-            // reaches it. Until this happens, the target remains at the origin.
-            MP_Target =
-                MP_EndGoal;
-        }
-
-
-        if (
-            completesPuzzleOnActivate &&
-            puzzleController != null
-        )
-        {
-            puzzleController.SolvePuzzle();
+ 
+        StartCoroutine(
+            WaitForCamera()
+        );
         }
     }
 
@@ -131,6 +120,33 @@ public class MovingPlatformReceiver : MonoBehaviour
             // recorded when gameplay began.
             MP_Target =
                 MP_Origin;
+        }
+    }
+
+    private IEnumerator WaitForCamera()
+    {
+        yield return new WaitUntil(() =>
+            CameraManager.IsCameraAt(
+                CameraSpace
+            )
+        );
+
+    
+        if (MovingPlatform != null)
+        {
+            // The receiver changes the destination only when the laser actually
+            // reaches it. Until this happens, the target remains at the origin.
+
+            MP_Target =
+                MP_EndGoal;
+        }
+
+        if (
+            completesPuzzleOnActivate &&
+            puzzleController != null
+        )
+        {
+            puzzleController.SolvePuzzle();
         }
     }
 }

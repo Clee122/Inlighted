@@ -11,7 +11,7 @@ public class cameramanage : MonoBehaviour
     private Transform player;
     private Transform camerapplace;
 
-    public float zoomSpeed = 5f;
+    public float zoomSpeed = 4f;
     public float targetOrtho;
     public float normalOrtho = 4f;
     public float maxOrtho = 17f;
@@ -419,5 +419,23 @@ public class cameramanage : MonoBehaviour
         {
             return false;
         }
+    }
+
+    public bool IsCameraAt(
+        Transform cameraSpace
+    )
+    {
+        if (
+            camerapplace == null ||
+            cameraSpace == null
+        )
+        {
+            return false;
+        }
+
+        return Vector3.Distance(
+            camerapplace.position,
+            cameraSpace.position
+        ) < 0.1f;
     }
 }
