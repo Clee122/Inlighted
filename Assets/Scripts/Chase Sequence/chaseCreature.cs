@@ -34,6 +34,14 @@ public class ChaseCreature : MonoBehaviour
     public Cinemachine.CinemachineImpulseSource impulseSource;
     public float anticipationTime = 2f; //in seconds
     public float shakeForce = 1f;
+
+    [Header("Repeated Slam particles")]
+    public bool repeatSlamWhileChasing = true;
+    public float repeatSlamMinInterval = 1.5f;
+    public float repeatSlamMaxInterval = 3f;
+    public float repeatShakeForce = 0.3f;
+    
+    private Coroutine repeatSlamRoutine;
     
     
     [Header("Audio")]
@@ -57,6 +65,12 @@ public class ChaseCreature : MonoBehaviour
             StopCoroutine(catchRoutine);
             catchRoutine = null;
         }
+
+        if(repeatSlamRoutine !=null)
+        {
+            StopCoroutine(repeatSlamRoutine);
+            repeatSlamRoutine = null;
+        }    
 
         if (spawnPoint != null)
         {
@@ -82,6 +96,12 @@ public class ChaseCreature : MonoBehaviour
             StopCoroutine(despawnRoutine);
         }
         despawnRoutine = StartCoroutine(DespawnAfterDelay());
+
+        if (repeatSlamRoutine != null)
+        {
+            StopCoroutine(repeatSlamRoutine);
+            repeatSlamRoutine = null;
+        }
 
         PlayClip(endChase);
      
@@ -154,8 +174,34 @@ public class ChaseCreature : MonoBehaviour
 
         PlayClip(startChase);
         isMoving = true;
+
+        if (repeatSlamWhileChasing)
+        {
+            repeatSlamRoutine = StartCoroutine(RepeatSlamRoutine());
+        }
     }
 
+
+    private IEnumerator RepeatSlamRoutine()
+    {
+        while (isMoving)
+        {
+
+            float wait = Random.Range(repeatSlamMinInterval, repeatSlamMaxInterval);
+            yield return new WaitForSeconds(wait);
+
+            if (!isMoving) yield break; //caught or stopped do not fire
+
+            if (slamParticles != null)
+            {
+                slamParticles.Play();
+            }
+            if (impulseSource != null)
+            {
+                impulseSource.GenerateImpulse(repeatShakeForce);
+            }
+        }
+    }
 
     private IEnumerator FlashRedRoutine()
     {
