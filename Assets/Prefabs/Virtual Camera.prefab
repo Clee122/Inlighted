@@ -90,7 +90,10 @@ MonoBehaviour:
   targetOrtho: 0
   normalOrtho: 4
   maxOrtho: 17
+  playerController: {fileID: 0}
+  playerRb: {fileID: 0}
   vcam: {fileID: 1116328329378012816}
+  introFollowTransitionSpeed: 15
 --- !u!1 &2770276064714881410
 GameObject:
   m_ObjectHideFlags: 0

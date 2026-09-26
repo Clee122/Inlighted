@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class MovingPlatformReceiver : MonoBehaviour
@@ -20,9 +21,14 @@ public class MovingPlatformReceiver : MonoBehaviour
     // The end goal remains editable because this is the destination the level
     // designer intentionally chooses for this particular platform.
     public Vector3 MP_EndGoal;
+    
+    public float Speed = 0.5f;
+    
+    public cameramanage CameraManager;
+    public float maxOrtho;
+    public Transform CameraSpace;
 
-    public float Speed = 2f;
-
+    private bool cameraShown = false;
     private Vector3 MP_Target;
 
     private void Start()
@@ -71,20 +77,25 @@ public class MovingPlatformReceiver : MonoBehaviour
 
     public void Activate()
     {
-        if (MovingPlatform != null)
         {
-            // The receiver changes the destination only when the laser actually
-            // reaches it. Until this happens, the target remains at the origin.
-            MP_Target =
-                MP_EndGoal;
+        if (
+        !cameraShown &&
+        CameraManager != null &&
+        CameraSpace != null
+        )
+
+        {
+            cameraShown = true;
+
+            CameraManager.Movetocameraspace(
+                CameraSpace
+            );
         }
 
-        if (
-            completesPuzzleOnActivate &&
-            puzzleController != null
-        )
-        {
-            puzzleController.SolvePuzzle();
+ 
+        StartCoroutine(
+            WaitForCamera()
+        );
         }
     }
 
@@ -109,6 +120,33 @@ public class MovingPlatformReceiver : MonoBehaviour
             // recorded when gameplay began.
             MP_Target =
                 MP_Origin;
+        }
+    }
+
+    private IEnumerator WaitForCamera()
+    {
+        yield return new WaitUntil(() =>
+            CameraManager.IsCameraAt(
+                CameraSpace
+            )
+        );
+
+    
+        if (MovingPlatform != null)
+        {
+            // The receiver changes the destination only when the laser actually
+            // reaches it. Until this happens, the target remains at the origin.
+
+            MP_Target =
+                MP_EndGoal;
+        }
+
+        if (
+            completesPuzzleOnActivate &&
+            puzzleController != null
+        )
+        {
+            puzzleController.SolvePuzzle();
         }
     }
 }
