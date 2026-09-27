@@ -27,6 +27,9 @@ public class AudioManager : MonoBehaviour
     [Header("Debug")]
     [SerializeField] private bool showAudioDebugLogs = false;
 
+    [Header("ButtonPressedSFX")]
+    public AudioSource ButtonSFX;
+
     private void Awake()
     {
         // Only one AudioManager should control a scene. Rejecting a duplicate
@@ -322,5 +325,9 @@ public class AudioManager : MonoBehaviour
         {
             Instance = null;
         }
+    }
+    public void ButtonPressedSFX()
+    {
+        ButtonSFX.Play();
     }
 }

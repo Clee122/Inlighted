@@ -65,6 +65,9 @@ public class ShootLaser : MonoBehaviour
     // Different puzzle layouts can use different delays in the Inspector.
     [SerializeField] private float solvedShutoffDelay = 3f;
 
+    [Header("SFX")]
+    public AudioSource PlantBeamInteractSFX;
+
     private InputAction playerInteract;
 
     private bool isLaserActive;
@@ -270,6 +273,7 @@ public class ShootLaser : MonoBehaviour
             return;
         }
 
+        PlantBeamInteractSFX.Play();
         ActivateLaser();
     }
 
