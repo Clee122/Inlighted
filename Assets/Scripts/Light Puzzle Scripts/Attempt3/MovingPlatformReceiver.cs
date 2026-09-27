@@ -89,7 +89,13 @@ public class MovingPlatformReceiver : MonoBehaviour
         )
         {
             puzzleController.SolvePuzzle();
-            DoorMovingSFX.Play();
+
+            // Audio feedback is optional, so a missing AudioSource should never
+            // interrupt puzzle completion or prevent the platform from moving.
+            if (DoorMovingSFX != null)
+            {
+                DoorMovingSFX.Play();
+            }
         }
 
         if (

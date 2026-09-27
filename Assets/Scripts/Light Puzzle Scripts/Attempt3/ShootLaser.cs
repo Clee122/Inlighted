@@ -251,8 +251,8 @@ public class ShootLaser : MonoBehaviour
     }
 
     private void HandleInteraction(
-        bool playerIsNearby
-    )
+    bool playerIsNearby
+)
     {
         if (
             Player == null ||
@@ -273,7 +273,13 @@ public class ShootLaser : MonoBehaviour
             return;
         }
 
-        PlantBeamInteractSFX.Play();
+        // Audio feedback is optional, so a missing AudioSource should never prevent
+        // the LaserPointer's gameplay interaction, beam, or animation from activating.
+        if (PlantBeamInteractSFX != null)
+        {
+            PlantBeamInteractSFX.Play();
+        }
+
         ActivateLaser();
     }
 
