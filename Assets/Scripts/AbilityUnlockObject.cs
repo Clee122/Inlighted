@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Audio;
 
 public class AbilityUnlockObject : MonoBehaviour
 {
@@ -26,6 +27,9 @@ public class AbilityUnlockObject : MonoBehaviour
     [Header("After Unlock")]
     [SerializeField] private bool disableAfterUnlock = false;
     [SerializeField] private Color unlockedColor = Color.yellow;
+
+    [Header("SFX")]
+    [SerializeField]public AudioSource UnlockSFX;
 
     private bool hasBeenUnlocked = false;
     private SpriteRenderer spriteRenderer;
@@ -132,6 +136,8 @@ public class AbilityUnlockObject : MonoBehaviour
         // Swapping to the unlocked visual gives the shrine a persistent "already claimed"
         // state, which is more suitable than checkpoint-style state swapping.
         SetVisualState(true);
+
+        UnlockSFX.Play();
 
         // I am changing the colour instead of removing the object so the scene still shows
         // that this was an important unlock point. It also gives the player feedback that

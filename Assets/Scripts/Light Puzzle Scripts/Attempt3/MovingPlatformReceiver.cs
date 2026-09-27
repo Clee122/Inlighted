@@ -31,6 +31,9 @@ public class MovingPlatformReceiver : MonoBehaviour
     private bool cameraShown = false;
     private Vector3 MP_Target;
 
+    [Header("SFX")]
+    public AudioSource DoorMovingSFX;
+
     private void Start()
     {
         if (MovingPlatform == null)
@@ -86,6 +89,7 @@ public class MovingPlatformReceiver : MonoBehaviour
         )
         {
             puzzleController.SolvePuzzle();
+            DoorMovingSFX.Play();
         }
 
         if (
