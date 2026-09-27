@@ -21,9 +21,9 @@ public class MovingPlatformReceiver : MonoBehaviour
     // The end goal remains editable because this is the destination the level
     // designer intentionally chooses for this particular platform.
     public Vector3 MP_EndGoal;
-    
+
     public float Speed = 0.5f;
-    
+
     public cameramanage CameraManager;
     public float maxOrtho;
     public Transform CameraSpace;
@@ -77,25 +77,42 @@ public class MovingPlatformReceiver : MonoBehaviour
 
     public void Activate()
     {
-        {
+        // The puzzle is solved immediately when the receiver is activated.
+        // Puzzle completion no longer depends on the camera successfully
+        // reaching CameraSpace.
         if (
-        !cameraShown &&
-        CameraManager != null &&
-        CameraSpace != null
+            completesPuzzleOnActivate &&
+            puzzleController != null
         )
+        {
+            puzzleController.SolvePuzzle();
+        }
 
+        if (
+            !cameraShown &&
+            CameraManager != null &&
+            CameraSpace != null
+        )
         {
             cameraShown = true;
 
             CameraManager.Movetocameraspace(
                 CameraSpace
             );
-        }
 
- 
-        StartCoroutine(
-            WaitForCamera()
-        );
+            StartCoroutine(
+                WaitForCamera()
+            );
+        }
+        else
+        {
+            // If there is no camera sequence, or the camera has already been
+            // shown, move the platform immediately.
+            if (MovingPlatform != null)
+            {
+                MP_Target =
+                    MP_EndGoal;
+            }
         }
     }
 
@@ -125,28 +142,20 @@ public class MovingPlatformReceiver : MonoBehaviour
 
     private IEnumerator WaitForCamera()
     {
+        // Camera movement now only controls when the platform begins moving.
+        // It no longer controls whether the puzzle becomes solved.
         yield return new WaitUntil(() =>
+            CameraManager != null &&
+            CameraSpace != null &&
             CameraManager.IsCameraAt(
                 CameraSpace
             )
         );
 
-    
         if (MovingPlatform != null)
         {
-            // The receiver changes the destination only when the laser actually
-            // reaches it. Until this happens, the target remains at the origin.
-
             MP_Target =
                 MP_EndGoal;
-        }
-
-        if (
-            completesPuzzleOnActivate &&
-            puzzleController != null
-        )
-        {
-            puzzleController.SolvePuzzle();
         }
     }
 }

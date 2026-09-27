@@ -312787,6 +312787,10 @@ PrefabInstance:
       value: 5.47
       objectReference: {fileID: 0}
     - target: {fileID: 8515725018668927943, guid: e93358b6acf23db4abd9e104df3c2e55, type: 3}
+      propertyPath: CameraManager
+      value: 
+      objectReference: {fileID: 2014357492}
+    - target: {fileID: 8515725018668927943, guid: e93358b6acf23db4abd9e104df3c2e55, type: 3}
       propertyPath: MovingPlatform
       value: 
       objectReference: {fileID: 287279251}
@@ -312794,6 +312798,10 @@ PrefabInstance:
       propertyPath: puzzleController
       value: 
       objectReference: {fileID: 164585973}
+    - target: {fileID: 8515725018668927943, guid: e93358b6acf23db4abd9e104df3c2e55, type: 3}
+      propertyPath: completesPuzzleOnActivate
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -420557,11 +420565,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8444308779891831622, guid: f89af44afc700694886c51d567af716f, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -57.52524
+      value: -51.8931
       objectReference: {fileID: 0}
     - target: {fileID: 8444308779891831622, guid: f89af44afc700694886c51d567af716f, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -7.0944996
+      value: -7.1359596
       objectReference: {fileID: 0}
     - target: {fileID: 8444308779891831622, guid: f89af44afc700694886c51d567af716f, type: 3}
       propertyPath: m_LocalPosition.z
