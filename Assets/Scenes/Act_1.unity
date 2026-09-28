@@ -11400,7 +11400,7 @@ PrefabInstance:
     - target: {fileID: 4124388559237253108, guid: fde6fd2a6757f004da11fa767e958c4c, type: 3}
       propertyPath: puzzleController
       value: 
-      objectReference: {fileID: 847263095}
+      objectReference: {fileID: 265831492}
     - target: {fileID: 8158877820484968693, guid: fde6fd2a6757f004da11fa767e958c4c, type: 3}
       propertyPath: m_Name
       value: LaserPointer_Vertical (1)
@@ -347816,7 +347816,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 375302773824281081, guid: fde6fd2a6757f004da11fa767e958c4c, type: 3}
       propertyPath: m_SortingOrder
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 827240800976777313, guid: fde6fd2a6757f004da11fa767e958c4c, type: 3}
       propertyPath: m_LocalPosition.x
