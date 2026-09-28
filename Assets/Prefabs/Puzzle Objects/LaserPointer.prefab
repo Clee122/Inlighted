@@ -238,7 +238,7 @@ Transform:
   m_GameObject: {fileID: 7304105038852975237}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 2.94, y: -1.33, z: 0}
+  m_LocalPosition: {x: 3.07, y: -1.09, z: 0}
   m_LocalScale: {x: 3.8610394, y: 4.6597075, z: 3.8610394}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -414,6 +414,7 @@ MonoBehaviour:
   activationTriggerName: activate
   interactionOutline: {fileID: 0}
   solvedShutoffDelay: 3
+  PlantBeamInteractSFX: {fileID: 0}
 --- !u!114 &1337893546978931891
 MonoBehaviour:
   m_ObjectHideFlags: 0
