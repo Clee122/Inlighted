@@ -1,0 +1,403 @@
+fileFormatVersion: 2
+guid: f2d046b1e9f67ea4fa5a66cff31f3b14
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -5430009688979494298
+    second: LaserPointer_Vertical_0
+  - first:
+      213: 7201924292163051067
+    second: LaserPointer_Vertical_1
+  - first:
+      213: 3757083828271238197
+    second: LaserPointer_Vertical_2
+  - first:
+      213: -116108484193427003
+    second: LaserPointer_Vertical_3
+  - first:
+      213: 8443016950842426412
+    second: LaserPointer_Vertical_4
+  - first:
+      213: 4625217686854500691
+    second: LaserPointer_Vertical_5
+  - first:
+      213: 3563805092639706216
+    second: LaserPointer_Vertical_6
+  - first:
+      213: 9124463231280006031
+    second: LaserPointer_Vertical_7
+  - first:
+      213: -101900900435719243
+    second: LaserPointer_Vertical_8
+  - first:
+      213: 6781024696558644134
+    second: LaserPointer_Vertical_9
+  - first:
+      213: -157022366453553433
+    second: LaserPointer_Vertical_10
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 200
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: LaserPointer_Vertical_0
+      rect:
+        serializedVersion: 2
+        x: 211
+        y: 4286
+        width: 1205
+        height: 1443
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 66aa27115fab4a4b0800000000000000
+      internalID: -5430009688979494298
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LaserPointer_Vertical_1
+      rect:
+        serializedVersion: 2
+        x: 2258
+        y: 4249
+        width: 1363
+        height: 1316
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b3e92ad7cff52f360800000000000000
+      internalID: 7201924292163051067
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LaserPointer_Vertical_2
+      rect:
+        serializedVersion: 2
+        x: 4353
+        y: 4245
+        width: 1380
+        height: 1292
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 53cc87ff5d7d32430800000000000000
+      internalID: 3757083828271238197
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LaserPointer_Vertical_3
+      rect:
+        serializedVersion: 2
+        x: 6486
+        y: 4285
+        width: 1354
+        height: 1317
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5c1ed34e2ff736ef0800000000000000
+      internalID: -116108484193427003
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LaserPointer_Vertical_4
+      rect:
+        serializedVersion: 2
+        x: 245
+        y: 2182
+        width: 1208
+        height: 1413
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c24809b0f2f9b2570800000000000000
+      internalID: 8443016950842426412
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LaserPointer_Vertical_5
+      rect:
+        serializedVersion: 2
+        x: 2393
+        y: 2179
+        width: 1154
+        height: 1510
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 35101d11bf2103040800000000000000
+      internalID: 4625217686854500691
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LaserPointer_Vertical_6
+      rect:
+        serializedVersion: 2
+        x: 4504
+        y: 2178
+        width: 1168
+        height: 1600
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 86c848399dd257130800000000000000
+      internalID: 3563805092639706216
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LaserPointer_Vertical_7
+      rect:
+        serializedVersion: 2
+        x: 6557
+        y: 2177
+        width: 1219
+        height: 1779
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f83ce8227fa90ae70800000000000000
+      internalID: 9124463231280006031
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LaserPointer_Vertical_8
+      rect:
+        serializedVersion: 2
+        x: 210
+        y: 72
+        width: 1289
+        height: 1761
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5bb8c33cba9f59ef0800000000000000
+      internalID: -101900900435719243
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LaserPointer_Vertical_9
+      rect:
+        serializedVersion: 2
+        x: 2320
+        y: 68
+        width: 1285
+        height: 1831
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6ab678bb80a0b1e50800000000000000
+      internalID: 6781024696558644134
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LaserPointer_Vertical_10
+      rect:
+        serializedVersion: 2
+        x: 4427
+        y: 70
+        width: 1279
+        height: 1862
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7e6aeb95df422ddf0800000000000000
+      internalID: -157022366453553433
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      LaserPointer_Vertical_0: -5430009688979494298
+      LaserPointer_Vertical_1: 7201924292163051067
+      LaserPointer_Vertical_10: -157022366453553433
+      LaserPointer_Vertical_2: 3757083828271238197
+      LaserPointer_Vertical_3: -116108484193427003
+      LaserPointer_Vertical_4: 8443016950842426412
+      LaserPointer_Vertical_5: 4625217686854500691
+      LaserPointer_Vertical_6: 3563805092639706216
+      LaserPointer_Vertical_7: 9124463231280006031
+      LaserPointer_Vertical_8: -101900900435719243
+      LaserPointer_Vertical_9: 6781024696558644134
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
