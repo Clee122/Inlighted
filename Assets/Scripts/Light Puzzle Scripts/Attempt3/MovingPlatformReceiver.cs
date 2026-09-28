@@ -34,6 +34,14 @@ public class MovingPlatformReceiver : MonoBehaviour
     [Header("SFX")]
     public AudioSource DoorMovingSFX;
 
+    [Header("VFX")]
+    // This stationary holder contains the door movement VFX. It remains separate
+    // from MovingPlatform so the smoke stays at the chosen doorway position
+    // instead of following the door as it moves towards its destination.
+    [SerializeField] private GameObject DoorVFXPosition;
+
+    private bool doorVFXActive = false;
+
     private void Start()
     {
         if (MovingPlatform == null)
@@ -55,6 +63,13 @@ public class MovingPlatformReceiver : MonoBehaviour
         // the platform remains completely stationary until the receiver activates.
         MP_Target =
             MP_Origin;
+
+        // The VFX begins hidden and is only enabled when this receiver actually
+        // tells the door to start moving towards its solved destination.
+        if (DoorVFXPosition != null)
+        {
+            DoorVFXPosition.SetActive(false);
+        }
     }
 
     private void Update()
@@ -76,6 +91,27 @@ public class MovingPlatformReceiver : MonoBehaviour
                 MP_Target,
                 step
             );
+
+        // The VFX holder is disabled once the door reaches its destination.
+        // A small tolerance avoids relying on exact floating-point equality.
+        bool reachedEnd =
+            Vector3.Distance(
+                MovingPlatform.transform.localPosition,
+                MP_EndGoal
+            ) <= 0.001f;
+
+        if (
+            doorVFXActive &&
+            reachedEnd
+        )
+        {
+            if (DoorVFXPosition != null)
+            {
+                DoorVFXPosition.SetActive(false);
+            }
+
+            doorVFXActive = false;
+        }
     }
 
     public void Activate()
@@ -117,11 +153,10 @@ public class MovingPlatformReceiver : MonoBehaviour
         else
         {
             // If there is no camera sequence, or the camera has already been
-            // shown, move the platform immediately.
+            // shown, start the door and its stationary movement VFX immediately.
             if (MovingPlatform != null)
             {
-                MP_Target =
-                    MP_EndGoal;
+                StartDoorMovement();
             }
         }
     }
@@ -164,8 +199,21 @@ public class MovingPlatformReceiver : MonoBehaviour
 
         if (MovingPlatform != null)
         {
-            MP_Target =
-                MP_EndGoal;
+            StartDoorMovement();
+        }
+    }
+
+    private void StartDoorMovement()
+    {
+        // The VFX holder is enabled at the same moment the door receives its
+        // destination. Because the holder is stationary, only the door moves.
+        MP_Target =
+            MP_EndGoal;
+
+        if (DoorVFXPosition != null)
+        {
+            DoorVFXPosition.SetActive(true);
+            doorVFXActive = true;
         }
     }
 }
