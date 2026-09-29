@@ -45,7 +45,7 @@ AudioSource:
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 8300000, guid: 2bbe7adf7717abb4886c39f06c4bae63, type: 3}
   m_PlayOnAwake: 0
-  m_Volume: 1
+  m_Volume: 0.786
   m_Pitch: 1
   Loop: 0
   Mute: 0
@@ -373,6 +373,10 @@ PrefabInstance:
       propertyPath: unlockedVisual
       value: 
       objectReference: {fileID: 7503262175109477407}
+    - target: {fileID: 2081231852171719563, guid: ca870d499805af34abb58c087d6ed43b, type: 3}
+      propertyPath: checkpointSound
+      value: 
+      objectReference: {fileID: 8300000, guid: 2bbe7adf7717abb4886c39f06c4bae63, type: 3}
     - target: {fileID: 2636231044047387804, guid: ca870d499805af34abb58c087d6ed43b, type: 3}
       propertyPath: m_LocalScale.x
       value: 3.043
