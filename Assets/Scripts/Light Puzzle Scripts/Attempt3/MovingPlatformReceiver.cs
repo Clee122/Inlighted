@@ -42,6 +42,16 @@ public class MovingPlatformReceiver : MonoBehaviour
 
     private bool doorVFXActive = false;
 
+    [Header("Solved Visuals")]
+    // The Off and On artwork are separate objects so the artist's original
+    // visuals can be preserved. Solving the puzzle permanently switches which
+    // version is visible without modifying either SpriteRenderer at runtime.
+    [SerializeField] private GameObject receiverOffVisual;
+    [SerializeField] private GameObject receiverOnVisual;
+
+    [SerializeField] private GameObject doorOffVisual;
+    [SerializeField] private GameObject doorOnVisual;
+
     private void Start()
     {
         if (MovingPlatform == null)
@@ -70,6 +80,11 @@ public class MovingPlatformReceiver : MonoBehaviour
         {
             DoorVFXPosition.SetActive(false);
         }
+
+        // The puzzle always begins with its unpowered artwork visible. Setting
+        // this here also prevents an On object accidentally left enabled in the
+        // hierarchy from appearing before the puzzle has been solved.
+        SetSolvedVisuals(false);
     }
 
     private void Update()
@@ -125,6 +140,10 @@ public class MovingPlatformReceiver : MonoBehaviour
         )
         {
             puzzleController.SolvePuzzle();
+
+            // The receiver and door permanently change to their powered artwork
+            // at the same moment the puzzle enters its solved state.
+            SetSolvedVisuals(true);
 
             // Audio feedback is optional, so a missing AudioSource should never
             // interrupt puzzle completion or prevent the platform from moving.
@@ -214,6 +233,31 @@ public class MovingPlatformReceiver : MonoBehaviour
         {
             DoorVFXPosition.SetActive(true);
             doorVFXActive = true;
+        }
+    }
+
+    private void SetSolvedVisuals(bool solved)
+    {
+        // Switching the complete visual objects keeps the artist's Off and On
+        // states independent and makes the current puzzle state explicit.
+        if (receiverOffVisual != null)
+        {
+            receiverOffVisual.SetActive(!solved);
+        }
+
+        if (receiverOnVisual != null)
+        {
+            receiverOnVisual.SetActive(solved);
+        }
+
+        if (doorOffVisual != null)
+        {
+            doorOffVisual.SetActive(!solved);
+        }
+
+        if (doorOnVisual != null)
+        {
+            doorOnVisual.SetActive(solved);
         }
     }
 }

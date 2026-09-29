@@ -1,4 +1,3 @@
-using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -6,8 +5,8 @@ public class ShootLaser : MonoBehaviour
 {
     [Header("Puzzle")]
 
-    // The LaserPointer remains active while the player solves this specific
-    // puzzle, then shuts down after a configurable delay once success is registered.
+    // The LaserPointer remains active after activation, including after this
+    // specific puzzle is solved, so the completed light path stays visible.
     [SerializeField] private LightPuzzleController puzzleController;
 
     [Header("Laser")]
@@ -58,22 +57,12 @@ public class ShootLaser : MonoBehaviour
     // puzzle interactions use one consistent visual language.
     [SerializeField] private PuzzleInteractableOutline interactionOutline;
 
-    [Header("Solved Laser Shutoff")]
-
-    // The laser remains visible briefly after the puzzle is solved so the player
-    // can clearly see the successful beam path and the resulting platform movement.
-    // Different puzzle layouts can use different delays in the Inspector.
-    [SerializeField] private float solvedShutoffDelay = 3f;
-
     [Header("SFX")]
     public AudioSource PlantBeamInteractSFX;
 
     private InputAction playerInteract;
 
     private bool isLaserActive;
-    private bool isWaitingToShutOff;
-
-    private Coroutine solvedShutoffCoroutine;
 
     private void Awake()
     {
@@ -81,12 +70,6 @@ public class ShootLaser : MonoBehaviour
             Mathf.Max(
                 0f,
                 interactionDistance
-            );
-
-        solvedShutoffDelay =
-            Mathf.Max(
-                0f,
-                solvedShutoffDelay
             );
 
         laserWidth =
@@ -177,8 +160,10 @@ public class ShootLaser : MonoBehaviour
 
     private void Update()
     {
-        // Once solved, the laser keeps recasting during its shutdown delay so
-        // the successful light path remains visible while the platform moves.
+        // Once the puzzle is solved, the successful laser path remains active
+        // permanently so the completed light connection stays visually clear.
+        // Interaction remains disabled because the LaserPointer has already
+        // performed its one available activation.
         if (
             puzzleController != null &&
             puzzleController.IsSolved()
@@ -187,14 +172,6 @@ public class ShootLaser : MonoBehaviour
             SetInteractionOutline(
                 false
             );
-
-            if (
-                isLaserActive &&
-                !isWaitingToShutOff
-            )
-            {
-                StartSolvedShutoff();
-            }
 
             if (isLaserActive)
             {
@@ -251,8 +228,8 @@ public class ShootLaser : MonoBehaviour
     }
 
     private void HandleInteraction(
-    bool playerIsNearby
-)
+        bool playerIsNearby
+    )
     {
         if (
             Player == null ||
@@ -325,9 +302,9 @@ public class ShootLaser : MonoBehaviour
         PlayActivationAnimation();
 
         // Activating the source starts a persistent laser so the player can
-        // experiment with mirror angles without needing to race against a timer.
+        // experiment with mirror angles. Once the puzzle is solved, the laser
+        // remains active permanently to preserve the completed light path.
         isLaserActive = true;
-        isWaitingToShutOff = false;
 
         // Once the source has been activated there is no further interaction
         // available here, so its proximity outline should disappear immediately.
@@ -339,7 +316,7 @@ public class ShootLaser : MonoBehaviour
 
         Debug.Log(
             gameObject.name +
-            " activated. The laser will remain on until the puzzle is solved."
+            " activated. The laser will remain on permanently."
         );
     }
 
@@ -389,8 +366,8 @@ public class ShootLaser : MonoBehaviour
             return;
         }
 
-        // Recasting every frame gives immediate feedback when mirrors rotate,
-        // and also keeps the completed beam path visible during the solved delay.
+        // Recasting every frame gives immediate feedback when mirrors rotate and
+        // keeps the successful beam path visible permanently after puzzle completion.
         beam.laser.positionCount = 0;
         beam.laserIndices.Clear();
 
@@ -406,69 +383,6 @@ public class ShootLaser : MonoBehaviour
             origin.position,
             origin.right,
             beam.laser
-        );
-    }
-
-    private void StartSolvedShutoff()
-    {
-        isWaitingToShutOff = true;
-
-        if (solvedShutoffCoroutine != null)
-        {
-            StopCoroutine(
-                solvedShutoffCoroutine
-            );
-        }
-
-        solvedShutoffCoroutine =
-            StartCoroutine(
-                SolvedShutoffRoutine()
-            );
-
-        Debug.Log(
-            gameObject.name +
-            " puzzle solved. Laser will switch off after " +
-            solvedShutoffDelay.ToString("0.00") +
-            " seconds."
-        );
-    }
-
-    private IEnumerator SolvedShutoffRoutine()
-    {
-        // Keeping the laser active during this delay lets the player visually
-        // connect the successful receiver hit with the moving platform response.
-        if (solvedShutoffDelay > 0f)
-        {
-            yield return new WaitForSeconds(
-                solvedShutoffDelay
-            );
-        }
-
-        DeactivateLaserAfterPuzzleSolved();
-
-        solvedShutoffCoroutine = null;
-    }
-
-    private void DeactivateLaserAfterPuzzleSolved()
-    {
-        isLaserActive = false;
-        isWaitingToShutOff = false;
-
-        if (
-            beam != null &&
-            beam.laser != null
-        )
-        {
-            beam.laser.positionCount = 0;
-            beam.laser.enabled = false;
-        }
-
-        // Do not deactivate the receiver here because the completed puzzle
-        // must keep its door/platform in the solved state after the beam disappears.
-
-        Debug.Log(
-            gameObject.name +
-            " switched off after the solved puzzle delay."
         );
     }
 
@@ -495,17 +409,6 @@ public class ShootLaser : MonoBehaviour
 
     private void OnDisable()
     {
-        // Stop any delayed shutdown if this puzzle object itself is disabled,
-        // preventing a coroutine from continuing against an inactive object.
-        if (solvedShutoffCoroutine != null)
-        {
-            StopCoroutine(
-                solvedShutoffCoroutine
-            );
-
-            solvedShutoffCoroutine = null;
-        }
-
         // Removing the proximity feedback ensures an inactive puzzle object
         // cannot leave its generated outline visible in the level.
         SetInteractionOutline(
