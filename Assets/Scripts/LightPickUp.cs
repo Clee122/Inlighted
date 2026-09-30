@@ -1,7 +1,7 @@
 using System.Collections;
 using UnityEngine;
 
-public class EnvironmentalLightSource : MonoBehaviour
+public class LightPickUp : MonoBehaviour
 {
     [Header("Light Restoration")]
 
