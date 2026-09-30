@@ -7,6 +7,16 @@ public class DarknessZone : MonoBehaviour
     [Header("Visual")]
     [SerializeField] private GameObject darknessVisual;
 
+    [Header("Damage Settings")]
+
+    /*
+     * Some experimental darkness objects are used only to demonstrate darkness
+     * behaviour and light interaction. Disabling damage here keeps their collider,
+     * dispel, reform and visual behaviour working without registering the player
+     * as being inside damaging darkness.
+     */
+    [SerializeField] private bool dealDamage = true;
+
     [Header("Dispel Settings")]
     [SerializeField] private float reformDelay = 3f;
     [SerializeField] private float reformCheckInterval = 0.1f;
@@ -53,6 +63,14 @@ public class DarknessZone : MonoBehaviour
         // If the darkness has been dispelled, it should not damage the player or count as active darkness.
         // This keeps the visual state and gameplay state consistent.
         if (isDispelled)
+            return;
+
+        /*
+         * Non-damaging experimental zones still keep their collider active for
+         * interaction and visual testing, but should not register with the player's
+         * darkness damage tracker.
+         */
+        if (!dealDamage)
             return;
 
         PlayerDarknessTracker darknessTracker = other.GetComponent<PlayerDarknessTracker>();
@@ -217,6 +235,13 @@ public class DarknessZone : MonoBehaviour
 
     private void CheckForPlayerAfterReform()
     {
+        /*
+         * A harmless experimental darkness zone should never register the player
+         * with PlayerDarknessTracker, including when it reforms around them.
+         */
+        if (!dealDamage)
+            return;
+
         if (darknessCollider == null)
             return;
 

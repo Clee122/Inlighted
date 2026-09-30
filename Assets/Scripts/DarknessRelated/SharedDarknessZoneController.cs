@@ -36,6 +36,14 @@ public class SharedDarknessZoneController : MonoBehaviour
     [Header("Damage Settings")]
 
     /*
+     * Experimental darkness masses may need all of their visual cut-out and
+     * light interaction behaviour without actually hurting the player.
+     * Keeping damage optional avoids disabling colliders or other gameplay logic.
+     */
+    [SerializeField]
+    private bool dealDamage = true;
+
+    /*
      * The controller checks damage at a short interval instead of every frame.
      * PlayerLifeSystem still owns the actual invulnerability protection, while
      * this interval avoids repeatedly calling TakeDamage while protection is active.
@@ -69,6 +77,17 @@ public class SharedDarknessZoneController : MonoBehaviour
             darknessCutoutController == null
         )
         {
+            return;
+        }
+
+        /*
+         * Some experimental darkness masses exist only to demonstrate visual and
+         * deformation behaviour. They should keep their colliders and cut-out logic
+         * active while completely skipping player damage checks.
+         */
+        if (!dealDamage)
+        {
+            damageCheckTimer = 0f;
             return;
         }
 
