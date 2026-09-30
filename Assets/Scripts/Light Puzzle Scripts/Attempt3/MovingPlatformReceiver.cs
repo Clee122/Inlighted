@@ -131,9 +131,9 @@ public class MovingPlatformReceiver : MonoBehaviour
 
     public void Activate()
     {
-        // The puzzle is solved immediately when the receiver is activated.
-        // Puzzle completion no longer depends on the camera successfully
-        // reaching CameraSpace.
+        // The puzzle is solved immediately so puzzle completion does not depend
+        // on the camera reaching CameraSpace. This preserves the fix where a
+        // missing or incorrect camera reference could prevent the solved state.
         if (
             completesPuzzleOnActivate &&
             puzzleController != null
@@ -142,17 +142,13 @@ public class MovingPlatformReceiver : MonoBehaviour
             puzzleController.SolvePuzzle();
 
             // The receiver and door permanently change to their powered artwork
-            // at the same moment the puzzle enters its solved state.
+            // as soon as the puzzle enters its solved state.
             SetSolvedVisuals(true);
-
-            // Audio feedback is optional, so a missing AudioSource should never
-            // interrupt puzzle completion or prevent the platform from moving.
-            if (DoorMovingSFX != null)
-            {
-                DoorMovingSFX.Play();
-            }
         }
 
+        // The door must wait for this puzzle's camera sequence before opening.
+        // cameraShown only prevents this particular camera pan from repeating;
+        // it does not affect camera sequences belonging to other puzzles.
         if (
             !cameraShown &&
             CameraManager != null &&
@@ -168,15 +164,19 @@ public class MovingPlatformReceiver : MonoBehaviour
             StartCoroutine(
                 WaitForCamera()
             );
+
+            return;
         }
-        else
+
+        // Some receivers may not use a camera sequence. In that case the door
+        // is allowed to move immediately so a missing optional camera setup
+        // cannot leave the puzzle permanently stuck.
+        if (
+            CameraManager == null ||
+            CameraSpace == null
+        )
         {
-            // If there is no camera sequence, or the camera has already been
-            // shown, start the door and its stationary movement VFX immediately.
-            if (MovingPlatform != null)
-            {
-                StartDoorMovement();
-            }
+            StartDoorMovement();
         }
     }
 
@@ -206,8 +206,8 @@ public class MovingPlatformReceiver : MonoBehaviour
 
     private IEnumerator WaitForCamera()
     {
-        // Camera movement now only controls when the platform begins moving.
-        // It no longer controls whether the puzzle becomes solved.
+        // Door movement is deliberately delayed until the camera reaches the
+        // puzzle's CameraSpace so the player sees the door before it begins opening.
         yield return new WaitUntil(() =>
             CameraManager != null &&
             CameraSpace != null &&
@@ -224,10 +224,16 @@ public class MovingPlatformReceiver : MonoBehaviour
 
     private void StartDoorMovement()
     {
-        // The VFX holder is enabled at the same moment the door receives its
-        // destination. Because the holder is stationary, only the door moves.
+        // The door receives its destination only after the camera has reached
+        // the intended view. Keeping movement, VFX and audio together ensures
+        // all three begin at the same point in the puzzle sequence.
         MP_Target =
             MP_EndGoal;
+
+        if (DoorMovingSFX != null)
+        {
+            DoorMovingSFX.Play();
+        }
 
         if (DoorVFXPosition != null)
         {
