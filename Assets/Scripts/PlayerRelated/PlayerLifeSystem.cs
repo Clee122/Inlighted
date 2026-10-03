@@ -11,7 +11,9 @@ public class PlayerLifeSystem : MonoBehaviour
 
     // The event remains static so Eladio's HUD can subscribe without needing a
     // direct reference to the specific PlayerLifeSystem component.
+    //and an event for the chase sequence so the start chase collider can respawn on player respawn
     public static event Action<int, int> OnLivesChanged;
+    public static event Action OnPlayerRespawned;
 
     [Header("Damage Settings")]
     [SerializeField] private float invulnerabilityDuration = 1f;
@@ -537,6 +539,7 @@ public class PlayerLifeSystem : MonoBehaviour
         // The shared notification updates Eladio's HUD and any other health
         // feedback system through the same event used by damage and healing.
         NotifyLivesChanged();
+        OnPlayerRespawned?.Invoke();
     }
 
     public void DarknessIndicatorReset()

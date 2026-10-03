@@ -9,6 +9,22 @@ public class ChaseZone : MonoBehaviour
     public ZoneType zonetype = ZoneType.Start; //pick what the collider does in the inspector 
     public string playerTag = "Player";
 
+    private Collider2D zoneCollider;
+
+    private void Awake()
+    {
+        zoneCollider = GetComponent<Collider2D>();
+    }
+
+    private void OnEnable()
+    {
+        PlayerLifeSystem.OnPlayerRespawned += ResetZone;
+    }
+
+    private void OnDisable()
+    {
+        PlayerLifeSystem.OnPlayerRespawned -= ResetZone;
+    }
     private void OnTriggerEnter2D(Collider2D collision)
     {
 
@@ -16,6 +32,7 @@ public class ChaseZone : MonoBehaviour
 
         if (zonetype == ZoneType.Start)
         {
+            if(zoneCollider != null) zoneCollider.enabled = false;// one-shot until reset
             Trigger.StartMoving(); //collider start line
         }
         else
@@ -24,4 +41,11 @@ public class ChaseZone : MonoBehaviour
         }
     }
 
+    private void ResetZone()
+    {
+        if (zonetype == ZoneType.Start && zoneCollider != null)
+        {
+            zoneCollider.enabled = true;
+        }
+    }
 }
